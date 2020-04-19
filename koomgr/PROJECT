@@ -1,4 +1,14 @@
 domain: koobind.io
 multigroup: true
 repo: github.com/koobind/koobind/koomgr
+resources:
+- group: directory
+  kind: User
+  version: v1alpha1
+- group: directory
+  kind: Group
+  version: v1alpha1
+- group: directory
+  kind: Binding
+  version: v1alpha1
 version: "2"

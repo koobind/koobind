@@ -16,3 +16,15 @@ Edit hack/boilerplate.go.txt ans main.go to adjust licensing
 Edit go.mod to adjust go version
 
 - Initial commit
+
+```
+kubebuilder create api --group directory --version v1alpha1 --kind User
+Create Resource [y/n]
+y
+Create Controller [y/n]
+n
+```
+
+kubebuilder create api --group directory --version v1alpha1 --kind Group
+kubebuilder create api --group directory --version v1alpha1 --kind Binding
+kubebuilder create webhook --group directory --version v1alpha1 --kind User --defaulting --programmatic-validation

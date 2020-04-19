@@ -1,0 +1,7 @@
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: group-sample
+spec:
+  # Add fields here
+  foo: bar
