@@ -244,7 +244,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: controller:latest
+        image: koobind/manager:latest
         name: manager
         ports:
         - containerPort: 9443
