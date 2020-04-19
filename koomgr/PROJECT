@@ -1,0 +1,4 @@
+domain: koobind.io
+multigroup: true
+repo: github.com/koobind/koobind/koomgr
+version: "2"
