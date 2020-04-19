@@ -1,2 +1,3 @@
 resources:
-- role_binding.yaml
+  - editor_role.yaml
+  - viewer_role.yaml

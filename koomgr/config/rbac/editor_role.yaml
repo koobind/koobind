@@ -1,13 +1,15 @@
-# permissions for end users to edit users.
+# permissions for end users to edit bindings.
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: user-editor-role
+  name: editor-role
 rules:
 - apiGroups:
   - directory.koobind.io
   resources:
+  - bindings
   - users
+  - groups
   verbs:
   - create
   - delete
@@ -19,6 +21,6 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - users/status
+  - bindings/status
   verbs:
   - get
