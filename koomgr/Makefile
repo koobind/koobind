@@ -54,6 +54,28 @@ vet:
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
+# ---------------------------------------------------------------- Deployment in pod (std)
+
+# Generate ready to install manifests
+yamlpod: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/overlays/pod -o yaml/pod/deploy.yaml
+	kustomize build config/crd -o yaml/pod/crd.yaml
+
+deploypod: yamlpod
+	kubectl apply -f yaml/pod/crd.yaml
+	kubectl apply -f yaml/pod/deploy.yaml
+
+undeploypod: yamlpod
+	-kubectl delete -f yaml/pod/deploy.yaml
+	kubectl delete -f yaml/pod/crd.yaml
+
+#------------------------------------------------------------------------------------
+
+
+
+#------------------------------------------------------------------------------------
+
 # Build the docker image
 docker-build: test
 	docker build . -t ${IMG}
