@@ -11,6 +11,42 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-directory-koobind-io-v1alpha1-binding
+  failurePolicy: Fail
+  name: mbinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - bindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-directory-koobind-io-v1alpha1-group
+  failurePolicy: Fail
+  name: mgroup.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groups
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-directory-koobind-io-v1alpha1-user
   failurePolicy: Fail
   name: muser.kb.io
@@ -32,6 +68,42 @@ metadata:
   creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-directory-koobind-io-v1alpha1-binding
+  failurePolicy: Fail
+  name: vbinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - bindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-directory-koobind-io-v1alpha1-group
+  failurePolicy: Fail
+  name: vgroup.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groups
 - clientConfig:
     caBundle: Cg==
     service:

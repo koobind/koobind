@@ -3,7 +3,7 @@ apiVersion: directory.koobind.io/v1alpha1
 kind: User
 metadata:
   name: lhamilton
-  #namespace: koo-system
+  namespace: koo-system
 spec:
   commonName: Lewis HAMILTION
   passwordHash: $2a$10$0XqNZP13.lTc6eh1tidUEu6pFkJ8tRmz5qdMNuTah7AdH7uQQwpIO

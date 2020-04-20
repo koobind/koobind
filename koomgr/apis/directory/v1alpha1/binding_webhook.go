@@ -21,71 +21,57 @@ package v1alpha1
 
 import (
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"k8s.io/apimachinery/pkg/runtime"
-	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
-var userlog = logf.Log.WithName("user-resource")
+var bindinglog = logf.Log.WithName("binding-resource")
 
-func (r *User) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *Binding) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-user,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=users,verbs=create;update,versions=v1alpha1,name=muser.kb.io
+// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-binding,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=bindings,verbs=create;update,versions=v1alpha1,name=mbinding.kb.io
 
-var _ webhook.Defaulter = &User{}
+var _ webhook.Defaulter = &Binding{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (this *User) Default() {
-	userlog.Info("default", "name", this.Name, "namespace", this.Namespace)
+func (r *Binding) Default() {
+	bindinglog.Info("default", "name", r.Name)
+	// Nothing to do for now
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-user,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=users,versions=v1alpha1,name=vuser.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-binding,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=bindings,versions=v1alpha1,name=vbinding.kb.io
 
-var _ webhook.Validator = &User{}
+var _ webhook.Validator = &Binding{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *User) ValidateCreate() error {
-	userlog.Info("validate create", "name", r.Name)
+func (r *Binding) ValidateCreate() error {
+	bindinglog.Info("validate create", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *User) ValidateUpdate(old runtime.Object) error {
-	userlog.Info("validate update", "name", r.Name)
+func (r *Binding) ValidateUpdate(old runtime.Object) error {
+	bindinglog.Info("validate update", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *User) ValidateDelete() error {
-	userlog.Info("validate delete", "name", r.Name)
+func (r *Binding) ValidateDelete() error {
+	bindinglog.Info("validate delete", "name", r.Name)
 	return nil
 }
 
-var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
-func (this *User) validate() error {
+func (this *Binding) validate() error {
 	if this.Namespace != Namespace {
 		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, Namespace)
-	}
-	if this.Spec.PasswordHash != "" {
-		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
-		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {
-			return fmt.Errorf("Invalid passwordHash!")
-		}
-	}
-	if this.Spec.Email != "" {
-		if !emailRegexp.MatchString(this.Spec.Email) {
-			return fmt.Errorf("Invalid Email")
-		}
 	}
 	return nil
 }

@@ -25,9 +25,14 @@ spec:
       containers:
       - command:
         - /manager
-        args: []
+        args: ["--namespace", "$(KOO_NAMESPACE)" ]
         image: controller:latest
         name: manager
+        env:
+        - name: KOO_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         resources:
           limits:
             cpu: 100m

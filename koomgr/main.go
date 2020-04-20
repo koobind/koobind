@@ -22,15 +22,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -88,6 +90,14 @@ func main() {
 
 	if err = (&directoryv1alpha1.User{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "User")
+		os.Exit(1)
+	}
+	if err = (&directoryv1alpha1.Group{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Group")
+		os.Exit(1)
+	}
+	if err = (&directoryv1alpha1.Binding{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Binding")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
