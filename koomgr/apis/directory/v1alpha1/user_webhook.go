@@ -43,9 +43,8 @@ func (r *User) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Defaulter = &User{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *User) Default() {
-	userlog.Info("default", "name", r.Name)
-	// Nothing to do now
+func (this *User) Default() {
+	userlog.Info("default", "name", this.Name, "namespace", this.Namespace)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -74,6 +73,9 @@ func (r *User) ValidateDelete() error {
 var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func (this *User) validate() error {
+	if this.Namespace != Namespace {
+		return fmt.Errorf("Invalid namespace '%s'. Should be '%s'", this.Namespace, Namespace)
+	}
 	if this.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
 		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {

@@ -3,6 +3,7 @@ apiVersion: directory.koobind.io/v1alpha1
 kind: User
 metadata:
   name: lhamilton
+  #namespace: koo-system
 spec:
   commonName: Lewis HAMILTION
   passwordHash: $2a$10$0XqNZP13.lTc6eh1tidUEu6pFkJ8tRmz5qdMNuTah7AdH7uQQwpIO
@@ -12,6 +13,7 @@ apiVersion: directory.koobind.io/v1alpha1
 kind: Group
 metadata:
   name: mercedes
+  namespace: koo-system
 spec:
   description: German car manufacturer
 ---
@@ -19,6 +21,7 @@ apiVersion: directory.koobind.io/v1alpha1
 kind: Binding
 metadata:
   name: lh-mercedes
+  namespace: koo-system
 spec:
   user: lhamilton
   group: mercedes

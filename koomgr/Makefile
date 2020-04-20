@@ -65,25 +65,25 @@ certificate: config/overlays/dev/cert/tls.key
 
 yamldev: certificate manifests
 	bash config/overlays/dev/generate_webhooks_patches.sh
-	kustomize build config/overlays/dev -o yaml/dev/webhooks.yaml
+	kustomize build config/overlays/dev -o yaml/dev/deploy.yaml
 	kustomize build config/crd -o yaml/dev/crd.yaml
 
 deploydev: yamldev
 	kubectl apply -f yaml/dev/crd.yaml
-	kubectl apply -f yaml/dev/webhooks.yaml
+	kubectl apply -f yaml/dev/deploy.yaml
 
 undeploydev: yamldev
-	-kubectl delete -f yaml/dev/webhooks.yaml
+	-kubectl delete -f yaml/dev/deploy.yaml
 	kubectl delete -f yaml/dev/crd.yaml
 
 rundev: manager
-	bin/manager -cert-dir config/overlays/dev/cert
+	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system
 
 rundebug: manager
-	bin/manager -cert-dir config/overlays/dev/cert -logLevel 1
+	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system -logLevel 1
 
 runtrace: manager
-	bin/manager -cert-dir config/overlays/dev/cert -logLevel 2
+	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system -logLevel 2
 
 #------------------------------------------------------------------------------------
 

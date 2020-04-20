@@ -25,9 +25,11 @@ Create Controller [y/n]
 n
 ```
 
+```
 kubebuilder create api --group directory --version v1alpha1 --kind Group
 kubebuilder create api --group directory --version v1alpha1 --kind Binding
 kubebuilder create webhook --group directory --version v1alpha1 --kind User --defaulting --programmatic-validation
+```
 
 - commit (Add api resources)
 
@@ -39,3 +41,8 @@ To simplify stuff, will remove all stuff related to
 - conversion webhook
 - prometheus
 - leader election
+
+```
+kubebuilder create webhook --group directory --version v1alpha1 --kind Group --defaulting --programmatic-validation
+kubebuilder create webhook --group directory --version v1alpha1 --kind Binding --defaulting --programmatic-validation
+```

@@ -21,6 +21,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -47,7 +48,10 @@ func init() {
 func main() {
 	var managerCertDir string
 	var logLevel int
+	var host string
+	flag.StringVar(&host, "host", "", "Webhook server bind address")
 	flag.StringVar(&managerCertDir, "cert-dir", "", "Path to the server certificate folder")
+	flag.StringVar(&directoryv1alpha1.Namespace, "namespace", "", "The namespace where to store koo resources (users,groups,bindings)")
 	flag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
 	flag.Parse()
 
@@ -63,6 +67,11 @@ func main() {
 	setupLog.V(3).Info("Verbose trace log mode activated")
 	setupLog.V(4).Info("Very verbose trace log mode activated")
 
+	if directoryv1alpha1.Namespace == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: --namespace parameter is required!\n")
+		os.Exit(2)
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: "0",
@@ -70,6 +79,7 @@ func main() {
 		LeaderElection:     false,
 		//LeaderElectionID:   "f9553f09.koobind.io",
 		CertDir: managerCertDir,
+		Host:    host,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

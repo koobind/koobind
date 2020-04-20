@@ -13,6 +13,7 @@ namePrefix: koo-
 #  someName: someValue
 resources:
   - ./webhook_manifests.yaml
+  - ./namespace.yaml
 
 patchesStrategicMerge:
   - generated/webhooks_patch.yaml
