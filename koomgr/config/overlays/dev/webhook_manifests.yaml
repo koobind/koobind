@@ -1,0 +1,44 @@
+# copied from ../../webhook/manifests and clientConfig.service removed
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+  failurePolicy: Fail
+  name: muser.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - users
+
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+  failurePolicy: Fail
+  name: vuser.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - users

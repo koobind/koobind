@@ -8,13 +8,26 @@ metadata:
   creationTimestamp: null
   name: bindings.directory.koobind.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.user
+    name: User
+    type: string
+  - JSONPath: .spec.group
+    name: Group
+    type: string
+  - JSONPath: .spec.disabled
+    name: Disabled
+    type: boolean
   group: directory.koobind.io
   names:
     kind: Binding
     listKind: BindingList
     plural: bindings
+    shortNames:
+    - koobinding
     singular: binding
   scope: Namespaced
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: Binding is the Schema for the bindings API
@@ -34,10 +47,19 @@ spec:
         spec:
           description: BindingSpec defines the desired state of Binding
           properties:
-            foo:
-              description: Foo is an example field of Binding. Edit Binding_types.go
-                to remove/update
+            disabled:
+              description: Allow to 'hide' this binding. Even if defined in another
+                provider
+              type: boolean
+            group:
+              minLength: 1
               type: string
+            user:
+              minLength: 1
+              type: string
+          required:
+          - group
+          - user
           type: object
         status:
           description: BindingStatus defines the observed state of Binding

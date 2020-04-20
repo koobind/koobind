@@ -20,15 +20,16 @@
 package main
 
 import (
-	"os"
-
+	"flag"
+	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -39,14 +40,28 @@ var (
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
-
 	_ = directoryv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
 func main() {
+	var managerCertDir string
+	var logLevel int
+	flag.StringVar(&managerCertDir, "cert-dir", "", "Path to the server certificate folder")
+	flag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
+	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	if logLevel > 0 {
+		ll := zap.NewAtomicLevelAt(zapcore.Level(-logLevel))
+		ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(true), crtzap.Level(&ll)))
+	} else {
+		ctrl.SetLogger(crtzap.New())
+	}
+
+	setupLog.V(1).Info("Debug log mode activated")
+	setupLog.V(2).Info("Trace log mode activated")
+	setupLog.V(3).Info("Verbose trace log mode activated")
+	setupLog.V(4).Info("Very verbose trace log mode activated")
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
@@ -54,6 +69,7 @@ func main() {
 		Port:               9443,
 		LeaderElection:     false,
 		//LeaderElectionID:   "f9553f09.koobind.io",
+		CertDir: managerCertDir,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

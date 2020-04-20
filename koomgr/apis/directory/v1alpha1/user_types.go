@@ -23,26 +23,43 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // UserSpec defines the desired state of User
 type UserSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// The user login is the Name of the ressource.
 
-	// Foo is an example field of User. Edit User_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// The user common name.
+	// +optional
+	CommonName string `json:"commonName,omitempty"`
+
+	// The user email.
+	// +optional
+	Email string `json:"email,omitempty"`
+
+	// The user password, Hashed. Using golang.org/x/crypto/bcrypt.GenerateFromPassword()
+	// Is optional, in case we only enrich a user from another directory
+	// +optional
+	PasswordHash string `json:"passwordHash,omitempty"`
+
+	// Whatever extra information related to this user.
+	// +optional
+	Comment string `json:"comment,omitempty"`
+
+	// Prevent this user to login. Even if this user is managed by an external provider (i.e LDAP)
+	// +optional
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // UserStatus defines the observed state of User
 type UserStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
 
+// +kubebuilder:resource:scope=Namespaced,shortName=koouser
+// +kubebuilder:printcolumn:name="Common name",type=string,JSONPath=`.spec.commonName`
+// +kubebuilder:printcolumn:name="Email",type=string,JSONPath=`.spec.email`
+// +kubebuilder:printcolumn:name="Comment",type=string,JSONPath=`.spec.comment`
+// +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
 // User is the Schema for the users API
 type User struct {
 	metav1.TypeMeta   `json:",inline"`

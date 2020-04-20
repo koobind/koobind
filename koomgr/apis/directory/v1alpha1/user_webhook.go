@@ -20,7 +20,10 @@
 package v1alpha1
 
 import (
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"k8s.io/apimachinery/pkg/runtime"
+	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -35,8 +38,6 @@ func (r *User) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
 // +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-user,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=users,verbs=create;update,versions=v1alpha1,name=muser.kb.io
 
 var _ webhook.Defaulter = &User{}
@@ -44,8 +45,7 @@ var _ webhook.Defaulter = &User{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *User) Default() {
 	userlog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
+	// Nothing to do now
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -56,23 +56,34 @@ var _ webhook.Validator = &User{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateCreate() error {
 	userlog.Info("validate create", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateUpdate(old runtime.Object) error {
 	userlog.Info("validate update", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateDelete() error {
 	userlog.Info("validate delete", "name", r.Name)
+	return nil
+}
 
-	// TODO(user): fill in your validation logic upon object deletion.
+var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func (this *User) validate() error {
+	if this.Spec.PasswordHash != "" {
+		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
+		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {
+			return fmt.Errorf("Invalid passwordHash!")
+		}
+	}
+	if this.Spec.Email != "" {
+		if !emailRegexp.MatchString(this.Spec.Email) {
+			return fmt.Errorf("Invalid Email")
+		}
+	}
 	return nil
 }

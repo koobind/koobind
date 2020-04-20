@@ -35,7 +35,7 @@ webhooks:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: koo-editor-role
+  name: koo-editor
   namespace: koo-system
 rules:
 - apiGroups:
@@ -62,7 +62,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: koo-viewer-role
+  name: koo-viewer
   namespace: koo-system
 rules:
 - apiGroups:

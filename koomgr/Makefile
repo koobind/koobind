@@ -55,12 +55,35 @@ undeploypod: yamlpod
 	kubectl delete -f yaml/pod/crd.yaml
 
 
+
 # ---------------------------------------------------------------- Deployment for dev (local)
 
-# Run against the configured Kubernetes cluster in ~/.kube/config
-rundev: generate fmt vet manifests
-	go run ./main.go
+config/overlays/dev/cert/tls.key:
+	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout config/overlays/dev/cert/tls.key -out config/overlays/dev/cert/tls.crt -subj "/C=FR/ST=Paris/L=Paris/O=BROADSoftware/OU=IT Department/CN=koomgr"
 
+certificate: config/overlays/dev/cert/tls.key
+
+yamldev: certificate manifests
+	bash config/overlays/dev/generate_webhooks_patches.sh
+	kustomize build config/overlays/dev -o yaml/dev/webhooks.yaml
+	kustomize build config/crd -o yaml/dev/crd.yaml
+
+deploydev: yamldev
+	kubectl apply -f yaml/dev/crd.yaml
+	kubectl apply -f yaml/dev/webhooks.yaml
+
+undeploydev: yamldev
+	-kubectl delete -f yaml/dev/webhooks.yaml
+	kubectl delete -f yaml/dev/crd.yaml
+
+rundev: manager
+	bin/manager -cert-dir config/overlays/dev/cert
+
+rundebug: manager
+	bin/manager -cert-dir config/overlays/dev/cert -logLevel 1
+
+runtrace: manager
+	bin/manager -cert-dir config/overlays/dev/cert -logLevel 2
 
 #------------------------------------------------------------------------------------
 

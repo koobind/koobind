@@ -8,13 +8,29 @@ metadata:
   creationTimestamp: null
   name: users.directory.koobind.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.commonName
+    name: Common name
+    type: string
+  - JSONPath: .spec.email
+    name: Email
+    type: string
+  - JSONPath: .spec.comment
+    name: Comment
+    type: string
+  - JSONPath: .spec.disabled
+    name: Disabled
+    type: boolean
   group: directory.koobind.io
   names:
     kind: User
     listKind: UserList
     plural: users
+    shortNames:
+    - koouser
     singular: user
   scope: Namespaced
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: User is the Schema for the users API
@@ -34,9 +50,22 @@ spec:
         spec:
           description: UserSpec defines the desired state of User
           properties:
-            foo:
-              description: Foo is an example field of User. Edit User_types.go to
-                remove/update
+            comment:
+              description: Whatever extra information related to this user.
+              type: string
+            commonName:
+              description: The user common name.
+              type: string
+            disabled:
+              description: Prevent this user to login. Even if this user is managed
+                by an external provider (i.e LDAP)
+              type: boolean
+            email:
+              description: The user email.
+              type: string
+            passwordHash:
+              description: The user password, Hashed. Using golang.org/x/crypto/bcrypt.GenerateFromPassword()
+                Is optional, in case we only enrich a user from another directory
               type: string
           type: object
         status:

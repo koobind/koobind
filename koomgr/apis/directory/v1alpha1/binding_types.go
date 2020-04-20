@@ -23,16 +23,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // BindingSpec defines the desired state of Binding
 type BindingSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:validation:MinLength=1
+	// +required
+	User string `json:"user"`
 
-	// Foo is an example field of Binding. Edit Binding_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:MinLength=1
+	// +required
+	Group string `json:"group"`
+
+	// Allow to 'hide' this binding. Even if defined in another provider
+	// +optional
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // BindingStatus defines the observed state of Binding
@@ -42,7 +45,10 @@ type BindingStatus struct {
 }
 
 // +kubebuilder:object:root=true
-
+// +kubebuilder:resource:scope=Namespaced,shortName=koobinding
+// +kubebuilder:printcolumn:name="User",type=string,JSONPath=`.spec.user`
+// +kubebuilder:printcolumn:name="Group",type=string,JSONPath=`.spec.group`
+// +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
 // Binding is the Schema for the bindings API
 type Binding struct {
 	metav1.TypeMeta   `json:",inline"`

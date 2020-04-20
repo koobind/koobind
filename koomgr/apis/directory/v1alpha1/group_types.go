@@ -23,26 +23,25 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // GroupSpec defines the desired state of Group
 type GroupSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Group description
+	// +optional
+	Description string `json:"description,omitempty"`
 
-	// Foo is an example field of Group. Edit Group_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Allow to 'hide' this group. Even if defined in another provider
+	// +optional
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // GroupStatus defines the observed state of Group
 type GroupStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
-
+// +kubebuilder:resource:scope=Namespaced,shortName=koogroup
+// +kubebuilder:printcolumn:name="Description",type=string,JSONPath=`.spec.description`
+// +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
 // Group is the Schema for the groups API
 type Group struct {
 	metav1.TypeMeta   `json:",inline"`
