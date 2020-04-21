@@ -22,6 +22,7 @@ spec:
     plural: groups
     shortNames:
     - koogroup
+    - kgroup
     singular: group
   scope: Namespaced
   subresources: {}

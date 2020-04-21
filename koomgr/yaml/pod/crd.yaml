@@ -23,6 +23,7 @@ spec:
     plural: bindings
     shortNames:
     - koobinding
+    - kbinding
     singular: binding
   scope: Namespaced
   subresources: {}
@@ -97,6 +98,7 @@ spec:
     plural: groups
     shortNames:
     - koogroup
+    - kgroup
     singular: group
   scope: Namespaced
   subresources: {}
@@ -171,6 +173,7 @@ spec:
     plural: users
     shortNames:
     - koouser
+    - kuser
     singular: user
   scope: Namespaced
   subresources: {}

@@ -11,7 +11,7 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
-all: manager yamlpod
+all: manager yamlpod yamldev
 
 # Run tests
 test: generate fmt vet manifests

@@ -25,6 +25,7 @@ spec:
     plural: bindings
     shortNames:
     - koobinding
+    - kbinding
     singular: binding
   scope: Namespaced
   subresources: {}

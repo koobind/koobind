@@ -28,6 +28,7 @@ spec:
     plural: users
     shortNames:
     - koouser
+    - kuser
     singular: user
   scope: Namespaced
   subresources: {}
