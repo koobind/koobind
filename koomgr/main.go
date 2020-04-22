@@ -20,8 +20,7 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	"github.com/koobind/koobind/koomgr/internal/config"
 	"os"
 
 	"go.uber.org/zap"
@@ -48,17 +47,11 @@ func init() {
 }
 
 func main() {
-	var managerCertDir string
-	var logLevel int
-	var host string
-	flag.StringVar(&host, "host", "", "Webhook server bind address")
-	flag.StringVar(&managerCertDir, "cert-dir", "", "Path to the server certificate folder")
-	flag.StringVar(&directoryv1alpha1.Namespace, "namespace", "", "The namespace where to store koo resources (users,groups,bindings)")
-	flag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
-	flag.Parse()
 
-	if logLevel > 0 {
-		ll := zap.NewAtomicLevelAt(zapcore.Level(-logLevel))
+	config.Setup()
+
+	if config.Conf.LogLevel > 0 {
+		ll := zap.NewAtomicLevelAt(zapcore.Level(-config.Conf.LogLevel))
 		ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(true), crtzap.Level(&ll)))
 	} else {
 		ctrl.SetLogger(crtzap.New())
@@ -69,19 +62,14 @@ func main() {
 	setupLog.V(3).Info("Verbose trace log mode activated")
 	setupLog.V(4).Info("Very verbose trace log mode activated")
 
-	if directoryv1alpha1.Namespace == "" {
-		fmt.Fprintf(os.Stderr, "ERROR: --namespace parameter is required!\n")
-		os.Exit(2)
-	}
-
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: "0",
-		Port:               9443,
 		LeaderElection:     false,
 		//LeaderElectionID:   "f9553f09.koobind.io",
-		CertDir: managerCertDir,
-		Host:    host,
+		Port:    config.Conf.Port,
+		CertDir: config.Conf.CertDir,
+		Host:    config.Conf.Host,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

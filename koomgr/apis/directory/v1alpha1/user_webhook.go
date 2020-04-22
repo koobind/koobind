@@ -21,6 +21,7 @@ package v1alpha1
 
 import (
 	"fmt"
+	"github.com/koobind/koobind/koomgr/internal/config"
 	"golang.org/x/crypto/bcrypt"
 	"k8s.io/apimachinery/pkg/runtime"
 	"regexp"
@@ -73,8 +74,8 @@ func (r *User) ValidateDelete() error {
 var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func (this *User) validate() error {
-	if this.Namespace != Namespace {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, Namespace)
+	if this.Namespace != config.Conf.Namespace {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, config.Conf.Namespace)
 	}
 	if this.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))

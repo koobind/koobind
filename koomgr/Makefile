@@ -76,15 +76,6 @@ undeploydev: yamldev
 	-kubectl delete -f yaml/dev/deploy.yaml
 	kubectl delete -f yaml/dev/crd.yaml
 
-rundev: manager
-	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system
-
-rundebug: manager
-	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system -logLevel 1
-
-runtrace: manager
-	bin/manager -cert-dir config/overlays/dev/cert --host localhost --namespace koo-system -logLevel 2
-
 #------------------------------------------------------------------------------------
 
 # Build the docker image

@@ -1,0 +1,104 @@
+
+
+
+logLevel: 0
+certDir:  ./config/overlays/dev/cert
+host: localhost
+port: 9443
+adminGroup: "kooadmin"
+inactivityTimeout: "30m"
+sessionMaxTTL: "12h"
+clientTokenTTL: "30s"
+
+providers:
+  - name: base
+    uidOffset: 0
+    type: static
+    users:
+      - login: admin
+        passwordHash: "$2a$10$XiI6xl5BUpLjt7s2LkjWde.olxhDoYH56vNgBeomZDlU4SnKB3/pa"   # admin
+        id: 10000
+        groups: [ "admin", "kooadmin"]
+
+      - login: auditor
+        passwordHash: "$2a$10$.Wyytpadr73DsnTgofRFwuQhGejddt99gfttX8/.D5Hshc/3gR3gy"   # auditor
+        id: 10001
+        groups: [ "auditor" ]
+
+  - name: addon
+    type: static
+    users:
+      - login: admin
+        passwordHash: "$2a$10$XiI6xl5BUpLjt7s2LkjWde.olxhDoYH56vNgBeomZDlU4SnKB3/pa"   # admin
+        id: 20000
+        groups: [ "administrator"]
+
+      - login: auditor
+        id: 20001
+        groups: [ "spy" ]
+
+      - login: sa
+        passwordHash: "$2a$10$pezlwBeIGb1vaQghQx3T4evQmhbvR25DsLiuwWPxnf4MA0NIOnC5q"   # as
+        id: 20002
+        groups: [ "users"]
+
+      - login: salexandre
+        groups: [ "homeworker"]
+
+  - name: ldap1
+    type: ldap
+    groupPattern: "ldap1_%s"
+    credentialAuthority: yes
+    groupAuthority: yes
+    uidOffset: 0
+
+    host: ldap1
+    port: 636
+    insecureNoSSL: false
+    insecureSkipVerify: false
+    bindDN: cn=Manager,dc=vgr,dc=broadsoftware,dc=com
+    bindPW: LdapAdmin
+
+    userSearch:
+      baseDN: ou=Users,dc=vgr,dc=broadsoftware,dc=com
+      filter: "(objectClass=inetOrgPerson)"
+      loginAttr: uid
+      numericalIdAttr: uidNumber
+
+    groupSearch:
+      baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
+      filter: "(objectClass=posixgroup)"
+      nameAttr: cn
+      linkUserAttr: uid
+      linkGroupAttr: memberUid
+
+  - name: ipa2
+    type: ldap
+    credentialAuthority: yes
+    groupAuthority: yes
+    critical: yes
+    insecureNoSSL: false
+
+    host: ipa2.bsa.broadsoftware.com
+    port: 636
+    insecureSkipVerify: false
+    rootCA: ../../../ezciac/kvm2/ipa2/ca.pem
+    bindDN: uid=admin,cn=users,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
+    bindPW: ipaadmin
+
+    userSearch:
+      baseDN: cn=users,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
+      filter: "(objectClass=inetOrgPerson)"
+      loginAttr: uid
+      numericalIdAttr: uidNumber
+
+    groupSearch:
+      baseDN: cn=groups,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
+      filter: "(objectClass=posixgroup)"
+      nameAttr: cn
+      linkUserAttr: DN
+      linkGroupAttr: member
+
+  - type: static
+    name: testEmpty
+

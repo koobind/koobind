@@ -21,6 +21,7 @@ package v1alpha1
 
 import (
 	"fmt"
+	"github.com/koobind/koobind/koomgr/internal/config"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -70,8 +71,8 @@ func (r *Binding) ValidateDelete() error {
 }
 
 func (this *Binding) validate() error {
-	if this.Namespace != Namespace {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, Namespace)
+	if this.Namespace != config.Conf.Namespace {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, config.Conf.Namespace)
 	}
 	return nil
 }
