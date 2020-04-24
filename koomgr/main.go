@@ -20,18 +20,20 @@
 package main
 
 import (
+	"fmt"
+	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	"github.com/koobind/koobind/koomgr/internal/authserver"
 	"github.com/koobind/koobind/koomgr/internal/config"
-	"os"
-
+	"github.com/koobind/koobind/koomgr/internal/providers/chain"
+	"github.com/koobind/koobind/koomgr/internal/token"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -89,6 +91,13 @@ func main() {
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
+
+	providerChain, err := chain.BuildProviderChain(&config.Conf)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		os.Exit(1)
+	}
+	authserver.Init(mgr, token.NewTokenBasket(), providerChain)
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

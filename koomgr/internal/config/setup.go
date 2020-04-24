@@ -24,6 +24,8 @@ func loadConfig(fileName string, config *Config) error {
 	if err = decoder.Decode(&config); err != nil {
 		return err
 	}
+	// All file path should be relative to the config file location. So take note of its absolute path
+	config.ConfigFolder = filepath.Dir(configFile)
 	return nil
 }
 
@@ -65,8 +67,6 @@ func Setup() {
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
 
-	// All file path should be relative to the config file location
-	Conf.ConfigFolder = filepath.Dir(configFile)
 	AdjustPath(Conf.ConfigFolder, &Conf.CertDir)
 	if Conf.Providers == nil || len(Conf.Providers) == 0 {
 		_, _ = fmt.Fprintf(os.Stderr, "Missing Providers list in config file\n")

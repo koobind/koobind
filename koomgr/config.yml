@@ -82,7 +82,7 @@ providers:
     host: ipa2.bsa.broadsoftware.com
     port: 636
     insecureSkipVerify: false
-    rootCA: ../../../ezciac/kvm2/ipa2/ca.pem
+    rootCA: ../../ezciac/kvm2/ipa2/ca.pem
     bindDN: uid=admin,cn=users,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
     bindPW: ipaadmin
 
