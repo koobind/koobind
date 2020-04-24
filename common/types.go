@@ -2,6 +2,16 @@ package common
 
 import "time"
 
+
+
+const (
+	V1ValidateTokenUrl = "/auth/v1/validateToken"
+	V1GetToken         = "/auth/v1/getToken"
+	V1Admin            = "/auth/v1/admin/"
+)
+
+
+
 type GetTokenResponse struct {
 	Token string		`json:"token"`
 	ClientTTL Duration	`json:"clientTTL"`
