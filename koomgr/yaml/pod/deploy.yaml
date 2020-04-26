@@ -121,12 +121,27 @@ rules:
 apiVersion: v1
 kind: Service
 metadata:
+  name: koo-external-service
+  namespace: koo-system
+spec:
+  ports:
+  - nodePort: 31444
+    port: 444
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    control-plane: manager
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: koo-webhook-service
   namespace: koo-system
 spec:
   ports:
   - port: 443
-    targetPort: 9443
+    targetPort: 8443
   selector:
     control-plane: manager
 ---
@@ -151,6 +166,8 @@ spec:
       - args:
         - --namespace
         - $(KOO_NAMESPACE)
+        - --config
+        - /etc/koo/cfg/config.yaml
         command:
         - /manager
         env:
@@ -175,12 +192,25 @@ spec:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+        - mountPath: /etc/koo/cfg
+          name: config
+        - mountPath: /etc/koo/rootCA
+          name: ldaprootcas
       terminationGracePeriodSeconds: 10
       volumes:
       - name: cert
         secret:
           defaultMode: 420
           secretName: webhook-server-cert
+      - configMap:
+          items:
+          - key: config.yaml
+            path: config.yaml
+          name: koomgr
+        name: config
+      - configMap:
+          name: ldaprootcas
+        name: ldaprootcas
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate

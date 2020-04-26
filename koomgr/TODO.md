@@ -6,7 +6,7 @@
 - Add a ChangePassword capabillity on crd provider
 - A Blacklist mechanisme on user/group/binding stuff, superseding other provided information
 - Add email to retrieved parameters (Return a list). And a common name
-
+- Change Binding to GroupBinding (Conflict with Binding in core)
 
 - Package and setup client as krew plugin (krew template ?)
 - Build automation (goreleaser ?)

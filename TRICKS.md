@@ -26,3 +26,10 @@ May be also:
 git reset
 git restore ...  
 ```
+
+# Get a certificate
+
+```
+kubectl -n koo-system get secrets webhook-server-cert -o=jsonpath='{.data.ca\.crt}' | base64 -d
+```
+

@@ -44,7 +44,7 @@ func Setup() {
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
 	pflag.StringVar(&host, "host", "", "Server bind address (Default: All)")
-	pflag.IntVar(&port, "port", 443, "Server bind port")
+	pflag.IntVar(&port, "port", 8443, "Server bind port")
 	pflag.StringVar(&certDir, "certDir", "", "Path to the server certificate folder")
 	pflag.StringVar(&namespace, "namespace", "", "The namespace where koo resources (users,groups,bindings) are stored")
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
