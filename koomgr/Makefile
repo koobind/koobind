@@ -41,11 +41,14 @@ generate: controller-gen
 crd: manifests
 	kustomize build config/crd -o yaml/crd.yaml
 
+rbac: manifests
+	kustomize build config/rbac -o yaml/rbac.yaml
+
 # ---------------------------------------------------------------- Deployment in pod (std)
 # NB: These tasks does not handle authentication webhook installation.
 
 # Generate ready to install manifests
-yamlpod: crd
+yamlpod: crd rbac
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/overlays/pod -o yaml/pod/deploy.yaml
 
@@ -63,11 +66,11 @@ undeploypod: yamlpod
 # NB: These tasks does not handle authentication webhook installation.
 
 config/overlays/dev/cert/tls.key:
-	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout config/overlays/dev/cert/tls.key -out config/overlays/dev/cert/tls.crt -subj "/C=FR/ST=Paris/L=Paris/O=BROADSoftware/OU=IT Department/CN=koomgr"
+	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout config/overlays/dev/cert/tls.key -out config/overlays/dev/cert/tls.crt -subj "/C=FR/ST=Paris/L=Paris/O=BROADSoftware/OU=IT Department/CN=koomgrdev"
 
 certificate: config/overlays/dev/cert/tls.key
 
-yamldev: certificate crd
+yamldev: certificate crd rbac
 	bash config/overlays/dev/generate_webhooks_patches.sh
 	kustomize build config/overlays/dev -o yaml/dev/deploy.yaml
 

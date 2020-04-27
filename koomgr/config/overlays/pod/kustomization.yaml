@@ -13,8 +13,8 @@ namePrefix: koo-
 #  someName: someValue
 
 bases:
-#- ../../crd  CRD will be generated separatly
-- ../../rbac
+#- ../../crd  will be generated separatly
+# - ../../rbac  Will be generated separatly
 - ../../manager
 - ../../webhook
 - ../../certmanager

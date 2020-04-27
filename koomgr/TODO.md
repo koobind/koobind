@@ -7,6 +7,8 @@
 - A Blacklist mechanisme on user/group/binding stuff, superseding other provided information
 - Add email to retrieved parameters (Return a list). And a common name
 - Change Binding to GroupBinding (Conflict with Binding in core)
+- Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
+
 
 - Package and setup client as krew plugin (krew template ?)
 - Build automation (goreleaser ?)
