@@ -9,6 +9,9 @@ adminGroup: "kooadmin"
 inactivityTimeout: "30m"
 sessionMaxTTL: "12h"
 clientTokenTTL: "30s"
+#inactivityTimeout: "30s"
+#sessionMaxTTL: "12h"
+#clientTokenTTL: "3s"
 
 providers:
   - name: base

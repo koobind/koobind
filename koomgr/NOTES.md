@@ -46,3 +46,10 @@ To simplify stuff, will remove all stuff related to
 kubebuilder create webhook --group directory --version v1alpha1 --kind Group --defaulting --programmatic-validation
 kubebuilder create webhook --group directory --version v1alpha1 --kind Binding --defaulting --programmatic-validation
 ```
+
+# Test add samples
+
+in kspray/koomgr/dev or pod
+```
+k apply -f ../../../../../koobind/koomgr/samples/drivers.yaml
+```

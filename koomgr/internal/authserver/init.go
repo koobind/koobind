@@ -9,6 +9,7 @@ import (
 	"github.com/koobind/koobind/koomgr/internal/token"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"time"
 )
 
 func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain providers.ProviderChain) {
@@ -39,5 +40,13 @@ func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain 
 		},
 		AdminGroup: config.Conf.AdminGroup,
 	}))
+
+	err := manager.Add(&Cleaner{
+		Period:      60 * time.Second,
+		TokenBasket: tokenBasket,
+	})
+	if err != nil {
+		panic(err)
+	}
 
 }
