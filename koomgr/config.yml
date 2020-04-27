@@ -2,9 +2,14 @@
 
 
 logLevel: 0
-certDir:  ./config/overlays/dev/cert
-host: localhost
-port: 9443
+webhookServer:
+  certDir:  ./config/overlays/dev/cert
+  host: localhost
+  port: 9443
+authServer:
+  certDir:  ./config/overlays/dev/cert
+  host: localhost
+  port: 9444
 adminGroup: "kooadmin"
 inactivityTimeout: "30m"
 sessionMaxTTL: "12h"

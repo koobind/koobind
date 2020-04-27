@@ -25,5 +25,4 @@
 - Refactor certificate management (Use cluster CA)
 - Check client certificate
 - Security against BFA.
-- Setup auth server on the webhook server, but launch another server (so another port) for access from koocli, this allowing differents Network security policies.
-
+- Add some NetworkSecurityPolicies around auth and webhook servers

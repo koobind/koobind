@@ -78,7 +78,7 @@ spec:
   - nodePort: 31444
     port: 444
     protocol: TCP
-    targetPort: 8443
+    targetPort: 8444
   selector:
     control-plane: manager
   type: NodePort

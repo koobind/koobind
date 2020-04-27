@@ -69,9 +69,9 @@ func main() {
 		MetricsBindAddress: "0",
 		LeaderElection:     false,
 		//LeaderElectionID:   "f9553f09.koobind.io",
-		Port:    config.Conf.Port,
-		CertDir: config.Conf.CertDir,
-		Host:    config.Conf.Host,
+		Port:    config.Conf.WebhookServer.Port,
+		CertDir: config.Conf.WebhookServer.CertDir,
+		Host:    config.Conf.WebhookServer.Host,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

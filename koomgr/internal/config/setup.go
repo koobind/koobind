@@ -33,9 +33,12 @@ func Setup() {
 	// Allow overridng of some config variable. Mosty used in development stage
 	var configFile string
 	var logLevel int
-	var host string
-	var port int
-	var certDir string
+	var webhookHost string
+	var webhookPort int
+	var webhookCertDir string
+	var authHost string
+	var authPort int
+	var authCertDir string
 	var namespace string
 	var inactivityTimeout string
 	var sessionMaxTTL string
@@ -43,9 +46,12 @@ func Setup() {
 
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
-	pflag.StringVar(&host, "host", "", "Server bind address (Default: All)")
-	pflag.IntVar(&port, "port", 8443, "Server bind port")
-	pflag.StringVar(&certDir, "certDir", "", "Path to the server certificate folder")
+	pflag.StringVar(&webhookHost, "webhookHost", "", "Webhook server bind address (Default: All)")
+	pflag.IntVar(&webhookPort, "webhookPort", 8443, "Webhook server bind port")
+	pflag.StringVar(&webhookCertDir, "webhookCertDir", "", "Path to the webhook server certificate folder")
+	pflag.StringVar(&authHost, "authHost", "", "Auth server bind address (Default: All)")
+	pflag.IntVar(&authPort, "authPort", 8444, "Auth server bind port")
+	pflag.StringVar(&authCertDir, "authCertDir", "", "Path to the auth server certificate folder")
 	pflag.StringVar(&namespace, "namespace", "", "The namespace where koo resources (users,groups,bindings) are stored")
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
@@ -59,15 +65,19 @@ func Setup() {
 		os.Exit(2)
 	}
 	adjustConfigInt(pflag.CommandLine, &Conf.LogLevel, "logLevel")
-	adjustConfigString(pflag.CommandLine, &Conf.Host, "host")
-	adjustConfigInt(pflag.CommandLine, &Conf.Port, "port")
-	adjustConfigString(pflag.CommandLine, &Conf.CertDir, "certDir")
+	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.Host, "webhookHost")
+	adjustConfigInt(pflag.CommandLine, &Conf.WebhookServer.Port, "webhookPort")
+	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.CertDir, "webhookCertDir")
+	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.Host, "authHost")
+	adjustConfigInt(pflag.CommandLine, &Conf.AuthServer.Port, "authPort")
+	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.CertDir, "authCertDir")
 	adjustConfigString(pflag.CommandLine, &Conf.Namespace, "namespace")
 	adjustConfigDuration(pflag.CommandLine, &Conf.InactivityTimeout, "inactivityTimeout")
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
 
-	AdjustPath(Conf.ConfigFolder, &Conf.CertDir)
+	AdjustPath(Conf.ConfigFolder, &Conf.WebhookServer.CertDir)
+	AdjustPath(Conf.ConfigFolder, &Conf.AuthServer.CertDir)
 	if Conf.Providers == nil || len(Conf.Providers) == 0 {
 		_, _ = fmt.Fprintf(os.Stderr, "Missing Providers list in config file\n")
 		os.Exit(2)

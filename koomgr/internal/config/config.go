@@ -8,14 +8,17 @@ import (
 // THE GLOBAL CONFIGURATION SINGLETON
 var Conf = Config{}
 
+type Server struct {
+	Host    string `yaml:"host"`    // Host is the address that the server will listen on. Defaults to "" - all addresses.
+	Port    int    `yaml:"port"`    // Port is the port number that the server will serve. It will be defaulted to 443 if unspecified.
+	CertDir string `yaml:"certDir"` // CertDir is the directory that contains the server key and certificate.
+}
+
 type Config struct {
 	ConfigFolder      string         // This is not in the file, but set on reading. Used to adjust file path
+	WebhookServer     Server         `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
+	AuthServer        Server         `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
 	LogLevel          int            `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
-	Host              string         `yaml:"host"`              // Host is the address that the server will listen on. Defaults to "" - all addresses.
-	Port              int            `yaml:"port"`              // Port is the port number that the server will serve. It will be defaulted to 443 if unspecified.
-	CertDir           string         `yaml:"certDir"`           // CertDir is the directory that contains the server key and certificate. The server key and certificate.
-	CertName          string         `yaml:"certName"`          // CertName is the server certificate name. Defaults to tls.crt.
-	KeyName           string         `yaml:"keyName"`           // KeyName is the server key name. Defaults to tls.key.
 	Namespace         string         `yaml:"namespace"`         // The namespace where koo resources (users,groups,bindings) are stored
 	AdminGroup        string         `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
 	InactivityTimeout *time.Duration `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
