@@ -94,27 +94,27 @@ func (this *providerChain) Login(login, password string) (common.User, bool, str
 	}
 	authenticator := ""
 	for _, prvd := range this.providers {
-		if userStatus, err := prvd.GetUserStatus(login, password, passwordStatus == common.Unchecked); err != nil {
+		userStatus, err := prvd.GetUserStatus(login, password, passwordStatus == common.Unchecked)
+		if err != nil {
 			pcLog.Error(err, "", "provider", prvd.GetName())
 			if prvd.IsCritical() {
 				return common.User{}, false, prvd.GetName()
 			}
-		} else {
-			pcLog.Info("", "provider", prvd.GetName(), "found", userStatus.Found, "passwordStatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups)
-			//this.logger.Infof("Provider '%s' =>  Found:%t   passwordStatus:%s  uid:%s  groups=%v", prvd.GetName(), userStatus.Found, userStatus.PasswordStatus, userStatus.Uid, userStatus.Groups)
-			if userStatus.Found {
-				if userStatus.PasswordStatus == common.Wrong {
-					// No need to go further. Return an empty user to avoid providing partial info
-					return common.User{}, false, prvd.GetName()
-				}
-				if userStatus.PasswordStatus == common.Checked {
-					passwordStatus = common.Checked
-					// The provider who validate the password is the authority for Uid
-					user.Uid = userStatus.Uid
-					authenticator = prvd.GetName()
-				}
-				user.Groups = append(user.Groups, userStatus.Groups...)
+			continue
+		}
+		pcLog.Info("", "provider", prvd.GetName(), "found", userStatus.Found, "passwordStatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups)
+		if userStatus.Found {
+			if userStatus.PasswordStatus == common.Wrong {
+				// No need to go further. Return an empty user to avoid providing partial info
+				return common.User{}, false, prvd.GetName()
 			}
+			if userStatus.PasswordStatus == common.Checked {
+				passwordStatus = common.Checked
+				// The provider who validate the password is the authority for Uid
+				user.Uid = userStatus.Uid
+				authenticator = prvd.GetName()
+			}
+			user.Groups = append(user.Groups, userStatus.Groups...)
 		}
 	}
 	if passwordStatus == common.Checked {
