@@ -62,6 +62,9 @@ type LdapProviderConfig struct {
 
 		// The attribute provinding the numerical user ID
 		NumericalIdAttr string `yaml:"numericalIdAttr"`
+
+		// The attribute providing the user's email
+		EmailAttr string `yaml:"emailAttr"`
 	} `yaml:"userSearch"`
 
 	// Group search configuration.

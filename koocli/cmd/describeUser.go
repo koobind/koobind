@@ -44,13 +44,13 @@ var usersCmd = &cobra.Command{
 			}
 			tw := new(tabwriter.Writer)
 			tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
-			_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS")
+			_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL")
 			for _, userStatus := range userDescribeResponse.UserStatuses {
 				var found = ""
 				if userStatus.Found { found = "*" }
 				var password = ""
 				if userStatus.PasswordStatus == common.Wrong { password = "*" }
-				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%v", userStatus.ProviderName, found, password, userStatus.Uid, userStatus.Groups)
+				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%v\t%s", userStatus.ProviderName, found, password, userStatus.Uid, userStatus.Groups, userStatus.Email)
 			}
 			_, _ = fmt.Fprintf(tw, "\n")
 			_ = tw.Flush()

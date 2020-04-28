@@ -1,13 +1,11 @@
 
 ## Still to do 
 
-- Add email to retrieved parameters (Return a list). And a common name
-- Improve get (describe) user (Add a consolidated result)
-
-- A user/group mapping using regexes. Or prefix/suffix to be reversible)
-- Add a ChangePassword capabillity on crd provider
-- A Blacklist mechanisme on user/group/binding stuff, superseding other provided information
 - Change Binding to GroupBinding (Conflict with Binding in core)
+- Add crd provider
+- A Blacklist mechanisme on user/group/binding stuff, superseding other provided information
+
+- Add a ChangePassword capabillity on crd provider
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
 
 - Package and setup client as krew plugin (krew template ?)

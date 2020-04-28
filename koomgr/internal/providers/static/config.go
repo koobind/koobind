@@ -11,6 +11,7 @@ type User struct {
 	PasswordHash string   `yaml:"passwordHash"`
 	Id           int      `yaml:"id"`
 	Groups       []string `yaml:"groups"`
+	Email        string   `yaml:"email"`
 }
 
 type StaticProviderConfig struct {

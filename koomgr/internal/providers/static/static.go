@@ -30,6 +30,7 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		PasswordStatus: common.Unchecked,
 		Uid:            "",
 		Groups:         nil,
+		Email:          "",
 	}
 	user, exists := this.userByLogin[login]
 	if exists {
@@ -60,6 +61,7 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		}
 		userStatus.Uid = strconv.Itoa(user.Id + this.UidOffet)
 		userStatus.Groups = user.Groups
+		userStatus.Email = user.Email
 	} else {
 		//this.logger.Debugf("User '%s' NOT found!", login)
 		spLog.V(1).Info("User NOT found!", "user", login)

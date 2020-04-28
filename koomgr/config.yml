@@ -52,6 +52,7 @@ providers:
 
       - login: salexandre
         groups: [ "homeworker"]
+        email: "sa@broadsoftware.com"
 
   - name: ldap1
     type: ldap
@@ -72,6 +73,7 @@ providers:
       filter: "(objectClass=inetOrgPerson)"
       loginAttr: uid
       numericalIdAttr: uidNumber
+      emailAttr: mail
 
     groupSearch:
       baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
@@ -99,6 +101,7 @@ providers:
       filter: "(objectClass=inetOrgPerson)"
       loginAttr: uid
       numericalIdAttr: uidNumber
+      emailAttr: mail
 
     groupSearch:
       baseDN: cn=groups,cn=accounts,dc=bsa,dc=broadsoftware,dc=com

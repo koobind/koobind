@@ -45,13 +45,14 @@ type UserDescribeResponse struct {
 }
 
 
-// This for the user describe echange
+// This is here for the user describe exchange
 type UserStatus struct {
 	ProviderName string				`json:"provider"`	// Used for 'describe' command
 	Found bool						`json:"found"`
 	PasswordStatus PasswordStatus	`json:"passwordStatus"`
 	Uid string						`json:"uid"`    // Issued from the authoritative server (The first one which checked the password).
 	Groups []string					`json:"groups"`
+	Email string					`json:"email"`
 }
 
 type PasswordStatus int
