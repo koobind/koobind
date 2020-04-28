@@ -90,8 +90,8 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Group")
 		os.Exit(1)
 	}
-	if err = (&directoryv1alpha1.Binding{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "Binding")
+	if err = (&directoryv1alpha1.GroupBinding{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "GroupBinding")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

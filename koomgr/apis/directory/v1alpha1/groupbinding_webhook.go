@@ -29,48 +29,48 @@ import (
 )
 
 // log is for logging in this package.
-var bindinglog = logf.Log.WithName("binding-resource")
+var groupBindinglog = logf.Log.WithName("groupBinding-resource")
 
-func (r *Binding) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *GroupBinding) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-binding,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=bindings,verbs=create;update,versions=v1alpha1,name=mbinding.kb.io
+// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-groupbinding,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=groupbindings,verbs=create;update,versions=v1alpha1,name=mgroupBinding.kb.io
 
-var _ webhook.Defaulter = &Binding{}
+var _ webhook.Defaulter = &GroupBinding{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *Binding) Default() {
-	bindinglog.Info("default", "name", r.Name)
+func (r *GroupBinding) Default() {
+	groupBindinglog.Info("default", "name", r.Name)
 	// Nothing to do for now
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-binding,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=bindings,versions=v1alpha1,name=vbinding.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-groupbinding,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=groupbindings,versions=v1alpha1,name=vgroupbinding.kb.io
 
-var _ webhook.Validator = &Binding{}
+var _ webhook.Validator = &GroupBinding{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *Binding) ValidateCreate() error {
-	bindinglog.Info("validate create", "name", r.Name)
+func (r *GroupBinding) ValidateCreate() error {
+	groupBindinglog.Info("validate create", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *Binding) ValidateUpdate(old runtime.Object) error {
-	bindinglog.Info("validate update", "name", r.Name)
+func (r *GroupBinding) ValidateUpdate(old runtime.Object) error {
+	groupBindinglog.Info("validate update", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *Binding) ValidateDelete() error {
-	bindinglog.Info("validate delete", "name", r.Name)
+func (r *GroupBinding) ValidateDelete() error {
+	groupBindinglog.Info("validate delete", "name", r.Name)
 	return nil
 }
 
-func (this *Binding) validate() error {
+func (this *GroupBinding) validate() error {
 	if this.Namespace != config.Conf.Namespace {
 		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, config.Conf.Namespace)
 	}

@@ -23,8 +23,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// BindingSpec defines the desired state of Binding
-type BindingSpec struct {
+// GroupBindingSpec defines the desired state of GroupBinding
+type GroupBindingSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	// +required
 	User string `json:"user"`
@@ -33,40 +33,40 @@ type BindingSpec struct {
 	// +required
 	Group string `json:"group"`
 
-	// Allow to 'hide' this binding. Even if defined in another provider
+	// Allow to 'hide' this groupBinding. Even if defined in another provider
 	// +optional
 	Disabled bool `json:"disabled,omitempty"`
 }
 
-// BindingStatus defines the observed state of Binding
-type BindingStatus struct {
+// GroupBindingStatus defines the observed state of GroupBinding
+type GroupBindingStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,shortName=koobinding;kbinding
+// +kubebuilder:resource:scope=Namespaced,shortName=gb;ugb;usergroupbinding
 // +kubebuilder:printcolumn:name="User",type=string,JSONPath=`.spec.user`
 // +kubebuilder:printcolumn:name="Group",type=string,JSONPath=`.spec.group`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
-// Binding is the Schema for the bindings API
-type Binding struct {
+// GroupBinding is the Schema for the groupBindings API
+type GroupBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BindingSpec   `json:"spec,omitempty"`
-	Status BindingStatus `json:"status,omitempty"`
+	Spec   GroupBindingSpec   `json:"spec,omitempty"`
+	Status GroupBindingStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// BindingList contains a list of Binding
-type BindingList struct {
+// GroupBindingList contains a list of GroupBinding
+type GroupBindingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Binding `json:"items"`
+	Items           []GroupBinding `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Binding{}, &BindingList{})
+	SchemeBuilder.Register(&GroupBinding{}, &GroupBindingList{})
 }

@@ -7,7 +7,7 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - bindings
+  - groupbindings
   - users
   - groups
   verbs:
@@ -21,7 +21,7 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - bindings/status
+  - groupbindings/status
   verbs:
   - get
 ---
@@ -35,7 +35,7 @@ rules:
   - directory.koobind.io
   resources:
   - users
-  - bindings
+  - groupbindings
   - groups
   verbs:
   - get

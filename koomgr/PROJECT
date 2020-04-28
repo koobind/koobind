@@ -9,6 +9,6 @@ resources:
   kind: Group
   version: v1alpha1
 - group: directory
-  kind: Binding
+  kind: GroupBinding
   version: v1alpha1
 version: "2"

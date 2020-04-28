@@ -5,12 +5,12 @@ metadata:
   name: lhamilton
   namespace: koo-system
 spec:
-  commonName: Lewis HAMILTION
+  commonName: Lewis HAMILTON
   passwordHash: $2a$10$0XqNZP13.lTc6eh1tidUEu6pFkJ8tRmz5qdMNuTah7AdH7uQQwpIO  # hamiltonl
   email: lewis@mercedes.com
 ---
 apiVersion: directory.koobind.io/v1alpha1
-kind: Binding
+kind: GroupBinding
 metadata:
   name: lh-mclaren
   namespace: koo-system
@@ -19,7 +19,7 @@ spec:
   group: mclaren
 ---
 apiVersion: directory.koobind.io/v1alpha1
-kind: Binding
+kind: GroupBinding
 metadata:
   name: lh-mercedes
   namespace: koo-system
@@ -41,7 +41,7 @@ spec:
   email: nico@mercedes.com
 ---
 apiVersion: directory.koobind.io/v1alpha1
-kind: Binding
+kind: GroupBinding
 metadata:
   name: nr-williams
   namespace: koo-system
@@ -50,7 +50,7 @@ spec:
   group: williams
 ---
 apiVersion: directory.koobind.io/v1alpha1
-kind: Binding
+kind: GroupBinding
 metadata:
   name: nr-mercedes
   namespace: koo-system

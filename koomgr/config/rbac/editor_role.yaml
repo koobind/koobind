@@ -1,4 +1,4 @@
-# permissions for end users to edit bindings.
+# permissions for end users to edit groupBindings.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -7,7 +7,7 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - bindings
+  - groupbindings
   - users
   - groups
   verbs:
@@ -21,6 +21,6 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - bindings/status
+  - groupbindings/status
   verbs:
   - get

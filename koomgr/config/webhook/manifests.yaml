@@ -11,24 +11,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-directory-koobind-io-v1alpha1-binding
-  failurePolicy: Fail
-  name: mbinding.kb.io
-  rules:
-  - apiGroups:
-    - directory.koobind.io
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - bindings
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
       path: /mutate-directory-koobind-io-v1alpha1-group
   failurePolicy: Fail
   name: mgroup.kb.io
@@ -42,6 +24,24 @@ webhooks:
     - UPDATE
     resources:
     - groups
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-directory-koobind-io-v1alpha1-groupbinding
+  failurePolicy: Fail
+  name: mgroupBinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groupbindings
 - clientConfig:
     caBundle: Cg==
     service:
@@ -73,24 +73,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-directory-koobind-io-v1alpha1-binding
-  failurePolicy: Fail
-  name: vbinding.kb.io
-  rules:
-  - apiGroups:
-    - directory.koobind.io
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - bindings
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
       path: /validate-directory-koobind-io-v1alpha1-group
   failurePolicy: Fail
   name: vgroup.kb.io
@@ -104,6 +86,24 @@ webhooks:
     - UPDATE
     resources:
     - groups
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-directory-koobind-io-v1alpha1-groupbinding
+  failurePolicy: Fail
+  name: vgroupbinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groupbindings
 - clientConfig:
     caBundle: Cg==
     service:

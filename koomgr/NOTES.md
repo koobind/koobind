@@ -27,7 +27,7 @@ n
 
 ```
 kubebuilder create api --group directory --version v1alpha1 --kind Group
-kubebuilder create api --group directory --version v1alpha1 --kind Binding
+kubebuilder create api --group directory --version v1alpha1 --kind GroupBinding
 kubebuilder create webhook --group directory --version v1alpha1 --kind User --defaulting --programmatic-validation
 ```
 
@@ -44,7 +44,7 @@ To simplify stuff, will remove all stuff related to
 
 ```
 kubebuilder create webhook --group directory --version v1alpha1 --kind Group --defaulting --programmatic-validation
-kubebuilder create webhook --group directory --version v1alpha1 --kind Binding --defaulting --programmatic-validation
+kubebuilder create webhook --group directory --version v1alpha1 --kind GroupBinding --defaulting --programmatic-validation
 ```
 
 # Test add samples

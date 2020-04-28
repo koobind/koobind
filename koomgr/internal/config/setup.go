@@ -54,7 +54,7 @@ func Setup() {
 	pflag.StringVar(&authHost, "authHost", "", "Auth server bind address (Default: All)")
 	pflag.IntVar(&authPort, "authPort", 8444, "Auth server bind port")
 	pflag.StringVar(&authCertDir, "authCertDir", "", "Path to the auth server certificate folder")
-	pflag.StringVar(&namespace, "namespace", "", "The namespace where koo resources (users,groups,bindings) are stored")
+	pflag.StringVar(&namespace, "namespace", "", "The namespace where koo resources (users,groups,groupBindings) are stored")
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")

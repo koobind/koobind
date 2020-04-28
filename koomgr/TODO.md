@@ -1,9 +1,9 @@
 
 ## Still to do 
 
-- Change Binding to GroupBinding (Conflict with Binding in core)
+
 - Add crd provider
-- A Blacklist mechanisme on user/group/binding stuff, superseding other provided information
+- A Blacklist mechanisme on user/group/groupBinding stuff, superseding other provided information
 
 - Add a ChangePassword capabillity on crd provider
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
@@ -15,7 +15,7 @@
 
 - ldap bind passwrd in secret ?
 - Allow koocli context to be defined in an ENV variable
-- Introduce realm (Binding urlPath/Provider chain/token Lifecycle)  (Using https://github.com/gorilla/mux ?)
+- Introduce realm (GroupBinding urlPath/Provider chain/token Lifecycle)  (Using https://github.com/gorilla/mux ?)
 - Add some 'client secret' to koo serve and/or certificate protection
 
 - Refactor certificate management (Use cluster CA)

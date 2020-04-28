@@ -10,7 +10,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail
-    name: mbinding.kb.io
+    name: mgroupbinding.kb.io
     rules:
       - apiGroups:
           - directory.koobind.io
@@ -20,7 +20,7 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - bindings
+          - groupBindings
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail
@@ -60,7 +60,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail
-    name: vbinding.kb.io
+    name: vgroupbinding.kb.io
     rules:
       - apiGroups:
           - directory.koobind.io
@@ -70,7 +70,7 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - bindings
+          - groupBindings
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail

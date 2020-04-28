@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.5
   creationTimestamp: null
-  name: bindings.directory.koobind.io
+  name: groupbindings.directory.koobind.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.user
@@ -20,18 +20,19 @@ spec:
     type: boolean
   group: directory.koobind.io
   names:
-    kind: Binding
-    listKind: BindingList
-    plural: bindings
+    kind: GroupBinding
+    listKind: GroupBindingList
+    plural: groupbindings
     shortNames:
-    - koobinding
-    - kbinding
-    singular: binding
+    - gb
+    - ugb
+    - usergroupbinding
+    singular: groupbinding
   scope: Namespaced
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: Binding is the Schema for the bindings API
+      description: GroupBinding is the Schema for the groupBindings API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -46,10 +47,10 @@ spec:
         metadata:
           type: object
         spec:
-          description: BindingSpec defines the desired state of Binding
+          description: GroupBindingSpec defines the desired state of GroupBinding
           properties:
             disabled:
-              description: Allow to 'hide' this binding. Even if defined in another
+              description: Allow to 'hide' this groupBinding. Even if defined in another
                 provider
               type: boolean
             group:
@@ -63,7 +64,7 @@ spec:
           - user
           type: object
         status:
-          description: BindingStatus defines the observed state of Binding
+          description: GroupBindingStatus defines the observed state of GroupBinding
           type: object
       type: object
   version: v1alpha1

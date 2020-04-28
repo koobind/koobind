@@ -8,7 +8,7 @@ rules:
   - directory.koobind.io
   resources:
   - users
-  - bindings
+  - groupbindings
   - groups
   verbs:
   - get

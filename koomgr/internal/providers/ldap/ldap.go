@@ -188,7 +188,7 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 			}
 			// If password=="", then we may be in 'describe' and want groups to be fetched.
 			if (userStatus.PasswordStatus != common.Wrong || password == "") && *this.GroupAuthority {
-				// We need to bind again, as password check was performed by binding on user
+				// We need to bind again, as password check was performed by groupBinding on user
 				bindDesc := fmt.Sprintf("conn.Bind(%s, %s)", this.BindDN, "xxxxxxxx")
 				if err := conn.Bind(this.BindDN, this.BindPW); err != nil {
 					return fmt.Errorf("%s failed: %v", bindDesc, err)
