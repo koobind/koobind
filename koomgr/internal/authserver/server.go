@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/koomgr/internal/authserver/certwatcher"
-	"github.com/prometheus/common/log"
 	"net"
 	"net/http"
 	"os"
@@ -90,7 +89,7 @@ func (s *Server) Register(path string, hook http.Handler) {
 	// TODO(directxman12): call setfields if we've already started the server
 	s.handlerByPath[path] = hook
 	s.Mux.Handle(path, hook)
-	log.Info("registering webhook", "path", path)
+	serverLog.Info("registering webhook", "path", path)
 }
 
 func (this *Server) Start(stop <-chan struct{}) error {

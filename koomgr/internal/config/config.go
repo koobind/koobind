@@ -19,6 +19,7 @@ type Config struct {
 	WebhookServer     Server         `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
 	AuthServer        Server         `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
 	LogLevel          int            `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
+	LogMode           string         `yaml:"logMode"`           // Log output format: 'dev' or 'json'
 	Namespace         string         `yaml:"namespace"`         // The namespace where koo resources (users,groups,bindings) are stored
 	AdminGroup        string         `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
 	InactivityTimeout *time.Duration `yaml:"inactivityTimeout"` // After this period without token validation, the session expire

@@ -33,6 +33,7 @@ func Setup() {
 	// Allow overridng of some config variable. Mosty used in development stage
 	var configFile string
 	var logLevel int
+	var logMode string
 	var webhookHost string
 	var webhookPort int
 	var webhookCertDir string
@@ -46,6 +47,7 @@ func Setup() {
 
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
+	pflag.StringVar(&logMode, "logMode", "json", "Log mode: 'dev' or 'json'")
 	pflag.StringVar(&webhookHost, "webhookHost", "", "Webhook server bind address (Default: All)")
 	pflag.IntVar(&webhookPort, "webhookPort", 8443, "Webhook server bind port")
 	pflag.StringVar(&webhookCertDir, "webhookCertDir", "", "Path to the webhook server certificate folder")
@@ -65,6 +67,7 @@ func Setup() {
 		os.Exit(2)
 	}
 	adjustConfigInt(pflag.CommandLine, &Conf.LogLevel, "logLevel")
+	adjustConfigString(pflag.CommandLine, &Conf.LogMode, "logMode")
 	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.Host, "webhookHost")
 	adjustConfigInt(pflag.CommandLine, &Conf.WebhookServer.Port, "webhookPort")
 	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.CertDir, "webhookCertDir")
@@ -87,6 +90,14 @@ func Setup() {
 		os.Exit(2)
 	}
 	// CertDir, CertName and KeyName will be checked by lower layer
+	if Conf.LogMode != "dev" && Conf.LogMode != "json" {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: Invalid logMode value: %s. Must be one of 'dev' or 'json'\n", Conf.LogMode)
+		os.Exit(2)
+	}
+	if Conf.LogMode == "json" && Conf.LogLevel > 1 {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: logLevel can't be greater than one when logMode is 'json'.\n")
+		os.Exit(2)
+	}
 
 }
 
