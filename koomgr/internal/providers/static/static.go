@@ -1,6 +1,7 @@
 package static
 
 import (
+	"fmt"
 	"github.com/koobind/koobind/common"
 	"golang.org/x/crypto/bcrypt"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -60,8 +61,11 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			userStatus.PasswordStatus = common.Unchecked
 		}
 		userStatus.Uid = strconv.Itoa(user.Id + this.UidOffet)
-		userStatus.Groups = user.Groups
 		userStatus.Email = user.Email
+		userStatus.Groups = make([]string, len(user.Groups))
+		for i := 0; i < len(user.Groups); i++ {
+			userStatus.Groups[i] = fmt.Sprintf(this.GroupPattern, user.Groups[i])
+		}
 	} else {
 		//this.logger.Debugf("User '%s' NOT found!", login)
 		spLog.V(1).Info("User NOT found!", "user", login)

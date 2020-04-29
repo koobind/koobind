@@ -6,10 +6,12 @@ import (
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
+	"github.com/koobind/koobind/koomgr/internal/providers/crd"
 	"github.com/koobind/koobind/koomgr/internal/providers/ldap"
 	"github.com/koobind/koobind/koomgr/internal/providers/static"
 	"gopkg.in/yaml.v2"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
 )
 
@@ -20,16 +22,17 @@ type providerChain struct {
 var pcLog = ctrl.Log.WithName("providerChain")
 
 type providerConfig interface {
-	Open(idx int, configFolder string) (providers.Provider, error)
+	Open(idx int, configFolder string, kubeClient client.Client) (providers.Provider, error)
 	GetName() string
 }
 
 var ProviderConfigBuilderFromType = map[string]func() providerConfig{
 	"static": func() providerConfig { return new(static.StaticProviderConfig) },
 	"ldap":   func() providerConfig { return new(ldap.LdapProviderConfig) },
+	"crd":    func() providerConfig { return new(crd.CrdProviderConfig) },
 }
 
-func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
+func BuildProviderChain(conf *config.Config, kubeClient client.Client) (providers.ProviderChain, error) {
 	this := providerChain{
 		providers: []providers.Provider{},
 	}
@@ -66,10 +69,11 @@ func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 			return nil, fmt.Errorf("two providers are defined with the same name: '%s'", name)
 		}
 		providerNameSet.Insert(name)
-		prvd, err := providerConfig.Open(i, conf.ConfigFolder)
+		prvd, err := providerConfig.Open(i, conf.ConfigFolder, kubeClient)
 		if err != nil {
 			return nil, err
 		}
+		pcLog.Info("Setup provider", "provider", prvd.GetName())
 		this.providers = append(this.providers, prvd)
 	}
 	return &this, nil

@@ -38,7 +38,7 @@ type BaseProviderConfig struct {
 	UidOffet            int    `yaml:"uidOffset"`           // Will be added to the returned offset. Default to 0
 }
 
-func (this *BaseProviderConfig) Init(idx int) error {
+func (this *BaseProviderConfig) InitBase(idx int) error {
 	// Type already checked by the builder
 	// Test required fields
 	if this.Name == "" {

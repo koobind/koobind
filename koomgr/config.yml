@@ -110,6 +110,9 @@ providers:
       linkUserAttr: DN
       linkGroupAttr: member
 
+  - name: crd
+    type: crd
+
   - type: static
     name: testEmpty
 

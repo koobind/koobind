@@ -3,9 +3,16 @@
 
 
 - Add crd provider
+  - Missing uid field in crd
+  - Add a commonName in all providers
+
 - A Blacklist mechanisme on user/group/groupBinding stuff, superseding other provided information
 
+A set of command/api on crd provider to:
+- Create/update/delete user/group/groupbinding
+- Unlog a user (ie after removing it from a group)
 - Add a ChangePassword capabillity on crd provider
+
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
 
 - Package and setup client as krew plugin (krew template ?)

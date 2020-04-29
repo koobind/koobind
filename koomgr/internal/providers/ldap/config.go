@@ -8,6 +8,7 @@ import (
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"io/ioutil"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // NB: These values are strongly inspired from dex configuration (https://github.com/dexidp/dex)
@@ -87,8 +88,8 @@ type LdapProviderConfig struct {
 	} `yaml:"groupSearch"`
 }
 
-func (this *LdapProviderConfig) Open(idx int, configFolder string) (providers.Provider, error) {
-	if err := this.Init(idx); err != nil {
+func (this *LdapProviderConfig) Open(idx int, configFolder string, kubeClient client.Client) (providers.Provider, error) {
+	if err := this.InitBase(idx); err != nil {
 		return nil, err
 	}
 	prvd := ldapProvider{

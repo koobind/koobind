@@ -96,7 +96,15 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
-	providerChain, err := chain.BuildProviderChain(&config.Conf)
+	err = mgr.GetFieldIndexer().IndexField(&directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
+		ugb := rawObj.(*directoryv1alpha1.GroupBinding)
+		return []string{ugb.Spec.User}
+	})
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		os.Exit(1)
+	}
+	providerChain, err := chain.BuildProviderChain(&config.Conf, mgr.GetClient())
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 		os.Exit(1)

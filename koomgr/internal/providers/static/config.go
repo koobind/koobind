@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type User struct {
@@ -19,8 +20,8 @@ type StaticProviderConfig struct {
 	Users                     []User `yaml:"users"`
 }
 
-func (this *StaticProviderConfig) Open(idx int, configFolder string) (providers.Provider, error) {
-	if err := this.Init(idx); err != nil {
+func (this *StaticProviderConfig) Open(idx int, configFolder string, kubeClient client.Client) (providers.Provider, error) {
+	if err := this.InitBase(idx); err != nil {
 		return nil, err
 	}
 	prvd := staticProvider{
