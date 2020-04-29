@@ -86,7 +86,7 @@ metadata:
   namespace: koo-system
 spec:
   commonName: Graham HILL
-  passwordHash: $2a$10$wJIUNPjw3pb1UI.opd1FQOqPq7Nn4TyiLOHS/u2Hy93zpAaPG./oq  # clarkj
+  # passwordHash: $2a$10$wJIUNPjw3pb1UI.opd1FQOqPq7Nn4TyiLOHS/u2Hy93zpAaPG./oq  # clarkj
   email: grahamh@brm.com
 ---
 apiVersion: directory.koobind.io/v1alpha1

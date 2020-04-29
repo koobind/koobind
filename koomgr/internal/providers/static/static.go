@@ -27,6 +27,7 @@ func (this *staticProvider) IsCritical() bool {
 func (this *staticProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
 	userStatus := common.UserStatus{
 		ProviderName:   this.Name,
+		Authority:      *this.CredentialAuthority,
 		Found:          false,
 		PasswordStatus: common.Unchecked,
 		Uid:            "",
@@ -49,13 +50,11 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			}
 		} else {
 			if !*this.CredentialAuthority {
-				//this.logger.Debugf("User '%s' found, but not CredentialAuthority!", login)
 				spLog.V(1).Info("User found, but not CredentialAuthority!", "user", login)
 			} else if user.PasswordHash == "" {
-				//this.logger.Debugf("User '%s' found, but no password defined!", login)
 				spLog.V(1).Info("User found, but no password defined!", "user", login)
+				userStatus.Authority = false
 			} else {
-				//this.logger.Debugf("User '%s' found, but no password check was required!", login)
 				spLog.V(1).Info("User found, but no password check was required!", "user", login)
 			}
 			userStatus.PasswordStatus = common.Unchecked
@@ -64,9 +63,12 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			userStatus.Uid = strconv.Itoa(*user.Id + this.UidOffet)
 		}
 		userStatus.Email = user.Email
-		userStatus.Groups = make([]string, len(user.Groups))
-		for i := 0; i < len(user.Groups); i++ {
-			userStatus.Groups[i] = fmt.Sprintf(this.GroupPattern, user.Groups[i])
+		// Will not collect groups if auth failed
+		if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
+			userStatus.Groups = make([]string, len(user.Groups))
+			for i := 0; i < len(user.Groups); i++ {
+				userStatus.Groups[i] = fmt.Sprintf(this.GroupPattern, user.Groups[i])
+			}
 		}
 	} else {
 		//this.logger.Debugf("User '%s' NOT found!", login)

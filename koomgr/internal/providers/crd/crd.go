@@ -31,10 +31,11 @@ func (this *crdProvider) IsCritical() bool {
 func (this *crdProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
 	userStatus := common.UserStatus{
 		ProviderName:   this.Name,
+		Authority:      *this.CredentialAuthority,
 		Found:          false,
 		PasswordStatus: common.Unchecked,
 		Uid:            "",
-		Groups:         nil,
+		Groups:         []string{},
 		Email:          "",
 	}
 	usr := v1alpha1.User{}
@@ -72,6 +73,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 			crdLog.V(1).Info("User found, but not CredentialAuthority!", "user", login)
 		} else if usr.Spec.PasswordHash == "" {
 			crdLog.V(1).Info("User found, but no password defined!", "user", login)
+			userStatus.Authority = false
 		} else {
 			crdLog.V(1).Info("User found, but password check was not required!", "user", login)
 		}
@@ -82,30 +84,33 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	if err != nil {
 		return userStatus, err
 	}
-	userStatus.Groups = make([]string, 0, len(list.Items))
-	for i := 0; i < len(list.Items); i++ {
-		binding := list.Items[i]
-		crdLog.V(1).Info("lookup", "binding", binding.Name)
-		if binding.Spec.Disabled {
-			continue
+	// Will not collect groups if auth failed.
+	if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
+		userStatus.Groups = make([]string, 0, len(list.Items))
+		for i := 0; i < len(list.Items); i++ {
+			binding := list.Items[i]
+			crdLog.V(1).Info("lookup", "binding", binding.Name)
+			if binding.Spec.Disabled {
+				continue
+			}
+			grp := v1alpha1.Group{}
+			err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
+				Namespace: config.Conf.Namespace,
+				Name:      binding.Spec.Group,
+			}, &grp)
+			if client.IgnoreNotFound(err) != nil {
+				return userStatus, err
+			}
+			if err != nil {
+				// Not found. Broken link
+				crdLog.Error(nil, "Broken GroupBinding link (No matching group)", "groupBinding", binding.Name, "group", binding.Spec.Group)
+				continue
+			}
+			if grp.Spec.Disabled {
+				continue
+			}
+			userStatus.Groups = append(userStatus.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))
 		}
-		grp := v1alpha1.Group{}
-		err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
-			Namespace: config.Conf.Namespace,
-			Name:      binding.Spec.Group,
-		}, &grp)
-		if client.IgnoreNotFound(err) != nil {
-			return userStatus, err
-		}
-		if err != nil {
-			// Not found. Broken link
-			crdLog.Error(nil, "Broken GroupBinding link (No matching group)", "groupBinding", binding.Name, "group", binding.Spec.Group)
-			continue
-		}
-		if grp.Spec.Disabled {
-			continue
-		}
-		userStatus.Groups = append(userStatus.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))
 	}
 	return userStatus, nil
 }

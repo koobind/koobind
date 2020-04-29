@@ -45,11 +45,12 @@ type UserDescribeResponse struct {
 }
 
 
-// This is here for the user describe exchange
+// Used both internally and for the user describe exchange
 type UserStatus struct {
 	ProviderName string				`json:"provider"`	// Used for 'describe' command
+	Authority bool                  `json:authority"`	// Is this provider Authority for authentication (password) for this user (A password is defined)
 	Found bool						`json:"found"`
-	PasswordStatus PasswordStatus	`json:"passwordStatus"`
+	PasswordStatus PasswordStatus	`json:"passwordStatus"`	// For describe, always 'unchecked'
 	Uid string						`json:"uid"`    // Issued from the authoritative server (The first one which checked the password).
 	Groups []string					`json:"groups"`
 	Email string					`json:"email"`
@@ -58,7 +59,7 @@ type UserStatus struct {
 type PasswordStatus int
 
 const (
-	Unchecked PasswordStatus = iota		// Either password = "" (Caller don't want to check) or LdapClient.CredentialAuthority == False
+	Unchecked PasswordStatus = iota		// Either caller don't want to check or LdapClient.CredentialAuthority == False
 	Checked
 	Wrong
 )

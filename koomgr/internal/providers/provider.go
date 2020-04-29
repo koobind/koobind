@@ -5,7 +5,9 @@ import (
 )
 
 type Provider interface {
-	// By convention, for describe accuracy, if checkPassword == true && password == "", then UserStatus will be Wrong if this Provider is CredentialAuthority. Unchecked if not.
+	// If checkPassword == true && password == "", then UserStatus will be Wrong if this Provider is CredentialAuthority. Unchecked if not.
+	// For non ldap provider, if this provider is CredentialAuthority, but password is not defined for a user, then password will be unchecked.
+	// For LDAP provider defined as CredentialAuthority, password is assumed to be always defined.
 	GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error)
 	GetName() string
 	// If critical, a failure will induce 'Invalid login'. Otherwhise, other providers will be used
