@@ -54,6 +54,7 @@ type UserStatus struct {
 	Uid string						`json:"uid"`    // Issued from the authoritative server (The first one which checked the password).
 	Groups []string					`json:"groups"`
 	Email string					`json:"email"`
+	CommonName string				`json:"commonName"`
 }
 
 type PasswordStatus int

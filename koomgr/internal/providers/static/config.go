@@ -13,6 +13,7 @@ type User struct {
 	Id           *int     `yaml:"id,omitempty"`
 	Groups       []string `yaml:"groups"`
 	Email        string   `yaml:"email"`
+	CommonName   string   `yaml:"commonName"`
 }
 
 type StaticProviderConfig struct {

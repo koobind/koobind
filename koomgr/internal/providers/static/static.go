@@ -63,6 +63,7 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			userStatus.Uid = strconv.Itoa(*user.Id + this.UidOffet)
 		}
 		userStatus.Email = user.Email
+		userStatus.CommonName = user.CommonName
 		// Will not collect groups if auth failed
 		if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
 			userStatus.Groups = make([]string, len(user.Groups))

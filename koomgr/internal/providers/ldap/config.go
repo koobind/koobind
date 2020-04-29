@@ -66,6 +66,9 @@ type LdapProviderConfig struct {
 
 		// The attribute providing the user's email
 		EmailAttr string `yaml:"emailAttr"`
+
+		// The attribute providing the user's common name
+		CnAttr string `yaml:"cnAttr"`
 	} `yaml:"userSearch"`
 
 	// Group search configuration.

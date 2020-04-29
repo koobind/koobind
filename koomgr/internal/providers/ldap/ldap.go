@@ -111,6 +111,9 @@ func (this *ldapProvider) lookupUser(conn *ldap.Conn, login string) (ldap.Entry,
 	if this.UserSearch.EmailAttr != "" {
 		req.Attributes = append(req.Attributes, this.UserSearch.EmailAttr)
 	}
+	if this.UserSearch.CnAttr != "" {
+		req.Attributes = append(req.Attributes, this.UserSearch.CnAttr)
+	}
 	if *this.GroupAuthority {
 		req.Attributes = append(req.Attributes, this.GroupSearch.LinkUserAttr)
 	}
@@ -214,6 +217,7 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 			}
 		}
 		userStatus.Email = getAttr(ldapUser, this.UserSearch.EmailAttr)
+		userStatus.CommonName = getAttr(ldapUser, this.UserSearch.CnAttr)
 	}
 	return userStatus, err
 }

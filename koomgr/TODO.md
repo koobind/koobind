@@ -3,7 +3,6 @@
 
 
 - Add crd provider
-  - Missing uid field in crd
   - Add a commonName in all providers
 
 - A Blacklist mechanisme on user/group/groupBinding stuff, superseding other provided information
@@ -11,7 +10,7 @@
 A set of command/api on crd provider to:
 - Create/update/delete user/group/groupbinding
 - Unlog a user (ie after removing it from a group)
-- Add a ChangePassword capabillity on crd provider
+- Add a ChangePassword capability on crd provider
 
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
 
@@ -25,7 +24,6 @@ A set of command/api on crd provider to:
 - Introduce realm (GroupBinding urlPath/Provider chain/token Lifecycle)  (Using https://github.com/gorilla/mux ?)
 - Add some 'client secret' to koo serve and/or certificate protection
 
-- Refactor certificate management (Use cluster CA)
 - Check client certificate
 - Security against BFA.
 - Add some NetworkSecurityPolicies around auth and webhook servers

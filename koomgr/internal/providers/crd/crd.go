@@ -58,6 +58,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	if usr.Spec.Uid != nil {
 		userStatus.Uid = strconv.Itoa(*usr.Spec.Uid + this.UidOffet)
 	}
+	userStatus.CommonName = usr.Spec.CommonName
 	userStatus.Email = usr.Spec.Email
 	if *this.CredentialAuthority && checkPassword && usr.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(usr.Spec.PasswordHash), []byte(password))
@@ -79,13 +80,13 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		}
 		userStatus.PasswordStatus = common.Unchecked
 	}
-	list := v1alpha1.GroupBindingList{}
-	err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login})
-	if err != nil {
-		return userStatus, err
-	}
 	// Will not collect groups if auth failed.
 	if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
+		list := v1alpha1.GroupBindingList{}
+		err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login})
+		if err != nil {
+			return userStatus, err
+		}
 		userStatus.Groups = make([]string, 0, len(list.Items))
 		for i := 0; i < len(list.Items); i++ {
 			binding := list.Items[i]

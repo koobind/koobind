@@ -49,10 +49,12 @@ providers:
         passwordHash: "$2a$10$pezlwBeIGb1vaQghQx3T4evQmhbvR25DsLiuwWPxnf4MA0NIOnC5q"   # as
         id: 20002
         groups: [ "users"]
+        commonName: Serge ALEXANDRE
 
       - login: salexandre
         groups: [ "homeworker"]
         email: "sa@broadsoftware.com"
+        commonName: ALEXANDRE Serge
 
   - name: ldap1
     type: ldap
@@ -74,6 +76,7 @@ providers:
       loginAttr: uid
       numericalIdAttr: uidNumber
       emailAttr: mail
+      cnAttr: cn
 
     groupSearch:
       baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
@@ -102,6 +105,7 @@ providers:
       loginAttr: uid
       numericalIdAttr: uidNumber
       emailAttr: mail
+      cnAttr: cn
 
     groupSearch:
       baseDN: cn=groups,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
