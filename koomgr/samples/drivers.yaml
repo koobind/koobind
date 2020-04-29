@@ -8,6 +8,7 @@ spec:
   commonName: Lewis HAMILTON
   passwordHash: $2a$10$0XqNZP13.lTc6eh1tidUEu6pFkJ8tRmz5qdMNuTah7AdH7uQQwpIO  # hamiltonl
   email: lewis@mercedes.com
+  uid: 44
 ---
 apiVersion: directory.koobind.io/v1alpha1
 kind: GroupBinding
@@ -27,8 +28,6 @@ spec:
   user: lhamilton
   group: mercedes
 
-
-
 ---
 apiVersion: directory.koobind.io/v1alpha1
 kind: User
@@ -39,6 +38,7 @@ spec:
   commonName: Nico ROSBERG
   passwordHash: $2a$10$Jp2kWU1Do71uQkaaOpUHquXgZ.ODSMCRP/7u.hEdD5TW02J5J5EHO  # rosbergn
   email: nico@mercedes.com
+  uid: 6
 ---
 apiVersion: directory.koobind.io/v1alpha1
 kind: GroupBinding
@@ -58,7 +58,63 @@ spec:
   user: nrosberg
   group: mercedes
 
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: User
+metadata:
+  name: jclark
+  namespace: koo-system
+spec:
+  commonName: Jim CLARK
+  passwordHash: $2a$10$wJIUNPjw3pb1UI.opd1FQOqPq7Nn4TyiLOHS/u2Hy93zpAaPG./oq  # clarkj
+  email: jimc@lotus.com
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: jc-lotus
+  namespace: koo-system
+spec:
+  user: jclarck
+  group: lotus
 
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: User
+metadata:
+  name: ghill
+  namespace: koo-system
+spec:
+  commonName: Graham HILL
+  passwordHash: $2a$10$wJIUNPjw3pb1UI.opd1FQOqPq7Nn4TyiLOHS/u2Hy93zpAaPG./oq  # clarkj
+  email: grahamh@brm.com
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: gh-lotus
+  namespace: koo-system
+spec:
+  user: ghill
+  group: lotus
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: gh-brm
+  namespace: koo-system
+spec:
+  user: ghill
+  group: brm
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: gh-brabham
+  namespace: koo-system
+spec:
+  user: ghill
+  group: brabham
 
 
 ---
@@ -109,3 +165,27 @@ metadata:
   namespace: koo-system
 spec:
   description: French car manufacturer
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: lotus
+  namespace: koo-system
+spec:
+  description: Now gone F1 team
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: brm
+  namespace: koo-system
+spec:
+  description: Now gone F1 team
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: brabham
+  namespace: koo-system
+spec:
+  description: Now gone F1 team

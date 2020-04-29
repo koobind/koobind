@@ -10,7 +10,7 @@ import (
 type User struct {
 	Login        string   `yaml:"login"`
 	PasswordHash string   `yaml:"passwordHash"`
-	Id           int      `yaml:"id"`
+	Id           *int     `yaml:"id,omitempty"`
 	Groups       []string `yaml:"groups"`
 	Email        string   `yaml:"email"`
 }

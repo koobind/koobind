@@ -161,6 +161,9 @@ spec:
   - JSONPath: .spec.email
     name: Email
     type: string
+  - JSONPath: .spec.uid
+    name: Uid
+    type: int
   - JSONPath: .spec.comment
     name: Comment
     type: string
@@ -214,6 +217,9 @@ spec:
               description: The user password, Hashed. Using golang.org/x/crypto/bcrypt.GenerateFromPassword()
                 Is optional, in case we only enrich a user from another directory
               type: string
+            uid:
+              description: Numerical user id
+              type: integer
           type: object
         status:
           description: UserStatus defines the observed state of User

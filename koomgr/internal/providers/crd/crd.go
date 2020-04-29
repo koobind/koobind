@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 type crdProvider struct {
@@ -33,7 +34,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		Found:          false,
 		PasswordStatus: common.Unchecked,
 		Uid:            "",
-		Groups:         []string{},
+		Groups:         nil,
 		Email:          "",
 	}
 	usr := v1alpha1.User{}
@@ -53,7 +54,9 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		return userStatus, nil // Act as if user was not found
 	}
 	userStatus.Found = true
-	userStatus.Uid = ""
+	if usr.Spec.Uid != nil {
+		userStatus.Uid = strconv.Itoa(*usr.Spec.Uid + this.UidOffet)
+	}
 	userStatus.Email = usr.Spec.Email
 	if *this.CredentialAuthority && checkPassword && usr.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(usr.Spec.PasswordHash), []byte(password))
@@ -70,7 +73,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		} else if usr.Spec.PasswordHash == "" {
 			crdLog.V(1).Info("User found, but no password defined!", "user", login)
 		} else {
-			crdLog.V(1).Info("User found, but no password check was required!", "user", login)
+			crdLog.V(1).Info("User found, but password check was not required!", "user", login)
 		}
 		userStatus.PasswordStatus = common.Unchecked
 	}
@@ -79,9 +82,10 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	if err != nil {
 		return userStatus, err
 	}
-	groups := make([]string, len(list.Items))
+	userStatus.Groups = make([]string, 0, len(list.Items))
 	for i := 0; i < len(list.Items); i++ {
 		binding := list.Items[i]
+		crdLog.V(1).Info("lookup", "binding", binding.Name)
 		if binding.Spec.Disabled {
 			continue
 		}
@@ -101,7 +105,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		if grp.Spec.Disabled {
 			continue
 		}
-		groups = append(groups, fmt.Sprintf(this.GroupPattern, grp.Name))
+		userStatus.Groups = append(userStatus.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))
 	}
 	return userStatus, nil
 }

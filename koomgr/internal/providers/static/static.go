@@ -60,7 +60,9 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			}
 			userStatus.PasswordStatus = common.Unchecked
 		}
-		userStatus.Uid = strconv.Itoa(user.Id + this.UidOffet)
+		if user.Id != nil {
+			userStatus.Uid = strconv.Itoa(*user.Id + this.UidOffet)
+		}
 		userStatus.Email = user.Email
 		userStatus.Groups = make([]string, len(user.Groups))
 		for i := 0; i < len(user.Groups); i++ {
