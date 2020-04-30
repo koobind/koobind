@@ -205,7 +205,8 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 		}
 		return nil
 	})
-	if err == nil {
+	if err == nil && userStatus.Found {
+		this.logger.V(2).Info(fmt.Sprint("Will fetch Attributes"))
 		userStatus.Uid = getAttr(ldapUser, this.UserSearch.NumericalIdAttr)
 		if userStatus.Uid != "" && this.UidOffet != 0 {
 			if uid, err := strconv.Atoi(userStatus.Uid); err != nil {

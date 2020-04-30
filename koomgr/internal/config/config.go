@@ -31,6 +31,7 @@ type Config struct {
 type BaseProviderConfig struct {
 	Name                string `yaml:"name"`
 	Type                string `yaml:"type"`
+	Enabled             *bool  `yaml:"enabled"`             // Allow to disable a provider
 	CredentialAuthority *bool  `yaml:"credentialAuthority"` // Is this ldap is authority for password checking
 	GroupAuthority      *bool  `yaml:"groupAuthority"`      // Group will be fetched. Default true
 	Critical            *bool  `yaml:"critical"`            // If true (default), a failure on this provider will leads 'invalid login'. Even if another provider grants access
@@ -63,4 +64,9 @@ func (this *BaseProviderConfig) InitBase(idx int) error {
 
 func (this *BaseProviderConfig) GetName() string {
 	return this.Name
+}
+
+// Default setting (initBase) is not performed when this is called
+func (this *BaseProviderConfig) IsEnabled() bool {
+	return this.Enabled == nil || *this.Enabled
 }

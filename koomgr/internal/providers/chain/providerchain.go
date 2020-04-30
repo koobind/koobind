@@ -24,6 +24,7 @@ var pcLog = ctrl.Log.WithName("providerChain")
 type providerConfig interface {
 	Open(idx int, configFolder string, kubeClient client.Client) (providers.Provider, error)
 	GetName() string
+	IsEnabled() bool
 }
 
 var ProviderConfigBuilderFromType = map[string]func() providerConfig{
@@ -69,12 +70,14 @@ func BuildProviderChain(conf *config.Config, kubeClient client.Client) (provider
 			return nil, fmt.Errorf("two providers are defined with the same name: '%s'", name)
 		}
 		providerNameSet.Insert(name)
-		prvd, err := providerConfig.Open(i, conf.ConfigFolder, kubeClient)
-		if err != nil {
-			return nil, err
+		if providerConfig.IsEnabled() {
+			prvd, err := providerConfig.Open(i, conf.ConfigFolder, kubeClient)
+			if err != nil {
+				return nil, err
+			}
+			pcLog.Info("Setup provider", "provider", prvd.GetName())
+			this.providers = append(this.providers, prvd)
 		}
-		pcLog.Info("Setup provider", "provider", prvd.GetName())
-		this.providers = append(this.providers, prvd)
 	}
 	return &this, nil
 }
