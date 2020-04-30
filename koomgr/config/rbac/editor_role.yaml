@@ -1,4 +1,4 @@
-# permissions for end users to edit groupBindings.
+# permissions for end users to edit directory stuf.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

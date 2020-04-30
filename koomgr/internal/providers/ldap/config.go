@@ -99,26 +99,26 @@ func (this *LdapProviderConfig) Open(idx int, configFolder string, kubeClient cl
 		LdapProviderConfig: this,
 	}
 	if prvd.Host == "" {
-		return &prvd, fmt.Errorf("Missing required ldap.%s.host", prvd.Name)
+		return &prvd, fmt.Errorf("Missing required providers.%s.host", prvd.Name)
 	}
 	if prvd.UserSearch.BaseDN == "" {
-		return &prvd, fmt.Errorf("Missing required ldap.%s.userSearch.baseDN", prvd.Name)
+		return &prvd, fmt.Errorf("Missing required providers.%s.userSearch.baseDN", prvd.Name)
 	}
 	if prvd.UserSearch.LoginAttr == "" {
-		return &prvd, fmt.Errorf("Missing required ldap.%s.userSearch.loginAttr", prvd.Name)
+		return &prvd, fmt.Errorf("Missing required providers.%s.userSearch.loginAttr", prvd.Name)
 	}
 	if *prvd.GroupAuthority {
 		if prvd.GroupSearch.BaseDN == "" {
-			return &prvd, fmt.Errorf("Missing required ldap.%s.groupSearch.baseDN", prvd.Name)
+			return &prvd, fmt.Errorf("Missing required providers.%s.groupSearch.baseDN", prvd.Name)
 		}
 		if prvd.GroupSearch.NameAttr == "" {
-			return &prvd, fmt.Errorf("Missing required ldap.%s.groupSearch.nameAttr", prvd.Name)
+			return &prvd, fmt.Errorf("Missing required providers.%s.groupSearch.nameAttr", prvd.Name)
 		}
 		if prvd.GroupSearch.LinkGroupAttr == "" {
-			return &prvd, fmt.Errorf("Missing required ldap.%s.groupSearch.linkGroupAttr", prvd.Name)
+			return &prvd, fmt.Errorf("Missing required providers.%s.groupSearch.linkGroupAttr", prvd.Name)
 		}
 		if prvd.GroupSearch.LinkUserAttr == "" {
-			return &prvd, fmt.Errorf("Missing required ldap.%s.groupSearch.linkUserAttr", prvd.Name)
+			return &prvd, fmt.Errorf("Missing required providers.%s.groupSearch.linkUserAttr", prvd.Name)
 		}
 	}
 	prvd.logger = ctrl.Log.WithName("ldap:" + prvd.Name)

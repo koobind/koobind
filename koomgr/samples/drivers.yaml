@@ -5,7 +5,7 @@ metadata:
   name: lhamilton
   namespace: koo-system
 spec:
-  commonName: Lewis HAMILTON
+  commonName: Lewis HAMILTONX
   passwordHash: $2a$10$0XqNZP13.lTc6eh1tidUEu6pFkJ8tRmz5qdMNuTah7AdH7uQQwpIO  # hamiltonl
   email: lewis@mercedes.com
   uid: 44

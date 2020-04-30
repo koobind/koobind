@@ -114,8 +114,13 @@ providers:
       linkUserAttr: DN
       linkGroupAttr: member
 
-  - name: crd
+  - name: crdsys
     type: crd
+    namespace: koo-system
+
+  - name: crddir
+    type: crd
+    namespace: koo-directory
 
   - type: static
     name: testEmpty

@@ -33,7 +33,7 @@ type GroupBindingSpec struct {
 	// +required
 	Group string `json:"group"`
 
-	// Allow to 'hide' this groupBinding. Even if defined in another provider
+	// Allow to 'hide' this groupbinding. Even if defined in another provider
 	// +optional
 	Disabled bool `json:"disabled,omitempty"`
 }
@@ -49,7 +49,7 @@ type GroupBindingStatus struct {
 // +kubebuilder:printcolumn:name="User",type=string,JSONPath=`.spec.user`
 // +kubebuilder:printcolumn:name="Group",type=string,JSONPath=`.spec.group`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
-// GroupBinding is the Schema for the groupBindings API
+// GroupBinding is the Schema for the groupbindings API
 type GroupBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

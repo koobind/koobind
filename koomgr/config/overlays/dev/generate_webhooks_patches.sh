@@ -20,7 +20,7 @@ webhooks:
   - name: mgroupbinding.kb.io
     clientConfig:
       caBundle: $(base64 -i $MYDIR/cert/tls.crt)
-      url: https://koomgrdev:9443/mutate-directory-koobind-io-v1alpha1-groupBinding
+      url: https://koomgrdev:9443/mutate-directory-koobind-io-v1alpha1-groupbinding
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
@@ -38,6 +38,6 @@ webhooks:
   - name: vgroupbinding.kb.io
     clientConfig:
       caBundle: $(base64 -i $MYDIR/cert/tls.crt)
-      url: https://koomgrdev:9443/validate-directory-koobind-io-v1alpha1-groupBinding
+      url: https://koomgrdev:9443/validate-directory-koobind-io-v1alpha1-groupbinding
 EOF
 

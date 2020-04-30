@@ -38,7 +38,7 @@ webhooks:
       namespace: koo-system
       path: /mutate-directory-koobind-io-v1alpha1-groupbinding
   failurePolicy: Fail
-  name: mgroupBinding.kb.io
+  name: mgroupbinding.kb.io
   rules:
   - apiGroups:
     - directory.koobind.io

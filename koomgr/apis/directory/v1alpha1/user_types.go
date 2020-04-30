@@ -62,7 +62,7 @@ type UserStatus struct {
 // +kubebuilder:resource:scope=Namespaced,shortName=koouser;kuser
 // +kubebuilder:printcolumn:name="Common name",type=string,JSONPath=`.spec.commonName`
 // +kubebuilder:printcolumn:name="Email",type=string,JSONPath=`.spec.email`
-// +kubebuilder:printcolumn:name="Uid",type=int,JSONPath=`.spec.uid`
+// +kubebuilder:printcolumn:name="Uid",type=integer,JSONPath=`.spec.uid`
 // +kubebuilder:printcolumn:name="Comment",type=string,JSONPath=`.spec.comment`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
 // User is the Schema for the users API

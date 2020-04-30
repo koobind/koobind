@@ -40,7 +40,6 @@ func Setup() {
 	var authHost string
 	var authPort int
 	var authCertDir string
-	var namespace string
 	var inactivityTimeout string
 	var sessionMaxTTL string
 	var clientTokenTTL string
@@ -54,7 +53,6 @@ func Setup() {
 	pflag.StringVar(&authHost, "authHost", "", "Auth server bind address (Default: All)")
 	pflag.IntVar(&authPort, "authPort", 8444, "Auth server bind port")
 	pflag.StringVar(&authCertDir, "authCertDir", "", "Path to the auth server certificate folder")
-	pflag.StringVar(&namespace, "namespace", "", "The namespace where koo resources (users,groups,groupBindings) are stored")
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
@@ -74,7 +72,6 @@ func Setup() {
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.Host, "authHost")
 	adjustConfigInt(pflag.CommandLine, &Conf.AuthServer.Port, "authPort")
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.CertDir, "authCertDir")
-	adjustConfigString(pflag.CommandLine, &Conf.Namespace, "namespace")
 	adjustConfigDuration(pflag.CommandLine, &Conf.InactivityTimeout, "inactivityTimeout")
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
@@ -83,10 +80,6 @@ func Setup() {
 	AdjustPath(Conf.ConfigFolder, &Conf.AuthServer.CertDir)
 	if Conf.Providers == nil || len(Conf.Providers) == 0 {
 		_, _ = fmt.Fprintf(os.Stderr, "Missing Providers list in config file\n")
-		os.Exit(2)
-	}
-	if Conf.Namespace == "" {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: config.namespace definition is required or --namespace parameter must be provided!\n")
 		os.Exit(2)
 	}
 	// CertDir, CertName and KeyName will be checked by lower layer
@@ -98,7 +91,7 @@ func Setup() {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: logLevel can't be greater than one when logMode is 'json'.\n")
 		os.Exit(2)
 	}
-
+	Conf.Namespaces = make(map[string]bool)
 }
 
 func AdjustPath(baseFolder string, path *string) {

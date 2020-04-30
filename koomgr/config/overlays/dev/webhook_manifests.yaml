@@ -20,7 +20,7 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - groupBindings
+          - groupbindings
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail
@@ -70,7 +70,7 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - groupBindings
+          - groupbindings
   - clientConfig:
       caBundle: Cg==
     failurePolicy: Fail

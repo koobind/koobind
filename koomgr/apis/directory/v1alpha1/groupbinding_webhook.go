@@ -29,7 +29,7 @@ import (
 )
 
 // log is for logging in this package.
-var groupBindinglog = logf.Log.WithName("groupBinding-resource")
+var groupbindinglog = logf.Log.WithName("groupbinding-resource")
 
 func (r *GroupBinding) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -37,13 +37,13 @@ func (r *GroupBinding) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-groupbinding,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=groupbindings,verbs=create;update,versions=v1alpha1,name=mgroupBinding.kb.io
+// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-groupbinding,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=groupbindings,verbs=create;update,versions=v1alpha1,name=mgroupbinding.kb.io
 
 var _ webhook.Defaulter = &GroupBinding{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *GroupBinding) Default() {
-	groupBindinglog.Info("default", "name", r.Name)
+	groupbindinglog.Info("default", "name", r.Name)
 	// Nothing to do for now
 }
 
@@ -54,25 +54,25 @@ var _ webhook.Validator = &GroupBinding{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateCreate() error {
-	groupBindinglog.Info("validate create", "name", r.Name)
+	groupbindinglog.Info("validate create", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateUpdate(old runtime.Object) error {
-	groupBindinglog.Info("validate update", "name", r.Name)
+	groupbindinglog.Info("validate update", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateDelete() error {
-	groupBindinglog.Info("validate delete", "name", r.Name)
+	groupbindinglog.Info("validate delete", "name", r.Name)
 	return nil
 }
 
 func (this *GroupBinding) validate() error {
-	if this.Namespace != config.Conf.Namespace {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, config.Conf.Namespace)
+	if !config.Conf.Namespaces[this.Namespace] {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, mapkeys2slice(config.Conf.Namespaces))
 	}
 	return nil
 }

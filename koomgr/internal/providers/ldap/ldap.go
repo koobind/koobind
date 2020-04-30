@@ -192,7 +192,7 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 			}
 			// No need to collect groups if auth failed
 			if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
-				// We need to bind again, as password check was performed by groupBinding on user
+				// We need to bind again, as password check was performed by groupbinding on user
 				bindDesc := fmt.Sprintf("conn.Bind(%s, %s)", this.BindDN, "xxxxxxxx")
 				if err := conn.Bind(this.BindDN, this.BindPW); err != nil {
 					return fmt.Errorf("%s failed: %v", bindDesc, err)

@@ -71,8 +71,8 @@ func (r *Group) ValidateDelete() error {
 }
 
 func (this *Group) validate() error {
-	if this.Namespace != config.Conf.Namespace {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be '%s'", this.Kind, this.Name, this.Namespace, config.Conf.Namespace)
+	if !config.Conf.Namespaces[this.Namespace] {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, mapkeys2slice(config.Conf.Namespaces))
 	}
 	return nil
 }

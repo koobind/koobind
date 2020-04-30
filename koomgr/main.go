@@ -53,14 +53,8 @@ func main() {
 	config.Setup()
 
 	ll := zap.NewAtomicLevelAt(zapcore.Level(-config.Conf.LogLevel))
-	ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(config.Conf.LogMode == "dev"), crtzap.Level(&ll)))
-
-	//if config.Conf.LogLevel > 0 {
-	//	ll := zap.NewAtomicLevelAt(zapcore.Level(-config.Conf.LogLevel))
-	//	ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(config.Conf.LogMode == "dev"), crtzap.Level(&ll)))
-	//} else {
-	//	ctrl.SetLogger(crtzap.New())
-	//}
+	stLevel := zap.NewAtomicLevelAt(zapcore.Level(zapcore.DPanicLevel)) // No stack trace for WARN and ERROR
+	ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(config.Conf.LogMode == "dev"), crtzap.Level(&ll), crtzap.StacktraceLevel(&stLevel)))
 
 	setupLog.V(1).Info("Debug log mode activated")
 	setupLog.V(2).Info(

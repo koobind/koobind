@@ -32,7 +32,7 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: GroupBinding is the Schema for the groupBindings API
+      description: GroupBinding is the Schema for the groupbindings API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -50,7 +50,7 @@ spec:
           description: GroupBindingSpec defines the desired state of GroupBinding
           properties:
             disabled:
-              description: Allow to 'hide' this groupBinding. Even if defined in another
+              description: Allow to 'hide' this groupbinding. Even if defined in another
                 provider
               type: boolean
             group:

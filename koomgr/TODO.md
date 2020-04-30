@@ -5,7 +5,7 @@
 - Add crd provider
   - Add a commonName in all providers
 
-- A Blacklist mechanisme on user/group/groupBinding stuff, superseding other provided information
+- A Blacklist mechanisme on user/group/groupbinding stuff, superseding other provided information
 
 A set of command/api on crd provider to:
 - Create/update/delete user/group/groupbinding
