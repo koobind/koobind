@@ -19,6 +19,8 @@ subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: Group
     name: kooadmin
+
+
 ---
 apiVersion: directory.koobind.io/v1alpha1
 kind: GroupBinding
@@ -36,3 +38,39 @@ metadata:
   namespace: koo-directory
 spec:
   description: British racing car manufacturer
+
+
+
+
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: User
+metadata:
+  name: svettel
+  namespace: koo-directory
+spec:
+  commonName: Sebastian Vettel
+  passwordHash: $2a$10$3uW8MFgive0RtQDpQoA4sub0r3eNx6EQh2PYyLr3ThxcaQv4Lbz.K  # vettels
+  email: seb@ferrari.com
+  uid: 5
+  disabled: yes
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: sv-redbull
+  namespace: koo-directory
+spec:
+  user: svettel
+  group: redbull
+  disabled: no
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: redbull
+  namespace: koo-directory
+spec:
+  description: Austrian softdrink maker
+  disabled: no
+

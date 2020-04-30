@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -49,7 +50,7 @@ var usersCmd = &cobra.Command{
 				}
 				tw := new(tabwriter.Writer)
 				tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
-				_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME")
+				_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
 				authorityFound := false
 				for _, userStatus := range userDescribeResponse.UserStatuses {
 					var found = ""
@@ -61,11 +62,11 @@ var usersCmd = &cobra.Command{
 								authority = "*"
 								authorityFound = true
 							} else {
-								authority = "-"
+								authority = "+"
 							}
 						}
 					}
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%v\t%s\t%s", userStatus.ProviderName, found, authority, userStatus.Uid, userStatus.Groups, userStatus.Email, userStatus.CommonName)
+					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userStatus.ProviderName, found, authority, userStatus.Uid, array2String(userStatus.Groups), userStatus.Email, userStatus.CommonName, array2String(userStatus.Messages))
 				}
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()
@@ -83,3 +84,9 @@ var usersCmd = &cobra.Command{
 	},
 }
 
+func array2String(a []string) string {
+	if a == nil || len(a) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("[%s]", strings.Join(a, ","))
+}

@@ -93,7 +93,7 @@ providers:
     type: ldap
     credentialAuthority: yes
     groupAuthority: yes
-    critical: yes
+    critical: no
     insecureNoSSL: false
 
     host: ipa2.bsa.broadsoftware.com

@@ -35,6 +35,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		Uid:            "",
 		Groups:         []string{},
 		Email:          "",
+		Messages:       make([]string, 0, 0),
 	}
 	usr := v1alpha1.User{}
 	err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
@@ -46,11 +47,21 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	}
 	if err != nil {
 		this.logger.V(1).Info("User NOT found", "user", login)
+		// Check if there is some orphean GroupBindings
+		list := v1alpha1.GroupBindingList{}
+		err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
+		if err != nil {
+			return userStatus, err
+		}
+		for i := 0; i < len(list.Items); i++ {
+			userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("Orphean GroupBinding '%s' to '%s'", list.Items[i].Name, list.Items[i].Spec.Group))
+		}
 		return userStatus, nil // User not found. Not an error
 	}
 	if usr.Spec.Disabled {
 		this.logger.V(1).Info("User found but disabled", "user", login)
-		return userStatus, nil // Act as if user was not found
+		userStatus.Messages = append(userStatus.Messages, "User disabled")
+		return userStatus, nil // User Disabled. Not an error
 	}
 	userStatus.Found = true
 	if usr.Spec.Uid != nil {
@@ -71,6 +82,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		if !*this.CredentialAuthority {
 			this.logger.V(1).Info("User found, but not CredentialAuthority!", "user", login)
 		} else if usr.Spec.PasswordHash == "" {
+			userStatus.Messages = append(userStatus.Messages, "No password")
 			this.logger.V(1).Info("User found, but no password defined!", "user", login)
 			userStatus.Authority = false
 		} else {
@@ -81,7 +93,6 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	// Will not collect groups if auth failed.
 	if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
 		list := v1alpha1.GroupBindingList{}
-		this.logger.Info(fmt.Sprintf("************ namespace:%s", this.Namespace))
 		err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
 		if err != nil {
 			return userStatus, err
@@ -91,10 +102,10 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 			binding := list.Items[i]
 			this.logger.V(1).Info("lookup", "binding", binding.Name)
 			if binding.Spec.Disabled {
+				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("GroupBinding '%s' disabled", binding.Name))
 				continue
 			}
 			grp := v1alpha1.Group{}
-			this.logger.Info(fmt.Sprintf("************ namespace:%s   name:%s", this.Namespace, binding.Spec.Group))
 			err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
 				Namespace: this.Namespace,
 				Name:      binding.Spec.Group,
@@ -104,11 +115,12 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 			}
 			if err != nil {
 				// Not found. Broken link
-				//crdLog.Error(fmt.Errorf("Broken GroupBinding link "), "(No matching group)", "groupbinding", binding.Name, "group", binding.Spec.Group)
 				this.logger.V(-1).Info("Broken GroupBinding link (No matching group)", "groupbinding", binding.Name, "group", binding.Spec.Group)
+				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("No matching group '%s' for GroupBinding '%s'", binding.Spec.Group, binding.Name))
 				continue
 			}
 			if grp.Spec.Disabled {
+				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("Group '%s' disabled", grp.Name))
 				continue
 			}
 			userStatus.Groups = append(userStatus.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))

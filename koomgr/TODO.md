@@ -1,16 +1,13 @@
 
 ## Still to do 
 
-
-- Add crd provider
-  - Add a commonName in all providers
-
 - A Blacklist mechanisme on user/group/groupbinding stuff, superseding other provided information
 
 A set of command/api on crd provider to:
 - Create/update/delete user/group/groupbinding
 - Unlog a user (ie after removing it from a group)
 - Add a ChangePassword capability on crd provider
+- Coherency check on each CRD providers
 
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
 

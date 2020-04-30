@@ -150,10 +150,15 @@ func (this *providerChain) DescribeUser(login string) ([]common.UserStatus, erro
 	for _, prvd := range this.providers {
 		userStatus, err := prvd.GetUserStatus(login, "", false)
 		if err != nil {
-			return nil, fmt.Errorf("provider[%s]:%s", prvd.GetName(), err.Error())
+			userStatus = common.UserStatus{
+				ProviderName:   prvd.GetName(),
+				PasswordStatus: common.Unchecked,
+				Messages:       []string{fmt.Sprintf("Provider failure. Check server logs")},
+			}
+			pcLog.Error(err, "", "provider", prvd.GetName())
+		} else {
+			pcLog.V(1).Info("", "user", login, "provider", prvd.GetName(), "found", userStatus.Found, "passwordSatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups, "messages", userStatus.Messages)
 		}
-		pcLog.V(1).Info("", "provider", prvd.GetName(), "found", userStatus.Found, "passwordSatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups)
-		//this.logger.Debugf("Provider '%s' =>  Found:%t   passwordStatus:%s  uid:%s  groups=%v", prvd.GetName(), userStatus.Found, userStatus.PasswordStatus, userStatus.Uid, userStatus.Groups)
 		userStatuses = append(userStatuses, userStatus)
 	}
 	return userStatuses, nil

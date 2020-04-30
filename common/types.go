@@ -47,14 +47,15 @@ type UserDescribeResponse struct {
 
 // Used both internally and for the user describe exchange
 type UserStatus struct {
-	ProviderName string				`json:"provider"`	// Used for 'describe' command
-	Authority bool                  `json:authority"`	// Is this provider Authority for authentication (password) for this user (A password is defined)
+	ProviderName string				`json:"provider"`		// Used for 'describe' command
+	Authority bool                  `json:"authority"`		// Is this provider Authority for authentication (password) for this user (A password is defined)
 	Found bool						`json:"found"`
 	PasswordStatus PasswordStatus	`json:"passwordStatus"`	// For describe, always 'unchecked'
-	Uid string						`json:"uid"`    // Issued from the authoritative server (The first one which checked the password).
+	Uid string						`json:"uid"`    		// Issued from the authoritative server (The first one which checked the password).
 	Groups []string					`json:"groups"`
 	Email string					`json:"email"`
 	CommonName string				`json:"commonName"`
+	Messages []string				`json:"messages"`		// To report error or explanation i.e broken link in crd provider, or disabled link
 }
 
 type PasswordStatus int
