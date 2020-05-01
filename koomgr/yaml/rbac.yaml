@@ -47,3 +47,47 @@ rules:
   - users/status
   verbs:
   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: koo-token-editor-role
+rules:
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: koo-token-viewer-role
+rules:
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens/status
+  verbs:
+  - get

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var tokenLog = ctrl.Log.WithName("token")
+var tokenLog = ctrl.Log.WithName("token-memory")
 
 type tokenBasket struct {
 	sync.RWMutex

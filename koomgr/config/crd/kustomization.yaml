@@ -5,4 +5,5 @@ resources:
 - bases/directory.koobind.io_users.yaml
 - bases/directory.koobind.io_groups.yaml
 - bases/directory.koobind.io_groupbindings.yaml
+- bases/tokens.koobind.io_tokens.yaml
 # +kubebuilder:scaffold:crdkustomizeresource

@@ -1,7 +1,9 @@
 package common
 
-import "time"
-
+import (
+	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
+)
 
 
 const (
@@ -87,6 +89,13 @@ type User struct {
 	Username	string 		`json:"username"`
 	Uid			string		`json:"uid"`
 	Groups		[]string	`json:"groups"`
+}
+
+// Needed as member of  Token CRD
+func (in *User) DeepCopyInto(out *User) {
+	*out = *in
+	out.Groups = make([]string, len(in.Groups))
+	copy(out.Groups, in.Groups)
 }
 
 type ValidateTokenRequest struct {

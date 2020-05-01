@@ -10,5 +10,8 @@ namePrefix: koo-
 
 
 resources:
-  - editor_role.yaml
-  - viewer_role.yaml
+  - directory_editor_role.yaml
+  - directory_viewer_role.yaml
+  - token_editor_role.yaml
+  - token_viewer_role.yaml
+  

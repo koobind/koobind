@@ -21,20 +21,23 @@ package main
 
 import (
 	"fmt"
-	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
-	"github.com/koobind/koobind/koomgr/internal/authserver"
-	"github.com/koobind/koobind/koomgr/internal/config"
-	"github.com/koobind/koobind/koomgr/internal/providers/chain"
-	"github.com/koobind/koobind/koomgr/internal/token"
-	"github.com/koobind/koobind/koomgr/internal/token/memory"
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	tokensv1alpha1 "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
+	"github.com/koobind/koobind/koomgr/internal/authserver"
+	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/providers/chain"
+	"github.com/koobind/koobind/koomgr/internal/token"
+	"github.com/koobind/koobind/koomgr/internal/token/memory"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -46,6 +49,7 @@ var (
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = directoryv1alpha1.AddToScheme(scheme)
+	_ = tokensv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 

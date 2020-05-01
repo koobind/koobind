@@ -25,7 +25,7 @@ import (
 
 // UserSpec defines the desired state of User
 type UserSpec struct {
-	// The user login is the Name of the ressource.
+	// The user login is the Name of the resource.
 
 	// The user common name.
 	// +optional

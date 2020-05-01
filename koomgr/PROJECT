@@ -11,4 +11,7 @@ resources:
 - group: directory
   kind: GroupBinding
   version: v1alpha1
+- group: tokens
+  kind: Token
+  version: v1alpha1
 version: "2"

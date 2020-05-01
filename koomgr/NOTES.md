@@ -47,6 +47,11 @@ kubebuilder create webhook --group directory --version v1alpha1 --kind Group --d
 kubebuilder create webhook --group directory --version v1alpha1 --kind GroupBinding --defaulting --programmatic-validation
 ```
 
+```
+kubebuilder create api --group tokens --version v1alpha1 --kind Token
+```
+
+
 # Test add samples
 
 in kspray/koomgr/dev or pod
