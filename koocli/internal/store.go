@@ -3,8 +3,8 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/koobind/koobind/common"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"os/user"
 	"path"
@@ -23,7 +23,7 @@ type CurrentContext struct {
 
 type TokenBag struct {
 	Token      string    `json:"token"`
-	ClientTTL  Duration  `json:"clientTTL"`
+	ClientTTL  metav1.Duration  `json:"clientTTL"`
 	LastAccess time.Time `json:"lastAccess"`
 }
 

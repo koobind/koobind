@@ -1,7 +1,7 @@
 package common
 
 import (
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
 
@@ -16,14 +16,14 @@ const (
 
 type GetTokenResponse struct {
 	Token string		`json:"token"`
-	ClientTTL Duration	`json:"clientTTL"`
+	ClientTTL metav1.Duration	`json:"clientTTL"`
 }
 
 
 type TokenLifecycle struct {
-	InactivityTimeout Duration	`json:"inactivityTimeout"`
-	MaxTTL Duration				`json:"maxTTL"`
-	ClientTTL Duration			`json:"clientTTL"`
+	InactivityTimeout 	metav1.Duration	`json:"inactivityTimeout"`
+	MaxTTL 				metav1.Duration	`json:"maxTTL"`
+	ClientTTL 			metav1.Duration	`json:"clientTTL"`
 }
 
 type UserToken struct {

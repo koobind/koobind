@@ -20,6 +20,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -95,7 +96,7 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
-	err = mgr.GetFieldIndexer().IndexField(&directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
+	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
 		ugb := rawObj.(*directoryv1alpha1.GroupBinding)
 		return []string{ugb.Spec.User}
 	})

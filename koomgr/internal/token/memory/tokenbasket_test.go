@@ -3,9 +3,27 @@ package memory
 import (
 	. "github.com/koobind/koobind/common"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 	"time"
 )
+
+func ParseDuration(d string) (metav1.Duration, error) {
+	duration, err := time.ParseDuration(d)
+	if err == nil {
+		return metav1.Duration{Duration: duration}, nil
+	} else {
+		return metav1.Duration{}, err
+	}
+}
+
+func ParseDurationOrPanic(d string) metav1.Duration {
+	duration, err := ParseDuration(d)
+	if err != nil {
+		panic(err)
+	}
+	return duration
+}
 
 var lifeCycle2s TokenLifecycle = TokenLifecycle{
 	InactivityTimeout: ParseDurationOrPanic("2s"),

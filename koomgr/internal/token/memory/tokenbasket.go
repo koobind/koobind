@@ -5,6 +5,7 @@ import (
 	. "github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/token"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"math/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sort"
@@ -35,9 +36,9 @@ func newTokenBasket(defaultLifecycle *TokenLifecycle) token.TokenBasket {
 
 func NewTokenBasket() token.TokenBasket {
 	return newTokenBasket(&TokenLifecycle{
-		InactivityTimeout: Duration{Duration: *config.Conf.InactivityTimeout},
-		MaxTTL:            Duration{Duration: *config.Conf.SessionMaxTTL},
-		ClientTTL:         Duration{Duration: *config.Conf.ClientTokenTTL},
+		InactivityTimeout: metav1.Duration{Duration: *config.Conf.InactivityTimeout},
+		MaxTTL:            metav1.Duration{Duration: *config.Conf.SessionMaxTTL},
+		ClientTTL:         metav1.Duration{Duration: *config.Conf.ClientTokenTTL},
 	})
 }
 
