@@ -1,6 +1,12 @@
 
 ## Still to do 
 
+- Token in API Server 
+- Docs
+- Tests, tests, .....
+
+# Improvments
+
 - A Blacklist mechanisme on user/group/groupbinding stuff, superseding other provided information
 
 A set of command/api on crd provider to:
@@ -14,7 +20,6 @@ A set of command/api on crd provider to:
 - Package and setup client as krew plugin (krew template ?)
 - Build automation (goreleaser ?)
 - versionning: https://medium.com/better-programming/how-to-version-your-docker-images-1d5c577ebf54
-
 
 - ldap bind passwrd in secret ?
 - Allow koocli context to be defined in an ENV variable

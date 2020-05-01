@@ -24,6 +24,9 @@ type Config struct {
 	InactivityTimeout *time.Duration  `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
 	SessionMaxTTL     *time.Duration  `yaml:"sessionMaxTTL"`     // After this period, the session expire, in all case.
 	ClientTokenTTL    *time.Duration  `yaml:"clientTokenTTL"`    // This is intended for the client (koocli), for token caching
+	TokenStorage      string          `yaml:"tokenStorage"`      // 'memory' or 'crd'
+	TokenNamespace    string          `yaml:"tokenNamespace"`    // When tokenStorage==crd, the namespace to store them. Default to 'koo-system'
+	LastHitDelay      int             `yaml:"lastHitDelay"`      // When tokenStorage==crd, the max difference between reality and what is stored in API Server. In percent of InactivityTimeout
 	Providers         []interface{}   `yaml:"providers"`         // The ordered list of ID providers
 	Namespaces        map[string]bool // Not in the file, but used by validating webhook
 }

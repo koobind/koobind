@@ -26,6 +26,7 @@ import (
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers/chain"
 	"github.com/koobind/koobind/koomgr/internal/token"
+	"github.com/koobind/koobind/koomgr/internal/token/memory"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,11 +104,21 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 		os.Exit(1)
 	}
-	authserver.Init(mgr, token.NewTokenBasket(), providerChain)
+	authserver.Init(mgr, NewTokenBasket(), providerChain)
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+
+func NewTokenBasket() token.TokenBasket {
+	if config.Conf.TokenStorage == "memory" {
+		return memory.NewTokenBasket()
+	} else if config.Conf.TokenStorage == "crd" {
+		panic("TODO")
+	} else {
+		panic(fmt.Sprintf("Invalid token storage value:%s", config.Conf.TokenStorage))
 	}
 }

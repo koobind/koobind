@@ -43,6 +43,9 @@ func Setup() {
 	var inactivityTimeout string
 	var sessionMaxTTL string
 	var clientTokenTTL string
+	var tokenStorage string
+	var tokenNamespace string
+	var lastHitDelay int
 
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
@@ -56,6 +59,9 @@ func Setup() {
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
+	pflag.StringVar(&tokenStorage, "tokenStorage", "memory", "Tokens storage mode: 'memory' or 'crd'")
+	pflag.StringVar(&tokenNamespace, "tokenNamespace", "koo-system", "Tokens storage namespace when tokenStorage==crd")
+	pflag.IntVar(&lastHitDelay, "lastHitDelay", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 
@@ -75,6 +81,9 @@ func Setup() {
 	adjustConfigDuration(pflag.CommandLine, &Conf.InactivityTimeout, "inactivityTimeout")
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
+	adjustConfigString(pflag.CommandLine, &Conf.TokenStorage, "tokenStorage")
+	adjustConfigString(pflag.CommandLine, &Conf.TokenNamespace, "tokenNamespace")
+	adjustConfigInt(pflag.CommandLine, &Conf.LastHitDelay, "lastHitDelay")
 
 	AdjustPath(Conf.ConfigFolder, &Conf.WebhookServer.CertDir)
 	AdjustPath(Conf.ConfigFolder, &Conf.AuthServer.CertDir)
@@ -89,6 +98,10 @@ func Setup() {
 	}
 	if Conf.LogMode == "json" && Conf.LogLevel > 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: logLevel can't be greater than one when logMode is 'json'.\n")
+		os.Exit(2)
+	}
+	if Conf.TokenStorage != "memory" && Conf.TokenStorage != "crd" {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: Invalid tokenStorage value: %s. Must be one of 'memory' or 'crd'\n", Conf.LogMode)
 		os.Exit(2)
 	}
 	Conf.Namespaces = make(map[string]bool)

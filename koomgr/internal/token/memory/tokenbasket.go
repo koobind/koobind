@@ -1,23 +1,16 @@
-package token
+package memory
 
 import (
 	"fmt"
 	. "github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/token"
 	"math/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sort"
 	"sync"
 	"time"
 )
-
-type TokenBasket interface {
-	NewUserToken(user User) UserToken
-	Get(token string) (User, bool)
-	GetAll() []UserToken
-	Clean()
-	Delete(token string) bool
-}
 
 var tokenLog = ctrl.Log.WithName("token")
 
@@ -33,14 +26,14 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func newTokenBasket(defaultLifecycle *TokenLifecycle) TokenBasket {
+func newTokenBasket(defaultLifecycle *TokenLifecycle) token.TokenBasket {
 	return &tokenBasket{
 		byToken:          make(map[string]*UserToken),
 		defaultLifecycle: defaultLifecycle,
 	}
 }
 
-func NewTokenBasket() TokenBasket {
+func NewTokenBasket() token.TokenBasket {
 	return newTokenBasket(&TokenLifecycle{
 		InactivityTimeout: Duration{Duration: *config.Conf.InactivityTimeout},
 		MaxTTL:            Duration{Duration: *config.Conf.SessionMaxTTL},

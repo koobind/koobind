@@ -1,4 +1,4 @@
-package token
+package memory
 
 import (
 	. "github.com/koobind/koobind/common"
