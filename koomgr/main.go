@@ -38,7 +38,9 @@ import (
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers/chain"
 	"github.com/koobind/koobind/koomgr/internal/token"
+	"github.com/koobind/koobind/koomgr/internal/token/crd"
 	"github.com/koobind/koobind/koomgr/internal/token/memory"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -109,7 +111,7 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 		os.Exit(1)
 	}
-	authserver.Init(mgr, NewTokenBasket(), providerChain)
+	authserver.Init(mgr, NewTokenBasket(mgr.GetClient()), providerChain)
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
@@ -118,11 +120,11 @@ func main() {
 	}
 }
 
-func NewTokenBasket() token.TokenBasket {
+func NewTokenBasket(kubeClient client.Client) token.TokenBasket {
 	if config.Conf.TokenStorage == "memory" {
 		return memory.NewTokenBasket()
 	} else if config.Conf.TokenStorage == "crd" {
-		panic("TODO")
+		return crd.NewTokenBasket(kubeClient)
 	} else {
 		panic(fmt.Sprintf("Invalid token storage value:%s", config.Conf.TokenStorage))
 	}

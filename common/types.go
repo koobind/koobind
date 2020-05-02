@@ -34,14 +34,6 @@ type UserToken struct {
 	Lifecycle *TokenLifecycle	`json:"lifecycle"`
 }
 
-func (this *UserToken) StillValid(now time.Time) bool {
-	return this.LastHit.Add(this.Lifecycle.InactivityTimeout.Duration).After(now) && this.Creation.Add(this.Lifecycle.MaxTTL.Duration).After(now)
-}
-
-func (this *UserToken) Touch(now time.Time) {
-	this.LastHit = now
-}
-
 type UserDescribeResponse struct {
 	UserStatuses []UserStatus	`json:"userStatuses"`
 }

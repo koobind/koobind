@@ -27,12 +27,6 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-type TokenLifecycle struct { // Can't use the one from common, as Duration type is different
-	InactivityTimeout metav1.Duration `json:"inactivityTimeout"`
-	MaxTTL            metav1.Duration `json:"maxTTL"`
-	ClientTTL         metav1.Duration `json:"clientTTL"`
-}
-
 // Name will be the token itself
 type TokenSpec struct {
 
@@ -43,7 +37,7 @@ type TokenSpec struct {
 	Creation metav1.Time `json:"creation"`
 
 	// +required
-	Lifecycle TokenLifecycle `json:"lifecycle"`
+	Lifecycle common.TokenLifecycle `json:"lifecycle"`
 }
 
 // TokenStatus defines the observed state of Token

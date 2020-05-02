@@ -15,6 +15,14 @@ import (
 
 var tokenLog = ctrl.Log.WithName("token-memory")
 
+func stillValid(ut *UserToken, now time.Time) bool {
+	return ut.LastHit.Add(ut.Lifecycle.InactivityTimeout.Duration).After(now) && ut.Creation.Add(ut.Lifecycle.MaxTTL.Duration).After(now)
+}
+
+func touch(ut *UserToken, now time.Time) {
+	ut.LastHit = now
+}
+
 type tokenBasket struct {
 	sync.RWMutex
 	byToken          map[string]*UserToken
@@ -42,7 +50,7 @@ func NewTokenBasket() token.TokenBasket {
 	})
 }
 
-func (this *tokenBasket) NewUserToken(user User) UserToken {
+func (this *tokenBasket) NewUserToken(user User) (UserToken, error) {
 	b := make([]byte, 32)
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
@@ -58,30 +66,30 @@ func (this *tokenBasket) NewUserToken(user User) UserToken {
 	this.Lock()
 	this.byToken[t.Token] = &t
 	this.Unlock()
-	return t
+	return t, nil
 }
 
-func (this *tokenBasket) Get(token string) (user User, ok bool) {
+func (this *tokenBasket) Get(token string) (user User, ok bool, err error) {
 	this.Lock()
 	defer this.Unlock()
 	ut, ok := this.byToken[token]
 	if ok {
 		now := time.Now()
-		if ut.StillValid(now) {
-			ut.Touch(now)
-			return ut.User, true
+		if stillValid(ut, now) {
+			touch(ut, now)
+			return ut.User, true, nil
 		} else {
 			delete(this.byToken, token)
 			tokenLog.Info(fmt.Sprintf("Token %s (user:%s) has been cleaned on Get().", token, ut.User.Username))
 			//this.log.Infof("Token %s (user:%s) has been cleaned on Get().", token, ut.User.Username)
-			return User{}, false
+			return User{}, false, nil
 		}
 	} else {
-		return User{}, false
+		return User{}, false, nil
 	}
 }
 
-func (this *tokenBasket) GetAll() []UserToken {
+func (this *tokenBasket) GetAll() ([]UserToken, error) {
 	this.RLock()
 	slice := make([]UserToken, 0, len(this.byToken))
 	for _, value := range this.byToken {
@@ -92,29 +100,30 @@ func (this *tokenBasket) GetAll() []UserToken {
 	sort.Slice(slice, func(i, j int) bool {
 		return slice[i].Creation.Before(slice[j].Creation)
 	})
-	return slice
+	return slice, nil
 }
 
-func (this *tokenBasket) Clean() {
+func (this *tokenBasket) Clean() error {
 	now := time.Now()
 	this.Lock()
 	defer this.Unlock()
 	for key, value := range this.byToken {
-		if !value.StillValid(now) {
+		if !stillValid(value, now) {
 			tokenLog.Info(fmt.Sprintf("Token %s (user:%s) has been cleaned in background.", key, value.User.Username))
 			//this.log.Infof("Token %s (user:%s) has been cleaned in background.", key, value.User.Username)
 			delete(this.byToken, key)
 		}
 	}
+	return nil
 }
 
 // Return true if there was a token to delete
-func (this *tokenBasket) Delete(token string) bool {
+func (this *tokenBasket) Delete(token string) (bool, error) {
 	this.Lock()
 	defer this.Unlock()
 	_, ok := this.byToken[token]
 	if ok {
 		delete(this.byToken, token)
 	}
-	return ok
+	return ok, nil
 }

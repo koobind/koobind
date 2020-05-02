@@ -33,13 +33,17 @@ func (this *GetTokenHandler) ServeHTTP(response http.ResponseWriter, request *ht
 				password := up[1]
 				usr, ok, _ := this.Providers.Login(login, password)
 				if ok {
-					userToken := this.TokenBasket.NewUserToken(usr)
-					data := GetTokenResponse{
-						Token:     userToken.Token,
-						ClientTTL: userToken.Lifecycle.ClientTTL,
+					userToken, err := this.TokenBasket.NewUserToken(usr)
+					if err != nil {
+						http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+					} else {
+						data := GetTokenResponse{
+							Token:     userToken.Token,
+							ClientTTL: userToken.Lifecycle.ClientTTL,
+						}
+						this.ServeJSON(response, data)
+						this.Logger.Info(fmt.Sprintf("Token '%s' granted to user:'%s'  uid:%s, groups=%v", data.Token, usr.Username, usr.Uid, usr.Groups))
 					}
-					this.ServeJSON(response, data)
-					this.Logger.Info(fmt.Sprintf("Token '%s' granted to user:'%s'  uid:%s, groups=%v", data.Token, usr.Username, usr.Uid, usr.Groups))
 				} else {
 					this.Logger.Info(fmt.Sprintf("No token granted to user '%s'. Unable to validate this login.", login))
 					http.Error(response, "Unallowed", http.StatusUnauthorized)

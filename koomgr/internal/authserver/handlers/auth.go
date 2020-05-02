@@ -35,7 +35,12 @@ func (this *AuthHandler) ServeAuthHTTP(response http.ResponseWriter, request *ht
 		} else {
 			// It is Bearer
 			token := strings.TrimSpace(authList[0][len("Bearer "):])
-			usr, ok = this.TokenBasket.Get(token)
+			var err error
+			usr, ok, err = this.TokenBasket.Get(token)
+			if err != nil {
+				http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+				return
+			}
 		}
 		if ok {
 			fn(usr)

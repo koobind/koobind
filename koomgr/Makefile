@@ -85,7 +85,7 @@ undeploydev: yamldev
 #------------------------------------------------------------------------------------
 
 # Build the docker image
-docker-build: test
+docker-build: manager yamlpod
 	cd ..; docker build -f koomgr/Dockerfile . -t ${IMG}
 
 # Push the docker image

@@ -45,7 +45,7 @@ func Setup() {
 	var clientTokenTTL string
 	var tokenStorage string
 	var tokenNamespace string
-	var lastHitDelay int
+	var lastHitStep int
 
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
@@ -61,7 +61,7 @@ func Setup() {
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
 	pflag.StringVar(&tokenStorage, "tokenStorage", "memory", "Tokens storage mode: 'memory' or 'crd'")
 	pflag.StringVar(&tokenNamespace, "tokenNamespace", "koo-system", "Tokens storage namespace when tokenStorage==crd")
-	pflag.IntVar(&lastHitDelay, "lastHitDelay", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
+	pflag.IntVar(&lastHitStep, "lastHitStep", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 
@@ -83,7 +83,7 @@ func Setup() {
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
 	adjustConfigString(pflag.CommandLine, &Conf.TokenStorage, "tokenStorage")
 	adjustConfigString(pflag.CommandLine, &Conf.TokenNamespace, "tokenNamespace")
-	adjustConfigInt(pflag.CommandLine, &Conf.LastHitDelay, "lastHitDelay")
+	adjustConfigInt(pflag.CommandLine, &Conf.LastHitStep, "lastHitStep")
 
 	AdjustPath(Conf.ConfigFolder, &Conf.WebhookServer.CertDir)
 	AdjustPath(Conf.ConfigFolder, &Conf.AuthServer.CertDir)

@@ -24,7 +24,11 @@ func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, reques
 				ApiVersion: requestPayload.ApiVersion,
 				Kind:       requestPayload.Kind,
 			}
-			usr, ok := this.TokenBasket.Get(requestPayload.Spec.Token)
+			usr, ok, err := this.TokenBasket.Get(requestPayload.Spec.Token)
+			if err != nil {
+				http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+				return
+			}
 			if ok {
 				this.Logger.Info(fmt.Sprintf("Token '%s' OK. user:'%s'  uid:%s, groups=%v", requestPayload.Spec.Token, usr.Username, usr.Uid, usr.Groups))
 				data.Status.Authenticated = true

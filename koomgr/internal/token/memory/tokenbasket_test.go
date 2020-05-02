@@ -50,8 +50,10 @@ var lifeCycle3s TokenLifecycle = TokenLifecycle{
 func TestNew(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle3s)
 	var user = User{Username: "Alfred"}
-	userToken := basket.NewUserToken(user)
-	user2, ok := basket.Get(userToken.Token)
+	userToken, err := basket.NewUserToken(user)
+	assert.Nil(t, err)
+	user2, ok, err := basket.Get(userToken.Token)
+	assert.Nil(t, err)
 	assert.True(t, ok, "ok should be true")
 	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
 }
@@ -59,37 +61,45 @@ func TestNew(t *testing.T) {
 func TestTimeout1(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
 	var user = User{Username: "Alfred"}
-	token := basket.NewUserToken(user).Token
+	userToken, err := basket.NewUserToken(user)
+	assert.Nil(t, err)
 	time.Sleep(time.Second * 3)
-	_, ok := basket.Get(token)
+	_, ok, err := basket.Get(userToken.Token)
+	assert.Nil(t, err)
 	assert.False(t, ok, "ok should be false")
 }
 
 func TestTimeout2(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
 	var user = User{Username: "Alfred"}
-	token := basket.NewUserToken(user).Token
+	userToken, err := basket.NewUserToken(user)
+	assert.Nil(t, err)
+	token := userToken.Token
 
 	time.Sleep(time.Second)
 
-	user2, ok := basket.Get(token)
+	user2, ok, err := basket.Get(token)
+	assert.Nil(t, err)
 	assert.True(t, ok, "ok should be true")
 	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
 
 	time.Sleep(time.Second)
 
-	user2, ok = basket.Get(token)
+	user2, ok, err = basket.Get(token)
+	assert.Nil(t, err)
 	assert.True(t, ok, "ok should be true")
 	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
 
 	time.Sleep(time.Second)
 
-	user2, ok = basket.Get(token)
+	user2, ok, err = basket.Get(token)
+	assert.Nil(t, err)
 	assert.True(t, ok, "ok should be true")
 	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
 
 	time.Sleep(time.Second * 3)
 
-	user2, ok = basket.Get(token)
+	user2, ok, err = basket.Get(token)
+	assert.Nil(t, err)
 	assert.False(t, ok, "ok should be false")
 }

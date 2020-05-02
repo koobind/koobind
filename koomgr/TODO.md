@@ -2,6 +2,7 @@
 ## Still to do 
 
 - Token in API Server 
+- Package and setup client as krew plugin (krew template ?)
 - Docs
 - Tests, tests, .....
 
@@ -17,7 +18,6 @@ A set of command/api on crd provider to:
 
 - Add an url to fetch the CA for the kubconfig (And maybe to fetch on full kubeconfig).
 
-- Package and setup client as krew plugin (krew template ?)
 - Build automation (goreleaser ?)
 - versionning: https://medium.com/better-programming/how-to-version-your-docker-images-1d5c577ebf54
 

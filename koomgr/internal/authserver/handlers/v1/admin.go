@@ -55,14 +55,24 @@ func describeUser(handler *AdminV1Handler, usr common.User, remainingPath string
 }
 
 func listToken(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
+	list, err := handler.TokenBasket.GetAll()
+	if err != nil {
+		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+		return
+	}
 	data := common.TokenListResponse{
-		Tokens: handler.TokenBasket.GetAll(),
+		Tokens: list,
 	}
 	handler.ServeJSON(response, data)
 }
 
 func deleteToken(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
-	if !handler.TokenBasket.Delete(remainingPath) {
+	ok, err := handler.TokenBasket.Delete(remainingPath)
+	if err != nil {
+		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+		return
+	}
+	if !ok {
 		http.Error(response, "Not found", http.StatusNotFound)
 	}
 }

@@ -17,6 +17,7 @@ clientTokenTTL: "30s"
 #inactivityTimeout: "30s"
 #sessionMaxTTL: "12h"
 #clientTokenTTL: "3s"
+tokenStorage: crd
 
 providers:
   - name: base
