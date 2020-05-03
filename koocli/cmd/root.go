@@ -5,7 +5,9 @@ import (
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 	"os"
+	"os/user"
 	"path"
 )
 
@@ -22,13 +24,34 @@ var context string
 var config *internal.Config
 
 
+func lookupContextInKubeconfig(kubeconfig string) string {
+	if kubeconfig == "" {
+		kubeconfig = os.Getenv("KUBECONFIG")
+	}
+	if kubeconfig == "" {
+		usr, err := user.Current()
+		if err == nil {
+			kubeconfig = path.Join(usr.HomeDir, ".kube/config")
+		}
+	}
+	log.Debugf("kubeconfig=%s", kubeconfig)
+	config, err := clientcmd.LoadFromFile(kubeconfig)
+	if err != nil {
+		return ""
+	}
+	log.Debugf("kubeconfig=%s   context:%s", kubeconfig, config.CurrentContext)
+	return config.CurrentContext
+}
+
 func init() {
 	var rootCaFile string
 	var server string
 	var logLevel string
 	var logJson bool
+	var kubeconfig string
 
 	rootCmd.PersistentFlags().StringVarP(&context, "context", "", "", "Context" )
+	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Kubeconfig file path. Used to lookup context" )
 	rootCmd.PersistentFlags().StringVarP(&rootCaFile, "rootCaFile", "", "", "Cert authority for client connection" )
 	rootCmd.PersistentFlags().StringVarP(&server, "server", "", "", "Authentication server" )
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "logLevel", "", "INFO", "Log level" )
@@ -37,16 +60,15 @@ func init() {
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		internal.ConfigureLogger(logLevel, logJson)
 		log = logrus.WithFields(logrus.Fields{"package": "cmd"})
-		oldContext := internal.LoadCurrentContext()
+
 		if context == "" {
-			context = oldContext
+			context = lookupContextInKubeconfig(kubeconfig)
 			if context == "" {
 				context = "default"
 			}
 		}
-		if oldContext == "" || oldContext != context {
-			internal.SaveCurrentContext(context)
-		}
+		log.Debugf("context:%s", context)
+
 		if rootCaFile != "" {
 			if !path.IsAbs(rootCaFile) {
 				cwd, err := os.Getwd()

@@ -67,21 +67,6 @@ func ListContext() []string {
 	return files
 }
 
-
-func LoadCurrentContext() string {
-	currentContextPath := getCurrentContextPath()
-	var currentContext CurrentContext
-	if loadStuff(currentContextPath, func (decoder *json.Decoder) error {
-		return decoder.Decode(&currentContext)
-	}) {
-		getLog().Debugf("LoadCurrentContext(%s) -> context:%s", currentContextPath, currentContext.Context)
-		return currentContext.Context
-	} else {
-		getLog().Debugf("LoadCurrentContext(%s) -> ''", currentContextPath)
-		return ""
-	}
-}
-
 func LoadConfig(context string) *Config {
 	configPath := getConfigPath(context)
 	var config Config
@@ -126,16 +111,16 @@ func DeleteTokenBag(context string) {
 }
 
 
-func SaveCurrentContext(context string) {
-	currentContextPath := getCurrentContextPath()
-	getLog().Debugf("SaveCurrentContext(%s, %s)", currentContextPath, context)
-	currentContext := CurrentContext{
-		Context: context,
-	}
-	saveStuff(currentContextPath, func (encoder *json.Encoder) error  {
-		return encoder.Encode(currentContext)
-	})
-}
+//func SaveCurrentContext(context string) {
+//	currentContextPath := getCurrentContextPath()
+//	getLog().Debugf("SaveCurrentContext(%s, %s)", currentContextPath, context)
+//	currentContext := CurrentContext{
+//		Context: context,
+//	}
+//	saveStuff(currentContextPath, func (encoder *json.Encoder) error  {
+//		return encoder.Encode(currentContext)
+//	})
+//}
 
 func SaveConfig(context string, config *Config) {
 	configPath := getConfigPath(context)

@@ -59,7 +59,7 @@ func Setup() {
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
-	pflag.StringVar(&tokenStorage, "tokenStorage", "memory", "Tokens storage mode: 'memory' or 'crd'")
+	pflag.StringVar(&tokenStorage, "tokenStorage", "crd", "Tokens storage mode: 'memory' or 'crd'")
 	pflag.StringVar(&tokenNamespace, "tokenNamespace", "koo-system", "Tokens storage namespace when tokenStorage==crd")
 	pflag.IntVar(&lastHitStep, "lastHitStep", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
 	pflag.CommandLine.SortFlags = false
