@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/golang-collections/collections/set"
 	"time"
 )
 
@@ -15,20 +16,21 @@ type Server struct {
 }
 
 type Config struct {
-	ConfigFolder      string          // This is not in the file, but set on reading. Used to adjust file path
-	WebhookServer     Server          `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
-	AuthServer        Server          `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
-	LogLevel          int             `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
-	LogMode           string          `yaml:"logMode"`           // Log output format: 'dev' or 'json'
-	AdminGroup        string          `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
-	InactivityTimeout *time.Duration  `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
-	SessionMaxTTL     *time.Duration  `yaml:"sessionMaxTTL"`     // After this period, the session expire, in all case.
-	ClientTokenTTL    *time.Duration  `yaml:"clientTokenTTL"`    // This is intended for the client (koocli), for token caching
-	TokenStorage      string          `yaml:"tokenStorage"`      // 'memory' or 'crd'
-	TokenNamespace    string          `yaml:"tokenNamespace"`    // When tokenStorage==crd, the namespace to store them. Default to 'koo-system'
-	LastHitStep       int             `yaml:"lastHitStep"`       // When tokenStorage==crd, the max difference between reality and what is stored in API Server. In per mille of InactivityTimeout. Aim is to avoid API servr overloading
-	Providers         []interface{}   `yaml:"providers"`         // The ordered list of ID providers
-	Namespaces        map[string]bool // Not in the file, but used by validating webhook
+	ConfigFolder      string         // This is not in the file, but set on reading. Used to adjust file path
+	WebhookServer     Server         `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
+	AuthServer        Server         `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
+	LogLevel          int            `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
+	LogMode           string         `yaml:"logMode"`           // Log output format: 'dev' or 'json'
+	AdminGroup        string         `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
+	InactivityTimeout *time.Duration `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
+	SessionMaxTTL     *time.Duration `yaml:"sessionMaxTTL"`     // After this period, the session expire, in all case.
+	ClientTokenTTL    *time.Duration `yaml:"clientTokenTTL"`    // This is intended for the client (koocli), for token caching
+	TokenStorage      string         `yaml:"tokenStorage"`      // 'memory' or 'crd'
+	Namespace         string         `yaml:"namespace"`         // Default value for tokenNamespace and CRD providers
+	TokenNamespace    string         `yaml:"tokenNamespace"`    // When tokenStorage==crd, the namespace to store them. Default to defaultNamespace
+	LastHitStep       int            `yaml:"lastHitStep"`       // When tokenStorage==crd, the max difference between reality and what is stored in API Server. In per mille of InactivityTimeout. Aim is to avoid API servr overloading
+	Providers         []interface{}  `yaml:"providers"`         // The ordered list of ID providers
+	CrdNamespaces     *set.Set       // Not in the file, but used by validating webhook
 }
 
 type BaseProviderConfig struct {

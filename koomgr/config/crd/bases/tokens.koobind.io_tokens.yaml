@@ -28,6 +28,7 @@ spec:
     plural: tokens
     shortNames:
     - ktoken
+    - kootoken
     singular: token
   scope: Namespaced
   subresources: {}

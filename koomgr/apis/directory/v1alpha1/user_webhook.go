@@ -22,6 +22,7 @@ package v1alpha1
 import (
 	"fmt"
 	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 	"k8s.io/apimachinery/pkg/runtime"
 	"regexp"
@@ -74,8 +75,8 @@ func (r *User) ValidateDelete() error {
 var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func (this *User) validate() error {
-	if !config.Conf.Namespaces[this.Namespace] {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, mapkeys2slice(config.Conf.Namespaces))
+	if !config.Conf.CrdNamespaces.Has(this.Namespace) {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, utils.Set2stringSlice(config.Conf.CrdNamespaces))
 	}
 	if this.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
@@ -89,12 +90,4 @@ func (this *User) validate() error {
 		}
 	}
 	return nil
-}
-
-func mapkeys2slice(mymap map[string]bool) []string {
-	keys := make([]string, 0, len(mymap))
-	for k := range mymap {
-		keys = append(keys, k)
-	}
-	return keys
 }

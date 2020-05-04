@@ -3,13 +3,14 @@
 
 #logLevel: 0
 webhookServer:
-  certDir:  ./config/overlays/dev/cert
+  certDir:  ../config/overlays/dev/cert
   host: localhost
   port: 9443
 authServer:
-  certDir:  ./config/overlays/dev/cert
+  certDir:  ../config/overlays/dev/cert
   host: localhost
   port: 9444
+namespace: koo-system
 adminGroup: "kooadmin"
 inactivityTimeout: "30m"
 sessionMaxTTL: "12h"
@@ -99,7 +100,7 @@ providers:
     host: ipa2.bsa.broadsoftware.com
     port: 636
     insecureSkipVerify: false
-    rootCA: ../../ezciac/kvm2/ipa2/ca.pem
+    rootCA: ../../../ezciac/kvm2/ipa2/ca.pem
     bindDN: uid=admin,cn=users,cn=accounts,dc=bsa,dc=broadsoftware,dc=com
     bindPW: ipaadmin
 
@@ -121,12 +122,12 @@ providers:
   - name: crdsys
     enabled: yes
     type: crd
-    namespace: koo-system
 
   - name: crddir
     enabled: yes
     type: crd
     namespace: koo-directory
+    critical: no
 
   - type: static
     enabled: no

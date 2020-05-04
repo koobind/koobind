@@ -25,6 +25,8 @@ spec:
     - gb
     - ugb
     - usergroupbinding
+    - kgroupbinding
+    - koogroupbinding
     singular: groupbinding
   scope: Namespaced
   subresources: {}
@@ -174,6 +176,7 @@ spec:
     plural: tokens
     shortNames:
     - ktoken
+    - kootoken
     singular: token
   scope: Namespaced
   subresources: {}

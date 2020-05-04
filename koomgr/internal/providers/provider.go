@@ -15,7 +15,7 @@ type Provider interface {
 }
 
 type ProviderChain interface {
-	Login(login, password string) (user common.User, loginOk bool, authenticator string) // authenticator is the name of the provider who authenticate the user
+	Login(login, password string) (user common.User, loginOk bool, authenticator string, err error) // authenticator is the name of the provider who authenticate the user
 	DescribeUser(login string) ([]common.UserStatus, error)
 	String() string
 }

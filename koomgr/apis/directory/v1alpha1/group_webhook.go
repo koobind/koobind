@@ -22,6 +22,7 @@ package v1alpha1
 import (
 	"fmt"
 	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/utils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -71,8 +72,8 @@ func (r *Group) ValidateDelete() error {
 }
 
 func (this *Group) validate() error {
-	if !config.Conf.Namespaces[this.Namespace] {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, mapkeys2slice(config.Conf.Namespaces))
+	if !config.Conf.CrdNamespaces.Has(this.Namespace) {
+		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, utils.Set2stringSlice(config.Conf.CrdNamespaces))
 	}
 	return nil
 }

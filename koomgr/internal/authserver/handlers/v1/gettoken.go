@@ -31,7 +31,11 @@ func (this *GetTokenHandler) ServeHTTP(response http.ResponseWriter, request *ht
 				up := strings.Split(string(data), ":")
 				login := up[0]
 				password := up[1]
-				usr, ok, _ := this.Providers.Login(login, password)
+				usr, ok, _, err := this.Providers.Login(login, password)
+				if err != nil {
+					http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+					return
+				}
 				if ok {
 					userToken, err := this.TokenBasket.NewUserToken(usr)
 					if err != nil {

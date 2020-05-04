@@ -13,7 +13,16 @@ docker run -it --network container:f91c662f37dd --pid container:f91c662f37dd --p
 ps aux
 
 ls /proc/1/root
-```      
+```
+
+# Start a kubectl insinde cluster, in a given namespace.
+
+This will allow, for example to check RBAC for default account
+
+```
+kubectl run -n koo-system -it --image bitnami/kubectl kubectl --command /bin/bash
+```
+
  
 # git discard all changes
 
@@ -32,4 +41,6 @@ git restore ...
 ```
 kubectl -n koo-system get secrets webhook-server-cert -o=jsonpath='{.data.ca\.crt}' | base64 -d
 ```
+
+
 

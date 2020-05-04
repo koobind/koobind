@@ -30,7 +30,11 @@ func (this *AuthHandler) ServeAuthHTTP(response http.ResponseWriter, request *ht
 				up := strings.Split(string(data), ":")
 				login := strings.TrimSpace(up[0])
 				password := strings.TrimSpace(up[1])
-				usr, ok, _ = this.Providers.Login(login, password)
+				usr, ok, _, err = this.Providers.Login(login, password)
+				if err != nil {
+					http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+					return
+				}
 			}
 		} else {
 			// It is Bearer

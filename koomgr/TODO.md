@@ -1,7 +1,6 @@
 
 ## Still to do 
 
-- Token in API Server 
 - Package and setup client as krew plugin (krew template ?)
 - Docs
 - Tests, tests, .....

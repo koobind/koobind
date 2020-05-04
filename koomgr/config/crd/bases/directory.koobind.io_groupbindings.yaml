@@ -27,6 +27,8 @@ spec:
     - gb
     - ugb
     - usergroupbinding
+    - kgroupbinding
+    - koogroupbinding
     singular: groupbinding
   scope: Namespaced
   subresources: {}

@@ -59,7 +59,9 @@ func getTokenFor(login, password string) *GetTokenResponse {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		return nil
 	} else {
-		panic(fmt.Errorf("Invalid http response: %d, (Status:%d)\n", response.Status, response.StatusCode))
+		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode)
+		return nil
+		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
 	}
 }
 
@@ -118,7 +120,9 @@ func validateToken(token string) *User {
 			return nil
 		}
 	} else {
-		panic(fmt.Errorf("Invalid http response: %d, (Status:%d)\n", response.Status, response.StatusCode))
+		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode)
+		return nil
+		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
 	}
 }
 

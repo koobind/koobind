@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: koo-directory
+  labels:
+    name: koo-directory
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: koo-directory-editor
+  namespace: koo-directory
+rules:
+  - apiGroups:
+      - directory.koobind.io
+    resources:
+      - groupbindings
+      - users
+      - groups
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - directory.koobind.io
+    resources:
+      - groupbindings/status
+    verbs:
+      - get
+
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: koo-editor-kooadmin
+  namespace: koo-directory
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-directory-editor
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: kooadmin
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: koo-editor-default
+  namespace: koo-directory
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-directory-editor
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: koo-system
+

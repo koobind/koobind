@@ -3,6 +3,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $MYDIR
 set -e
 make manager
-CMD="bin/manager  --webhookCertDir config/overlays/dev/cert --webhookHost localhost $@"
+export KUBECONFIG=${MYDIR}/rundev/kubeconfig
+CMD="bin/manager  --config ${MYDIR}/rundev/config.yml --webhookCertDir ${MYDIR}/config/overlays/dev/cert --webhookHost localhost $@"
 echo $CMD
 $CMD

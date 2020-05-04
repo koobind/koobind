@@ -1,8 +1,8 @@
 # permissions for end users to edit tokens.
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: token-editor-role
+  name: token-editor
 rules:
 - apiGroups:
   - tokens.koobind.io
@@ -22,3 +22,17 @@ rules:
   - tokens/status
   verbs:
   - get
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: token-editor-default
+  namespace: system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: token-editor
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: system

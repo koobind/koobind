@@ -92,7 +92,7 @@ func (this providerChain) String() string {
 	return s
 }
 
-func (this *providerChain) Login(login, password string) (common.User, bool, string) {
+func (this *providerChain) Login(login, password string) (common.User, bool, string, error) {
 	passwordStatus := common.Unchecked
 	user := common.User{
 		Username: login,
@@ -103,17 +103,19 @@ func (this *providerChain) Login(login, password string) (common.User, bool, str
 	for _, prvd := range this.providers {
 		userStatus, err := prvd.GetUserStatus(login, password, passwordStatus == common.Unchecked)
 		if err != nil {
-			pcLog.Error(err, "", "provider", prvd.GetName())
 			if prvd.IsCritical() {
-				return common.User{}, false, prvd.GetName()
+				pcLog.Error(err, "FAIL; Provider is critical", "provider", prvd.GetName())
+				return common.User{}, false, prvd.GetName(), err
+			} else {
+				pcLog.Error(err, "Will continue (Provider is not critical)", "provider", prvd.GetName())
+				continue
 			}
-			continue
 		}
 		pcLog.Info("", "provider", prvd.GetName(), "found", userStatus.Found, "passwordStatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups)
 		if userStatus.Found {
 			if userStatus.PasswordStatus == common.Wrong {
 				// No need to go further. Return an empty user to avoid providing partial info
-				return common.User{}, false, prvd.GetName()
+				return common.User{}, false, prvd.GetName(), nil
 			}
 			if userStatus.PasswordStatus == common.Checked {
 				passwordStatus = common.Checked
@@ -127,9 +129,9 @@ func (this *providerChain) Login(login, password string) (common.User, bool, str
 	if passwordStatus == common.Checked {
 		user.Groups = unique(user.Groups)
 		sort.Strings(user.Groups)
-		return user, true, authenticator
+		return user, true, authenticator, nil
 	} else {
-		return common.User{}, false, authenticator
+		return common.User{}, false, authenticator, nil
 	}
 }
 

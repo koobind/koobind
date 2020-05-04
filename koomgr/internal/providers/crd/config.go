@@ -22,10 +22,13 @@ func (this *CrdProviderConfig) Open(idx int, configFolder string, kubeClient cli
 		kubeClient:        kubeClient,
 	}
 	if prvd.Namespace == "" {
-		return &prvd, fmt.Errorf("Missing required providers.%s.namespace", prvd.Name)
+		if config.Conf.Namespace == "" {
+			return &prvd, fmt.Errorf("Missing providers.%s.namespace and no global 'namespace' parameter provided", prvd.Name)
+		}
+		prvd.Namespace = config.Conf.Namespace
 	}
 	prvd.logger = ctrl.Log.WithName("crd:" + prvd.Name)
 	// Add this namespace as valid ones for the validating webhooks.
-	config.Conf.Namespaces[prvd.Namespace] = true
+	config.Conf.CrdNamespaces.Insert(prvd.Namespace)
 	return &prvd, nil
 }

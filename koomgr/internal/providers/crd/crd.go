@@ -21,9 +21,8 @@ func (this *crdProvider) GetName() string {
 	return this.Name
 }
 
-// As we have small chance to fail, we can be critical
 func (this *crdProvider) IsCritical() bool {
-	return true
+	return *this.Critical
 }
 
 func (this *crdProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {

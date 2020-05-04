@@ -19,9 +19,8 @@ func (this *staticProvider) GetName() string {
 	return this.Name
 }
 
-// As we have small chance to fail, we can be critical
 func (this *staticProvider) IsCritical() bool {
-	return true
+	return *this.Critical
 }
 
 func (this *staticProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {

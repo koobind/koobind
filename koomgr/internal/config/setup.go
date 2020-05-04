@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/golang-collections/collections/set"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -44,6 +45,7 @@ func Setup() {
 	var sessionMaxTTL string
 	var clientTokenTTL string
 	var tokenStorage string
+	var namespace string
 	var tokenNamespace string
 	var lastHitStep int
 
@@ -60,7 +62,8 @@ func Setup() {
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
 	pflag.StringVar(&tokenStorage, "tokenStorage", "crd", "Tokens storage mode: 'memory' or 'crd'")
-	pflag.StringVar(&tokenNamespace, "tokenNamespace", "koo-system", "Tokens storage namespace when tokenStorage==crd")
+	pflag.StringVar(&namespace, "namespace", "", "Default namespace for tokenNamespace and CRD")
+	pflag.StringVar(&tokenNamespace, "tokenNamespace", "", "Tokens storage namespace when tokenStorage==crd")
 	pflag.IntVar(&lastHitStep, "lastHitStep", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
@@ -82,6 +85,7 @@ func Setup() {
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
 	adjustConfigString(pflag.CommandLine, &Conf.TokenStorage, "tokenStorage")
+	adjustConfigString(pflag.CommandLine, &Conf.Namespace, "namespace")
 	adjustConfigString(pflag.CommandLine, &Conf.TokenNamespace, "tokenNamespace")
 	adjustConfigInt(pflag.CommandLine, &Conf.LastHitStep, "lastHitStep")
 
@@ -104,7 +108,14 @@ func Setup() {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: Invalid tokenStorage value: %s. Must be one of 'memory' or 'crd'\n", Conf.LogMode)
 		os.Exit(2)
 	}
-	Conf.Namespaces = make(map[string]bool)
+	if Conf.TokenNamespace == "" {
+		if Conf.Namespace == "" {
+			_, _ = fmt.Fprintf(os.Stderr, "ERROR: One of 'tokenNamespace' or 'namespace' parameter must be provided\n")
+			os.Exit(2)
+		}
+		Conf.TokenNamespace = Conf.Namespace
+	}
+	Conf.CrdNamespaces = set.New()
 }
 
 func AdjustPath(baseFolder string, path *string) {

@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: editor
+  name: directory-editor
 rules:
 - apiGroups:
   - directory.koobind.io
@@ -24,3 +24,19 @@ rules:
   - groupbindings/status
   verbs:
   - get
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: directory-editor-default
+  namespace: system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: directory-editor
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: system
+

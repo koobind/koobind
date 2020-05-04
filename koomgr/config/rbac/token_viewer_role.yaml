@@ -1,8 +1,8 @@
 # permissions for end users to view tokens.
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: token-viewer-role
+  name: token-viewer
 rules:
 - apiGroups:
   - tokens.koobind.io

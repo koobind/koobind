@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: koo-editor
+  name: koo-directory-editor
   namespace: koo-system
 rules:
 - apiGroups:
@@ -28,7 +28,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: koo-viewer
+  name: koo-directory-viewer
   namespace: koo-system
 rules:
 - apiGroups:
@@ -49,9 +49,10 @@ rules:
   - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: koo-token-editor-role
+  name: koo-token-editor
+  namespace: koo-system
 rules:
 - apiGroups:
   - tokens.koobind.io
@@ -73,9 +74,10 @@ rules:
   - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: koo-token-viewer-role
+  name: koo-token-viewer
+  namespace: koo-system
 rules:
 - apiGroups:
   - tokens.koobind.io
@@ -91,3 +93,31 @@ rules:
   - tokens/status
   verbs:
   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: koo-directory-editor-default
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-directory-editor
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: koo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: koo-token-editor-default
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-token-editor
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: koo-system

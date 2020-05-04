@@ -45,7 +45,7 @@ type GroupBindingStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,shortName=gb;ugb;usergroupbinding
+// +kubebuilder:resource:scope=Namespaced,shortName=gb;ugb;usergroupbinding;kgroupbinding;koogroupbinding
 // +kubebuilder:printcolumn:name="User",type=string,JSONPath=`.spec.user`
 // +kubebuilder:printcolumn:name="Group",type=string,JSONPath=`.spec.group`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`

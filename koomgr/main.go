@@ -22,14 +22,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
@@ -70,7 +70,9 @@ func main() {
 	setupLog.V(3).Info("Verbose trace log mode activated")
 	setupLog.V(4).Info("Very verbose trace log mode activated")
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	cfg := ctrl.GetConfigOrDie()
+	setupLog.V(2).Info(fmt.Sprintf("config:%v", cfg))
+	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: "0",
 		LeaderElection:     false,
@@ -78,6 +80,9 @@ func main() {
 		Port:    config.Conf.WebhookServer.Port,
 		CertDir: config.Conf.WebhookServer.CertDir,
 		Host:    config.Conf.WebhookServer.Host,
+		//NewCache: cache.MultiNamespacedCacheBuilder([]string{"koo-system"}),
+		NewCache: cache.MultiNamespacedCacheBuilder([]string{"koo-system", "koo-directory"}),
+		//Namespace: "koo-system",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -98,6 +103,13 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
+	providerChain, err := chain.BuildProviderChain(&config.Conf, mgr.GetClient())
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		os.Exit(1)
+	}
+	authserver.Init(mgr, NewTokenBasket(mgr.GetClient()), providerChain)
+
 	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
 		ugb := rawObj.(*directoryv1alpha1.GroupBinding)
 		return []string{ugb.Spec.User}
@@ -106,12 +118,6 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 		os.Exit(1)
 	}
-	providerChain, err := chain.BuildProviderChain(&config.Conf, mgr.GetClient())
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
-		os.Exit(1)
-	}
-	authserver.Init(mgr, NewTokenBasket(mgr.GetClient()), providerChain)
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
