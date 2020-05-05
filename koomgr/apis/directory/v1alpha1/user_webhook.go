@@ -21,8 +21,6 @@ package v1alpha1
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/koomgr/internal/config"
-	"github.com/koobind/koobind/koomgr/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 	"k8s.io/apimachinery/pkg/runtime"
 	"regexp"
@@ -46,7 +44,7 @@ var _ webhook.Defaulter = &User{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (this *User) Default() {
-	userlog.Info("default", "name", this.Name, "namespace", this.Namespace)
+	userlog.V(1).Info("default", "name", this.Name, "namespace", this.Namespace)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -56,28 +54,28 @@ var _ webhook.Validator = &User{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateCreate() error {
-	userlog.Info("validate create", "name", r.Name)
+	userlog.V(1).Info("validate create", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateUpdate(old runtime.Object) error {
-	userlog.Info("validate update", "name", r.Name)
+	userlog.V(1).Info("validate update", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *User) ValidateDelete() error {
-	userlog.Info("validate delete", "name", r.Name)
+	userlog.V(1).Info("validate delete", "name", r.Name)
 	return nil
 }
 
 var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func (this *User) validate() error {
-	if !config.Conf.CrdNamespaces.Has(this.Namespace) {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, utils.Set2stringSlice(config.Conf.CrdNamespaces))
-	}
+	//if !config.Conf.CrdNamespaces.Has(this.Namespace) {
+	//	return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, config.Conf.CrdNamespaces.AsList())
+	//}
 	if this.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
 		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {

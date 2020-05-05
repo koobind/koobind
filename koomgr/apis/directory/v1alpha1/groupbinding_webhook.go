@@ -20,9 +20,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-	"github.com/koobind/koobind/koomgr/internal/config"
-	"github.com/koobind/koobind/koomgr/internal/utils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -44,7 +41,7 @@ var _ webhook.Defaulter = &GroupBinding{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *GroupBinding) Default() {
-	groupbindinglog.Info("default", "name", r.Name)
+	groupbindinglog.V(1).Info("default", "name", r.Name)
 	// Nothing to do for now
 }
 
@@ -55,25 +52,25 @@ var _ webhook.Validator = &GroupBinding{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateCreate() error {
-	groupbindinglog.Info("validate create", "name", r.Name)
+	groupbindinglog.V(1).Info("validate create", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateUpdate(old runtime.Object) error {
-	groupbindinglog.Info("validate update", "name", r.Name)
+	groupbindinglog.V(1).Info("validate update", "name", r.Name)
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *GroupBinding) ValidateDelete() error {
-	groupbindinglog.Info("validate delete", "name", r.Name)
+	groupbindinglog.V(1).Info("validate delete", "name", r.Name)
 	return nil
 }
 
 func (this *GroupBinding) validate() error {
-	if !config.Conf.CrdNamespaces.Has(this.Namespace) {
-		return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, utils.Set2stringSlice(config.Conf.CrdNamespaces))
-	}
+	//if !config.Conf.CrdNamespaces.Has(this.Namespace) {
+	//	return fmt.Errorf("%s '%s': Invalid namespace '%s'. Should be one of '%v'", this.Kind, this.Name, this.Namespace, config.Conf.CrdNamespaces.AsList())
+	//}
 	return nil
 }

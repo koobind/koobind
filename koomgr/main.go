@@ -70,19 +70,27 @@ func main() {
 	setupLog.V(3).Info("Verbose trace log mode activated")
 	setupLog.V(4).Info("Very verbose trace log mode activated")
 
+	// Must be BEFORE manager creation, to have accurate list of Namespace
+	providerChain, err := chain.BuildProviderChain(&config.Conf)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		os.Exit(1)
+	}
+
+	namespaceList := config.Conf.CrdNamespaces.DeepCopy().Add(config.Conf.TokenNamespace).AsList()
+	//setupLog.Info(fmt.Sprintf("Namespaces handled by Kube client cache:%v (For webhook:%v)", namespaceList, config.Conf.CrdNamespaces.AsList()))
+	setupLog.Info("Namespaces", "kubeClient", namespaceList, "webhook", config.Conf.CrdNamespaces.AsList())
+
 	cfg := ctrl.GetConfigOrDie()
 	setupLog.V(2).Info(fmt.Sprintf("config:%v", cfg))
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: "0",
 		LeaderElection:     false,
-		//LeaderElectionID:   "f9553f09.koobind.io",
-		Port:    config.Conf.WebhookServer.Port,
-		CertDir: config.Conf.WebhookServer.CertDir,
-		Host:    config.Conf.WebhookServer.Host,
-		//NewCache: cache.MultiNamespacedCacheBuilder([]string{"koo-system"}),
-		NewCache: cache.MultiNamespacedCacheBuilder([]string{"koo-system", "koo-directory"}),
-		//Namespace: "koo-system",
+		Port:               config.Conf.WebhookServer.Port,
+		CertDir:            config.Conf.WebhookServer.CertDir,
+		Host:               config.Conf.WebhookServer.Host,
+		NewCache:           cache.MultiNamespacedCacheBuilder(namespaceList),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -101,13 +109,7 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "GroupBinding")
 		os.Exit(1)
 	}
-	// +kubebuilder:scaffold:builder
 
-	providerChain, err := chain.BuildProviderChain(&config.Conf, mgr.GetClient())
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
-		os.Exit(1)
-	}
 	authserver.Init(mgr, NewTokenBasket(mgr.GetClient()), providerChain)
 
 	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
@@ -119,6 +121,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set global KubeClient
+	config.KubeClient = mgr.GetClient()
+
+	// +kubebuilder:scaffold:builder
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")

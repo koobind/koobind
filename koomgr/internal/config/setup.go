@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/golang-collections/collections/set"
+	"github.com/koobind/koobind/koomgr/internal/utils"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -115,7 +115,7 @@ func Setup() {
 		}
 		Conf.TokenNamespace = Conf.Namespace
 	}
-	Conf.CrdNamespaces = set.New()
+	Conf.CrdNamespaces = utils.NewStringSet()
 }
 
 func AdjustPath(baseFolder string, path *string) {

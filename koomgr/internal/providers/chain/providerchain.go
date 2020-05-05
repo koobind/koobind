@@ -11,7 +11,6 @@ import (
 	"github.com/koobind/koobind/koomgr/internal/providers/static"
 	"gopkg.in/yaml.v2"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
 )
 
@@ -22,7 +21,7 @@ type providerChain struct {
 var pcLog = ctrl.Log.WithName("providerChain")
 
 type providerConfig interface {
-	Open(idx int, configFolder string, kubeClient client.Client) (providers.Provider, error)
+	Open(idx int, configFolder string) (providers.Provider, error)
 	GetName() string
 	IsEnabled() bool
 }
@@ -33,7 +32,7 @@ var ProviderConfigBuilderFromType = map[string]func() providerConfig{
 	"crd":    func() providerConfig { return new(crd.CrdProviderConfig) },
 }
 
-func BuildProviderChain(conf *config.Config, kubeClient client.Client) (providers.ProviderChain, error) {
+func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 	this := providerChain{
 		providers: []providers.Provider{},
 	}
@@ -71,7 +70,7 @@ func BuildProviderChain(conf *config.Config, kubeClient client.Client) (provider
 		}
 		providerNameSet.Insert(name)
 		if providerConfig.IsEnabled() {
-			prvd, err := providerConfig.Open(i, conf.ConfigFolder, kubeClient)
+			prvd, err := providerConfig.Open(i, conf.ConfigFolder)
 			if err != nil {
 				return nil, err
 			}

@@ -6,6 +6,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	"github.com/koobind/koobind/koomgr/internal/config"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
@@ -13,8 +14,7 @@ import (
 
 type crdProvider struct {
 	*CrdProviderConfig
-	kubeClient client.Client
-	logger     logr.Logger
+	logger logr.Logger
 }
 
 func (this *crdProvider) GetName() string {
@@ -37,7 +37,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		Messages:       make([]string, 0, 0),
 	}
 	usr := v1alpha1.User{}
-	err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
+	err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: this.Namespace,
 		Name:      login,
 	}, &usr)
@@ -48,7 +48,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 		this.logger.V(1).Info("User NOT found", "user", login)
 		// Check if there is some orphean GroupBindings
 		list := v1alpha1.GroupBindingList{}
-		err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
+		err = config.KubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
 		if err != nil {
 			return userStatus, err
 		}
@@ -92,7 +92,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 	// Will not collect groups if auth failed.
 	if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
 		list := v1alpha1.GroupBindingList{}
-		err = this.kubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
+		err = config.KubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
 		if err != nil {
 			return userStatus, err
 		}
@@ -105,7 +105,7 @@ func (this *crdProvider) GetUserStatus(login string, password string, checkPassw
 				continue
 			}
 			grp := v1alpha1.Group{}
-			err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
+			err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
 				Namespace: this.Namespace,
 				Name:      binding.Spec.Group,
 			}, &grp)
