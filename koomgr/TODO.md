@@ -2,7 +2,11 @@
 ## Still to do 
 
 - Package and setup client as krew plugin (krew template ?)
+- Move away personnal stuff
+- kubectl-koo in kubeconfig
+- Fetch manifests from github instead of local folders 
 - Docs
+
 - Tests, tests, .....
 
 # Improvments
@@ -29,3 +33,12 @@ A set of command/api on crd provider to:
 - Security against BFA.
 - Add some NetworkSecurityPolicies around auth and webhook servers
 - Automatic reload (or suicide) on configuration (configMap) change. See ?
+
+# Roadmap
+
+- Dashboard auth proxy
+- Directory coherency tool.
+- Front end web
+- gkbind.
+- Plugins Kafka, ELK, Cassandra
+
