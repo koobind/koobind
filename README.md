@@ -13,148 +13,9 @@ Another main advantage is it only require a ReadOnly access to the LDAP/AD serve
 - [Overview](#overview)
 - [Installation](docs/installation.md)
 - [Identity provider merging]
-- [Bearer token lifecycle]
+- [Token lifecycle](docs/tokenlifecycle.md)
 - [Configuration reference]
 
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-x
-
-x
-
-x
-
-x
-
-x
-
-x
-
-<a name="overview"></a>
 ## Overview
 
 Technically, Koobind can be defined as:
@@ -168,24 +29,24 @@ This involves the following components:
 
 ![](docs/koo1-Overview.jpg) 
 
+- kubectl and Kubernetes API server are usual Kubernetes components.
+- koocli is a kubectl plugin, providing a seamless user interaction.
+- koo-manager is a pod running in Kubernetes and handling both requests from koocli and from the API Server. 
 
-x
+Here is a summary of the initial interaction:
 
-x
+- The user issue a kubectl command (i.e. `kubectl get nodes`).
+- kubectl request a token to koocli.
+- As koocli does not host any token for now, it will request the user to provide a login and a password.
+- Then koocli request a token to koo-manager, based on the provided credential.
+- koo-manager check the credential against one or several Identity provider and return a token.
+- koocli store the token localy and return it to kubectl.
+- kubectl now issue the request to the API Server, with the token as authentication header.
+- The API Server check the token validity and retrieve associated user and group binding by calling koo-manager. 
+- Based on RBAC, the API server allow or denied the initial request.
 
-x
-x
+If the user issue another command in a short period, the locally stored token will be used.
 
-x
-
-x
-
-x
-
-x
-
-x
-
-
+More detailed information on [token lifecycle here](docs/tokenlifecycle.md)   
 
 
