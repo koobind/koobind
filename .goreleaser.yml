@@ -3,15 +3,13 @@
 project_name: koocli
 before:
   hooks:
-    # You may remove this if you don't use go modules.
-    - go mod download
-    # you may remove this if you don't need go generate
-    - go generate ./...
+    - cd koocli && go mod download && go generate ./...
 builds:
-- env:
-  - CGO_ENABLED=0
-  id: koocli
+- id: koocli
   binary: koocli
+  dir: koocli
+  env:
+  - CGO_ENABLED=0
   goos:
     - windows
     - linux
@@ -21,7 +19,9 @@ builds:
 release:
   prerelease: true
   extra_files:
-    - glob: ../koomgr/yaml/crd.yaml
+    - glob: koomgr/yaml/crd.yaml
+    - glob: koomgr/yaml/rbac.yaml
+    - glob: koomgr/yaml/pod/deploy.yaml
 
 archives:
 - replacements:

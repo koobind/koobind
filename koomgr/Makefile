@@ -1,6 +1,8 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= koobind/manager:latest
+VERSION ?= snapshot
+IMG ?= koobind/manager:$(VERSION)
+
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -12,6 +14,9 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 all: manager yamlpod yamldev
+
+displayimg:
+	@echo $(IMG)
 
 # Run tests
 test: generate fmt vet manifests
@@ -95,6 +100,8 @@ docker-build: manager yamlpod
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+docker-all: docker-build docker-push
 
 # find or download controller-gen
 # download controller-gen if necessary
