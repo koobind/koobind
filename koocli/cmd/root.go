@@ -12,7 +12,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "koocli",
+	Use:   "kubectl-koo",
 	Short: "A kubectl plugin for Kubernetes authentification",
 }
 
