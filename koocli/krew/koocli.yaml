@@ -1,0 +1,39 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: koo
+spec:
+  version: v0.0.1
+  homepage: https://github.com/koobind
+  shortDescription: Client part koobind, a Kubernetes smart authentication webhook
+  platforms:
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+      uri: https://github.com/koobind/koobind/releases/download/v0.0.1/koocli_0.0.1_Darwin_x86_64.tar.gz
+      sha256: 04fd859827b5449ba470892a185fe2fd0a8a7248c75a090e577d6d346393d807
+      files:
+        - from: "*"
+          to: "."
+      bin: koocli
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      uri: https://github.com/koobind/koobind/releases/download/v0.0.1/koocli_0.0.1_Linux_x86_64.tar.gz
+      sha256: 928d48e2e0946fdabba78eca0f9f189e0fc9f719aea8f22e106b7111f7d5bd15
+      files:
+        - from: "*"
+          to: "."
+      bin: koocli
+    - selector:
+        matchLabels:
+          os: windows
+          arch: amd64
+      uri: https://github.com/koobind/koobind/releases/download/v0.0.1/koocli_0.0.1_Windows_x86_64.tar.gz
+      sha256: 779bf62e48821ba0414caaf95065a695da910377e3965979e0e8918d0d36259f
+      files:
+        - from: "*"
+          to: "."
+      bin: koocli

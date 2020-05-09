@@ -24,7 +24,9 @@ release:
     - glob: koomgr/yaml/pod/deploy.yaml
 
 archives:
-- replacements:
+- files:
+    - LICENSE
+  replacements:
     darwin: Darwin
     linux: Linux
     windows: Windows
