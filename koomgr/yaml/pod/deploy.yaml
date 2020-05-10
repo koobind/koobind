@@ -117,7 +117,7 @@ spec:
         - --namespace
         - $(KOO_NAMESPACE)
         - --config
-        - /etc/koo/cfg/config.yaml
+        - /etc/koo/cfg/config.yml
         command:
         - /manager
         env:
@@ -125,7 +125,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: koobind/manager:0.0.1
+        image: koobind/manager:X.X.X
         name: manager
         ports:
         - containerPort: 9443
@@ -144,8 +144,6 @@ spec:
           readOnly: true
         - mountPath: /etc/koo/cfg
           name: config
-        - mountPath: /etc/koo/rootCA
-          name: ldapca
       terminationGracePeriodSeconds: 10
       volumes:
       - name: cert
@@ -153,14 +151,8 @@ spec:
           defaultMode: 420
           secretName: webhook-server-cert
       - configMap:
-          items:
-          - key: config.yaml
-            path: config.yaml
           name: mgrconfig
         name: config
-      - configMap:
-          name: mgrldapca
-        name: ldapca
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate

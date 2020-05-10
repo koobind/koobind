@@ -1,19 +1,12 @@
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mgrconfig
   namespace: koo-system
 data:
-  config.yaml: |2
+  config.yml: |2
     logLevel: 0
     adminGroup: "kooadmin"
     providers:
       - name: crdsys
         type: crd
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mgrldapca
-  namespace: koo-system

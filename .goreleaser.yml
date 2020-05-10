@@ -22,6 +22,7 @@ release:
     - glob: koomgr/yaml/crd.yaml
     - glob: koomgr/yaml/rbac.yaml
     - glob: koomgr/yaml/pod/deploy.yaml
+    - glob: sample/configs/mgrconfig-basic.yaml
 
 archives:
 - files:

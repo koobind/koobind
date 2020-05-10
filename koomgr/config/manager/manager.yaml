@@ -26,13 +26,11 @@ spec:
       - name: manager
         command:
         - /manager
-        args: ["--namespace", "$(KOO_NAMESPACE)", "--config", "/etc/koo/cfg/config.yaml"]
+        args: ["--namespace", "$(KOO_NAMESPACE)", "--config", "/etc/koo/cfg/config.yml"]
         image: controller:latest
         volumeMounts:
           - name: config
             mountPath: /etc/koo/cfg
-          - name: ldaprootcas
-            mountPath: /etc/koo/rootCA
         env:
         - name: KOO_NAMESPACE
           valueFrom:
@@ -48,11 +46,5 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: koomgr
-            items:
-              - key: config.yaml
-                path: config.yaml
-        - name: ldaprootcas
-          configMap:
-            name: ldaprootcas
+            name: mgrconfig
       terminationGracePeriodSeconds: 10

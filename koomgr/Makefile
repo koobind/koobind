@@ -59,12 +59,12 @@ yamlpod: crd rbac
 
 deploypod: yamlpod
 	kubectl apply -f yaml/crd.yaml
-	kubectl apply -f yaml/rbac.yaml
 	kubectl apply -f yaml/pod/deploy.yaml
+	kubectl apply -f yaml/rbac.yaml
 
 undeploypod: yamlpod
-	-kubectl delete -f yaml/pod/deploy.yaml
 	kubectl delete -f yaml/rbac.yaml
+	-kubectl delete -f yaml/pod/deploy.yaml
 	kubectl delete -f yaml/crd.yaml
 
 
