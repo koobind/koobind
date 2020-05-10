@@ -2,11 +2,22 @@
 
 [Back](../README.md)
 
-The process described here will install koobind in a simple case, with only a first identity provider based on CRD.
+The process described here will install `Koobind` in a simple case, with only a first identity provider based on CRD.
 
 Once this first step is completed, you will be able to easily add one (or several) LDAP/AD identity provider. 
 
-## Manifest Deployment
+> If Ansible is in your familiar toolset to manage your Kubernetes cluster, you may find an alternate installation process [here](./ansible.md)  
+
+## Prerequisite
+
+To install `koobind`, you will need to have full admin rights on the target cluster. This means:
+
+- An access with kubectl using a fully proviledged service account.
+- Root access on nodes hosting the Kubernetes API server.
+
+Also, `koobind` make use of 'certificate manager' to generate its certificate. Install it if not already present. 
+
+## Manifest deployment
 
 First step is to deploy some Kubernetes manifests:
  
@@ -18,12 +29,16 @@ kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/<release>/koo
 
 Where `<release>` should be replaced by the latest appropriate [release value](https://github.com/koobind/koobind/releases)
 
+Note all deployment will occur inside the namespace `koo-system`
+
+## Simple configuration
+
+
+
 Then you will need to deploy the initial configuration, as a configMap
 ```
 kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/sample/simpleconf.yaml
 ``` 
-
-Note all deployment will occur inside the namespace `koo-system`
 
 At this step, the koo-manager pod should be running:
 
@@ -36,6 +51,8 @@ And the logs should not mention any errors:
 ```
 kubectl -n koo-system logs koo-manager-XXXXXXX
 ```
+
+
 
 # Endpoints
 
