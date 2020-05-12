@@ -1,0 +1,29 @@
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: clusteradmin
+  namespace: koo-system
+spec:
+  description: Cluster administrator group
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: admin-clusteradmin
+  namespace: koo-system
+spec:
+  user: admin
+  group: clusteradmin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: clusteradmin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: Group
+    name: clusteradmin

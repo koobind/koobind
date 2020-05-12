@@ -1,6 +1,6 @@
 # KOOBIND
 
-`Koobind` is a Kubernetes extension focused on user authentication.
+**Koobind** is a Kubernetes extension focused on user authentication.
 
 It can authenticate users in a fully autonomous way, or can leverage one or several LDAP identity providers such as OpenLDAP or ActiveDirectory.
 
@@ -10,13 +10,24 @@ One main feature is its ability to **merge result from several identity provider
 
 Another main advantage is it **only require a ReadOnly access to the LDAP/AD server(s)**. User profile can then be enriched with local information.
 
+## Some WARNINGS
+
+**This extension should be considered as Alpha release, still immature and under development. Use it at your own risk.**
+
+And of course, all contribution are welcome.
+
+Also, I would like to apologise for the poor English of this documentation. On this topic also, contribution will be appreciated.
+
 ## Index
 
 - [Overview](#overview)
 - [Installation](docs/installation.md)
-- [Identity provider merging]
+  - [Ansible installation](docs/ansible.md)
+- [kubectl extension usage](doc/koocli.md)
+- [Identity provider association](doc/identityproviders.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
-- [Configuration reference]
+- [Configuration reference](doc/reference)
+- [Project build](doc/build.md)
 
 ## Overview
 
@@ -32,10 +43,11 @@ This involves the following components:
 ![](docs/draw/koo1-Overview.jpg) 
 
 - kubectl and Kubernetes API server are usual Kubernetes components.
-- koocli is a kubectl plugin, providing a seamless user interaction.
-- koo-manager is a pod running in Kubernetes and handling both requests from koocli and from the API Server. It also handle the logic to merge information from several Identity Providers.
+- kubectl-koo is a kubectl plugin, providing a seamless user interaction.
+- koo-manager is a pod running in Kubernetes and handling both requests from kubectl-koo and from the API Server. It also handles the logic to merge information from several Identity Providers.
 
 Curently two kind of identity providers are supported:
+
 - External LDAP server(s)
 - CRD (Custom Resources Definition) based directory, stored in Kubernetes. 
 

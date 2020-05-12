@@ -6,7 +6,7 @@ before:
     - cd koocli && go mod download && go generate ./...
 builds:
 - id: koocli
-  binary: koocli
+  binary: kubectl-koo
   dir: koocli
   env:
   - CGO_ENABLED=0
@@ -22,7 +22,7 @@ release:
     - glob: koomgr/yaml/crd.yaml
     - glob: koomgr/yaml/rbac.yaml
     - glob: koomgr/yaml/pod/deploy.yaml
-    - glob: sample/configs/mgrconfig-basic.yaml
+    - glob: samples/configs/mgrconfig-basic.yaml
 
 archives:
 - files:

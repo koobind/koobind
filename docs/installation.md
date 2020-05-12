@@ -1,6 +1,5 @@
-# Koobind installation
 
-[Back](../README.md)
+# Koobind installation
 
 The process described here will install `Koobind` in a simple case, with only a first identity provider based on CRD.
 
@@ -8,59 +7,393 @@ Once this first step is completed, you will be able to easily add one (or severa
 
 > If Ansible is in your familiar toolset to manage your Kubernetes cluster, you may find an alternate installation process [here](./ansible.md)  
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Index**
+
+- [Prerequisite](#prerequisite)
+- [Manifest deployment](#manifest-deployment)
+- [Endpoints and certificates](#endpoints-and-certificates)
+  - [Fetch the Certificate Authority](#fetch-the-certificate-authority)
+- [API Server configuration](#api-server-configuration)
+  - [Troubleshooting](#troubleshooting)
+- [kubectl plugin installation](#kubectl-plugin-installation)
+- [kubectl plugin configuration](#kubectl-plugin-configuration)
+  - [Kubeconfig file location](#kubeconfig-file-location)
+- [Setup users](#setup-users)
+- [Validate installation](#validate-installation)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Prerequisite
 
 To install `koobind`, you will need to have full admin rights on the target cluster. This means:
 
-- An access with kubectl using a fully proviledged service account.
+- An access with `kubectl` or equivalent using a fully privileged service account.
 - Root access on nodes hosting the Kubernetes API server.
 
-Also, `koobind` make use of 'certificate manager' to generate its certificate. Install it if not already present. 
+Also, `koobind` make use of [certificate manager](https://github.com/jetstack/cert-manager) to generate its certificate. Install it if not already present. 
 
 ## Manifest deployment
 
 First step is to deploy some Kubernetes manifests:
  
 ```
-kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/<release>/koomgr/yaml/crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/<release>/koomgr/yaml/pod/deploy.yaml
-kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/<release>/koomgr/yaml/rbac.yaml
+$ kubectl apply -f https://github.com/koobind/koobind/releases/download/<release>/crd.yaml
+$ kubectl apply -f https://github.com/koobind/koobind/releases/download/<release>/deploy.yaml
+$ kubectl apply -f https://github.com/koobind/koobind/releases/download/<release>/rbac.yaml
 ```
+Where `<release>` should be replaced by the one of the [release value](https://github.com/koobind/koobind/releases)
 
-Where `<release>` should be replaced by the latest appropriate [release value](https://github.com/koobind/koobind/releases)
+Then you will need to deploy the initial basic configuration (This is a configMap)
+
+```
+$ kubectl apply -f https://github.com/koobind/koobind/releases/download/<release>/mgrconfig-basic.yaml
+```
 
 Note all deployment will occur inside the namespace `koo-system`
-
-## Simple configuration
-
-
-
-Then you will need to deploy the initial configuration, as a configMap
-```
-kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/sample/simpleconf.yaml
-``` 
 
 At this step, the koo-manager pod should be running:
 
 ```
-kubectl -n koo-system get pod
+$ kubectl -n koo-system get pods
+NAME                           READY   STATUS    RESTARTS   AGE
+koo-manager-568cc546d8-6drcq   1/1     Running   0          4m19s
 ```
+
+> It may take some time to reach this state.
 
 And the logs should not mention any errors:
 
 ```
-kubectl -n koo-system logs koo-manager-XXXXXXX
+$ kubectl -n koo-system logs koo-manager-XXXXXXX
+{"level":"info","ts":1589127827.0832849,"logger":"providerChain","msg":"Setup provider","provider":"crdsys"}
+{"level":"info","ts":1589127827.0833528,"logger":"setup","msg":"Namespaces","kubeClient":["koo-system"],"webhook":["koo-system"]}
+{"level":"info","ts":1589127827.6812227,"logger":"controller-runtime.builder","msg":"Registering a mutating webhook","GVK":"directory.koobind.io/v1alpha1, Kind=User","path":"/mutate-directory-koobind-io-v1alpha1-user"}
+...
+{"level":"info","ts":1589127827.7838104,"logger":"auth.certwatcher","msg":"Starting certificate watcher"}
+{"level":"info","ts":1589127827.7844315,"logger":"controller-runtime.webhook","msg":"serving webhook server","host":"","port":8443}
+{"level":"info","ts":1589127827.7847195,"logger":"controller-runtime.certwatcher","msg":"Starting certificate watcher"}
+{"level":"info","ts":1589127827.784754,"logger":"Auth server","msg":"serving Auth server","host":"","port":8444}
 ```
 
+## Endpoints and certificates
+
+Here is a more detailled overview of the moving parts:
+
+![](./draw/koo1-Installation1.jpg) 
+
+`Koobind` parts are in grey. All dotted items are still to be installed at this stage.
+
+As you can see, `koo-manager` offer two endpoints:
+
+| Name           | Type    | FQDN                             |Target port|Service port| Access                                |
+| -------------- | ------  | -------------------------------- | --------- | ---------- | ------------------------------------- |
+|Webhook Endpoint|ClusterIP|koo-webhook-service.koo-system.svc|8443       |443         |From API Server. Internal to cluster   |
+|Auth Endpoint   |NodePort |One or several Cluster nodes      |8444       |31444       |From `kubectl-koo`. External to cluster|
+
+As these endpoints use HTTPS/SSL, a certificate must be provided. And this certificate must be issued by a CA (Certificate Authority) trusted by the clients.
+
+This is defined by the `deploy.yaml` manifest, the following way:
+
+- Certificate are handled by the `certificate manager` kubernetes extension
+- Both endoints use the same certificate
+- A specific self-signed CA is created.
+
+> Of course, these are default choices, and could be adjusted for differents need, by providing an alternate `deploy.yaml`
+
+But, there is a point here which need adjustement depending of your configuration: `kubectl-koo` will access the Auth endpoint by targeting one node of the cluster. 
+So, the FQDN of this node must be included in the certificate.
+
+Cut/Paste the following to create a manifest for this certificate definition:
+
+```yaml
+cat >./patchcert <<EOF
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: koo-serving-cert
+  namespace: koo-system
+spec:
+  dnsNames:
+  - koo-webhook-service.koo-system.svc
+  - koo-webhook-service.koo-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: koo-selfsigned-issuer
+  secretName: webhook-server-cert
+EOF
+```
+
+> This definition is extracted from the `deploy.yaml` manifest.
+
+Now edit this file by adding one or several entries in `dnsNames:`, corresponding to the FQDN of some of your cluster nodes:   
+
+```yaml
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: koo-serving-cert
+  namespace: koo-system
+spec:
+  dnsNames:
+  - koo-webhook-service.koo-system.svc
+  - koo-webhook-service.koo-system.svc.cluster.local
+  - node1.mycluster.mycompany.com
+  - node2.mycluster.mycompany.com
+  issuerRef:
+    kind: Issuer
+    name: koo-selfsigned-issuer
+  secretName: webhook-server-cert
+```
+
+We suggest you provide several nodes, thus providing alternate choice when a node is down.
+
+> A more sophisticated and robust deployment will use a load balancer in front of the Auth endpoint.
+
+Then, you must apply your new certificate definition:
+
+```
+$ kubectl apply -f patchcert.yaml
+```
+
+If you look again to the logs of koo-manager, you should see some message about certificate update:
+
+```
+$ kubectl -n koo-system logs koo-manager-XXXXXXXXXXXXXXX
+{"level":"info","ts":1589127827.0832849,"logger":"providerChain","msg":"Setup provider","provider":"crdsys"}
+....
+{"level":"info","ts":1589127827.7844315,"logger":"controller-runtime.webhook","msg":"serving webhook server","host":"","port":8443}
+{"level":"info","ts":1589127827.7847195,"logger":"controller-runtime.certwatcher","msg":"Starting certificate watcher"}
+{"level":"info","ts":1589127827.784754,"logger":"Auth server","msg":"serving Auth server","host":"","port":8444}
+{"level":"info","ts":1589191649.853247,"logger":"auth.certwatcher","msg":"Updated current TLS certificate"}
+{"level":"info","ts":1589191649.8533354,"logger":"controller-runtime.certwatcher","msg":"Updated current TLS certificate"}
+{"level":"info","ts":1589191649.8539522,"logger":"auth.certwatcher","msg":"Updated current TLS certificate"}
+{"level":"info","ts":1589191649.854047,"logger":"controller-runtime.certwatcher","msg":"Updated current TLS certificate"}
+```
+
+### Fetch the Certificate Authority
+
+Now, you must retrieve the CA which issued this certificate, to provide it to client. 
+
+This can be performed by issuing the following command:
+
+```
+$ kubectl -n koo-system get secret webhook-server-cert -o=jsonpath='{.data.ca\.crt}' | base64 -d >koomgr-ca.crt
+```
+
+The result should look like this:
+
+```
+$ cat koomgr-ca.crt
+-----BEGIN CERTIFICATE-----
+MIIDWTCCAkGgAwIBAgIQdBEXl09/Mbfie4u9ufhiwTANBgkqhkiG9w0BAQsFADAX
+MRUwEwYDVQQKEwxjZXJ0LW1hbmFnZXIwHhcNMjAwNTExMTAwNzI5WhcNMjAwODA5
+.....
+V+oVL8dONYzrDqEWn/QW8lllNF8n0Ad3lqbWFjHdWAa0w3JVRxGZ4LWDF7REgwWN
+n/901mrWtCEiMcSkReAmZrJ9S20kgDilKTA+24zkspzAubSu0OfH3I660/CK
+-----END CERTIFICATE-----
+```
+
+## API Server configuration
+
+As depicted on the previous schema, we must now configure the Authentication Webhook of the API server.
+
+Must of the API Server Webhooks can be configured by deploying appropriate manifests. This is how our Validating webhook is setup, by `deploy.yaml`. 
+But, unfortunatly, there is an exception for Authenticating Webhook, which must be deployed manually.
+
+Depending of your installation, the directory mentioned here may differs. 
+Also, this procedure assume the API Server is managed by the Kubelet, as a static Pod. If your API Server is managed by another system (i.e. systemd), you should adapt accordingly.
+
+The following operations must be performed on all nodes hosting an instance of API server, as `root`. Typically, all nodes of the control plane.
+
+First, create a folder dedicated to `Koobind`:
+
+```
+# mkdir /etc/kubernetes/koo
+```
+
+Then, create the Authentication webhook configuration file in this folder (You can cut/paste the following):
+
+```
+cat >/etc/kubernetes/koo/hookconfig.yaml <<EOF
+apiVersion: v1
+kind: Config
+# clusters refers to the remote service.
+clusters:
+  - name: koomgr
+    cluster:
+      certificate-authority: /etc/kubernetes/koo/koomgr-ca.crt        # CA for verifying the remote service.
+      server: https://koo-webhook-service.koo-system.svc:443/auth/v1/validateToken # URL of remote service to query. Must use 'https'.
+
+# users refers to the API server's webhook configuration.
+users:
+  - name: kooapisrv
+
+# kubeconfig files require a context. Provide one for the API server.
+current-context: authwebhook
+contexts:
+- context:
+    cluster: koomgr
+    user: kooapisrv
+  name: authwebhook
+EOF
+```
+
+As you can see in this file, there is a reference to the CA file we fetch previously. So, you must copy this file to this location:
+
+```
+# ls -l /etc/kubernetes/koo
+total 8
+-rw-r--r--. 1 root root  620 May 11 12:36 hookconfig.yaml
+-rw-r--r--. 1 root root 1220 May 11 12:58 koomgr-ca.crt
+```
+
+Now, you must edit the API server manifest file (`/etc/kubernetes/manifests/kube-apiserver.yaml`) to load the `hookconfig.yaml` file:
+
+```
+# vi /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+
+First step is to add two flags to the kube-apiserver command line:
+
+- `--authentication-token-webhook-cache-ttl`: How long to cache authentication decisions.
+- `--authentication-token-webhook-config-file`: The path to the configuration file we just setup
+
+Here is what it should look like: 
+
+```
+...
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --authentication-token-webhook-cache-ttl=30s
+    - --authentication-token-webhook-config-file=/etc/kubernetes/koo/hookconfig.yaml
+    - --advertise-address=192.168.33.16
+    - --allow-privileged=true
+    - --anonymous-auth=True
+...
+```
+
+And the second step will consists to map the node folder `/etc/kubernetes/koo` inside the API server pod, under the same path. 
+This is required as these files are accessed in the API Server container context.
+
+For this, a new `volumeMounts` entry should be added:
+
+```
+    volumeMounts:
+    - mountPath: /etc/kubernetes/koo
+      name: koo-config
+    - mountPath: ....
+```
+
+And a corresponding new `volumes`  entry:
+
+```
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/koo
+      type: ""
+    name: koo-config
+  - hostPath:
+  ....
+```
+ 
+This complete the API Server configuration. Saving the edited file will trigger a restart of the API Server.
+
+For more information, the kubernetes documentation on this topic is [here](https://kubernetes.io/docs/reference/access-authn-authz/webhook/) 
+
+### Troubleshooting
+
+A small typo or incoherence in configuration may lead to API Server unable to restart. 
+If this is the case, you may have a look in the logs of the Kubelet (Remember, as a static pod, the API Server is managed by the Kubelet) in order to figure out what'is happen.
+
+If you made a modification in this the `hookconfig.yaml` file, or if you update the CA file, you may think you will need to restart the API Server to reload the configuration. 
+Unfortunately, this may not be sufficient. API Server may restart with the old configuration. 
+
+The only way to trigger an effective reload is to modify the `/etc/kubernetes/manifests/kube-apiserver.yaml` file. 
+And you will need a real modification. Touch may not be enough. A common trick here is to modify slightly `the authentication-token-webhook-cache-ttl` flag value.
+
+## kubectl plugin installation
+
+Installation of the client part is quite simple. As a kubectl extension, the client executable must be in your path, with a specific naming 
+convention: its name must begin by `kubectl-`. `kubectl-koo` in our case.
+
+Several client implementation are provided depending of your architecture. Below installation example is for Linux
+
+```
+cd /tmp
+wget https://github.com/koobind/koobind/releases/download/<release>/koocli_<release>_Linux_x86_64.tar.gz
+tar tvzf koocli_<release>_Linux_x86_64.tar.gz
+mv kubectl-koo /user/local/bin
+```
+
+More information on this [here](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/)
+
+## kubectl plugin configuration
+
+As it will connect to the `koo-manager`, the client will need to access the CA file we fetched previously. Here, we will copy it in a dedicated location:
+
+```
+$ mkdir -p /etc/koobind/certs
+$ cp .../koomgr-ca.crt  /etc/koobind/certs/
+```
+
+Then, the `kubeconfig` file must be created:
+
+```
+cat >/etc/koobind/kubeconfig <<EOF
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJU.......EUtLS0tLQo=   # <--- To copy from another kubeconfig
+    server: https://192.168.33.39:6443                                   # <--- To copy from another kubeconfig
+  name: mycluster.local
+contexts:
+- context:
+    cluster: mycluster.local
+    user: koo-user
+  name: koo@mycluster.local
+current-context: koo@mycluster.local
+kind: Config
+preferences: {}
+users:
+- name: koo-user
+  user:
+    exec: 
+      apiVersion: "client.authentication.k8s.io/v1beta1"
+      command: kubectl-koo
+      args:
+      - auth 
+      - --server=https://node1.mycluster.mycompany.com:31444    # <---- Adjust FQDN to one of your node you included in the certificate
+      - --rootCaFile=/etc/koobind/certs/koomgr-ca.crt           
+EOF
+```
+
+In this file, three parts must be adjusted:
+
+- `cluster.certificate-authority-data` and `cluster.server` values must be cut/pasted from another kubeconfig file targeting your cluster
+- `--server=` url must be adjusted to target one of the node of the cluster among the ones provided in the certificate.
+
+### Kubeconfig file location
+
+Note this kubeconfig file is generic. It does not host any user information. As such, it can be shared by all users of an administration node.
+
+For this, each user will need to set its environment with the following variable;
+
+```
+export KUBECONFIG=/etc/koobind/kubeconfig
+```
+
+This may be set in a shared init file, such as `/etc/bashrc` or `/etc/profile`
+
+As an alternate solution, this `kubeconfig` file can be put in the default, user specific location: `~/.kube/config`
+
+## Setup users
 
 
-# Endpoints
+## Validate installation
 
-
-
-# Next step
-
-To test this initial installation, we now suggest you create a first user and group, allowed to deploy a sample 'hello Kubernetes' application in a dedicated namespace.
-
-
-[Back](../README.md)
