@@ -10,7 +10,7 @@ One main feature is its ability to **merge result from several identity provider
 
 Another main advantage is it **only require a ReadOnly access to the LDAP/AD server(s)**. User profile can then be enriched with local information.
 
-## Some WARNINGS
+## Warning
 
 **This extension should be considered as Alpha release, still immature and under development. Use it at your own risk.**
 
@@ -23,11 +23,13 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Overview](#overview)
 - [Installation](docs/installation.md)
   - [Ansible installation](docs/ansible.md)
-- [kubectl extension usage](doc/koocli.md)
-- [Identity provider association](doc/identityproviders.md)
+- [LDAP configuration](docs/ldap.md)
+- [Identity provider association](docs/idproviders.md)
+- [kubectl extension usage](docs/koocli.md)
+- [Directory resources reference](docs/dirref.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
-- [Configuration reference](doc/reference)
-- [Project build](doc/build.md)
+- [Configuration reference](docs/reference)
+- [Project build](docs/build.md)
 
 ## Overview
 
