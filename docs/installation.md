@@ -5,7 +5,9 @@ The process described here will install `Koobind` in a simple case, with only a 
 
 Once this first step is completed, you will be able to easily add one (or several) LDAP/AD identity provider. 
 
-> If Ansible is in your familiar toolset to manage your Kubernetes cluster, you may find an alternate installation process [here](./ansible.md)  
+> If Ansible is in your familiar toolset to manage your Kubernetes cluster, you may find an alternate installation process [here](./ansible.md)
+
+Also, note this procedure has been developed on 'vanilla' Kubernetes cluster, build by [kubespray](https://github.com/kubernetes-sigs/kubespray). You may have to adapt it, depending of your configuration.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -20,8 +22,8 @@ Once this first step is completed, you will be able to easily add one (or severa
 - [kubectl plugin installation](#kubectl-plugin-installation)
 - [kubectl plugin configuration](#kubectl-plugin-configuration)
   - [Kubeconfig file location](#kubeconfig-file-location)
-- [Setup users](#setup-users)
-- [Validate installation](#validate-installation)
+- [Users creation](#users-creation)
+- [Installation validation](#installation-validation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -414,7 +416,7 @@ $ cp /etc/koobind/kubeconfig ~/.kube/config
 
 ## Users creation
 
-Now, we can create a first user to test all the authentication chain. With Koobind, users and groups are Kubernetes ressources as many others. Thus can easily be created by applying manifests. 
+Now, we can create a first user to test all the authentication chain. With `Koobind`, Users and Groups are Kubernetes resources as many others. Thus can easily be created by applying manifests. 
 
 A sample `admin` user manifest is provided. Here is its content:
 
@@ -430,11 +432,13 @@ spec:
   passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
 ```
 
-The password is provided as a Hash. Sample value is 'admin' (Koobind provide a tool to generate such hash. See below).
+The password is provided as a Hash. Sample value is 'admin' (`Koobind` provide a tool to generate such hash. See [here](usage.md)).
 
-Apply it. But, for this, you will need to have full access on the cluster.
+But, to apply this manifest, you will need to have full access on the cluster.
+
+> We will assume here that the defaut `~/.kubi/config` file provide full cluster admin access.
+
 So, if you have set the KUBECONFIG env variable as described previously, clear it.
-We assume here that the defaut `~/.kubi/config` file provide full cluster admin access.
 
 ```
 $ export KUBECONFIG=
@@ -449,7 +453,7 @@ admin   Koo ADMIN
 
 ## Installation validation
 
-Now, you can try to log with the Koobind authentication mechanism:
+Now, you can try to log with the `Koobind` authentication mechanism:
 
 ```
 $ export KUBECONFIG=/etc/koobind/kubeconfig
@@ -460,18 +464,19 @@ logged successfully..
 Error from server (Forbidden): nodes is forbidden: User "admin" cannot list resource "nodes" in API group "" at the cluster scope
 ```
 
-> Remember: Password is 'admin'
+> Remember: Password is 'admin'. See the [usage](usage.md) section to change it.
 
 If you got such message, everything is ok. Authentication was successful. Of course, create a user does not grant it any rights, so the error message. 
 
-Beside handling authentication, the koobind plugin provide several subcommands, which can be accessed by the 'koo' prefix. For example:  
+Beside handling authentication, the `koobind` plugin provide several subcommands, which can be accessed by the `koo` prefix. For example:  
 
 ```
+$ export KUBECONFIG=/etc/koobind/kubeconfig
 $ kubectl koo whoami
 user:admin  id:  groups:
 ```
 
-Description of such subcommand [here](koocli.md)
+Description of these subcommands can be found [here](usage.md)
 
 But currently this user, despite his name, can't administrate anything, as there is no role associated.
 
@@ -485,6 +490,7 @@ of this procedure and allow full access to the `token.koobind.io` API Group in t
 - Include the user `admin` the the group `kooadmin`.
 
 ```
+$ export KUBECONFIG=
 $ kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/master/samples/kooadmin.yaml
 group.directory.koobind.io/kooadmin created
 rolebinding.rbac.authorization.k8s.io/koo-directory-editor-kooadmin created
@@ -492,6 +498,80 @@ rolebinding.rbac.authorization.k8s.io/koo-token-editor-kooadmin created
 groupbinding.directory.koobind.io/admin-kooadmin created
 ```
 
+Of course, one must logout for the new mapping to be effective
 
+```
+$ export KUBECONFIG=/etc/koobind/kubeconfig
+$ kubectl koo logout
+Bye!
+```
 
+> `logout` is another Koobind subcommand
+
+Admin user can now access all resources in the `koo-system` namespace:
+
+```
+$ kubectl -n koo-system get user
+Login:admin
+Password:
+logged successfully..
+NAME    COMMON NAME   EMAIL   UID   COMMENT   DISABLED
+admin   Koo ADMIN
+
+$ kubectl -n koo-system get groupbinding
+NAME             USER    GROUP      DISABLED
+admin-kooadmin   admin   kooadmin
+
+$ kubectl -n koo-system get group
+NAME       DESCRIPTION                   DISABLED
+kooadmin   Koobind administrator group
+```
+
+But our `admin` user perimeter is still limited to `Koobind` resources: 
+
+```
+$ kubectl get pods --all-namespaces
+Error from server (Forbidden): pods is forbidden: User "admin" cannot list resource "pods" in API group "" at the cluster scope
+```
+
+To make it a full, cluster wide, administrator, with all privileges, you can apply the following manifest:
  
+```
+$ export KUBECONFIG=
+$ kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/master/samples/clusteradmin.yaml
+group.directory.koobind.io/clusteradmin created
+groupbinding.directory.koobind.io/admin-clusteradmin created
+clusterrolebinding.rbac.authorization.k8s.io/clusteradmin created
+```
+
+This will:
+
+- Create the group `clusteradmin`
+- Include our User `admin` to this Group.
+- Associate the ClusterRole `cluster-admin` to this Group.
+
+> The `cluster-admin` ClusterRole was defined at the cluster creation in our case. May be, depending of your configuration, you will need to adapt this.
+
+Now, our `admin` user should be able to do everythings on this cluster:
+
+```
+$ export KUBECONFIG=/etc/koobind/kubeconfig
+$ kubectl koo logout
+Bye!
+$ kubectl get pods --all-namespaces
+Login:admin
+Password:
+logged successfully..
+NAMESPACE        NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager     cert-manager-6f578f4565-n5k8l              1/1     Running   9          55d
+cert-manager     cert-manager-cainjector-75b6bc7b8b-rfsvn   1/1     Running   24         18d
+cert-manager     cert-manager-webhook-8444c4bc77-c62sv      1/1     Running   7          55d
+koo-system       koo-manager-568cc546d8-6drcq               1/1     Running   0          3d16h
+kube-system      calico-kube-controllers-db4bb4bd8-flp87    1/1     Running   7          55d
+kube-system      calico-node-7pm4n                          1/1     Running   7          55d
+kube-system      coredns-58687784f9-cn7jw                   1/1     Running   7          55d
+kube-system      kube-apiserver-kspray1                     1/1     Running   0          36h
+....
+```
+
+

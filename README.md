@@ -23,12 +23,12 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Overview](#overview)
 - [Installation](docs/installation.md)
   - [Ansible installation](docs/ansible.md)
+- [Usage](docs/usage.md)
 - [LDAP configuration](docs/ldap.md)
 - [Identity provider association](docs/idproviders.md)
-- [kubectl extension usage](docs/koocli.md)
 - [Directory resources reference](docs/dirref.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
-- [Configuration reference](docs/reference)
+- [Configuration reference](docs/config.md)
 - [Project build](docs/build.md)
 
 ## Overview
