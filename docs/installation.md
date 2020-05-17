@@ -547,12 +547,12 @@ clusterrolebinding.rbac.authorization.k8s.io/clusteradmin created
 This will:
 
 - Create the group `clusteradmin`
-- Include our User `admin` to this Group.
 - Associate the ClusterRole `cluster-admin` to this Group.
+- Include our User `admin` to this Group.
 
 > The `cluster-admin` ClusterRole was defined at the cluster creation in our case. May be, depending of your configuration, you will need to adapt this.
 
-Now, our `admin` user should be able to do everythings on this cluster:
+Now, our `admin` user should be able to do everything on this cluster:
 
 ```
 $ export KUBECONFIG=/etc/koobind/kubeconfig
@@ -574,4 +574,5 @@ kube-system      kube-apiserver-kspray1                     1/1     Running   0 
 ....
 ```
 
+You can now move on [usage](usage.md) of `Koobind`...
 

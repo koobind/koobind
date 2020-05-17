@@ -1,0 +1,36 @@
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: User
+metadata:
+  name: jsmith
+  namespace: koo-system
+spec:
+  commonName: John SMITH
+  passwordHash: $2a$10$qumINdiGJIM1si2wi8ceDOczChq2twfDEDa6DR7jiYL8rJNzeYtmu
+  email: jsmith@mycompany.com
+  uid: 100001
+  comment: A sample user
+  disabled: no
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: devs
+  namespace: koo-system
+spec:
+  description: All developpers
+  disabled: no
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: jsmith-devs
+  namespace: koo-system
+spec:
+  user: jsmith
+  group: devs
+  disabled: no
+
+
+
+

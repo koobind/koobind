@@ -26,7 +26,6 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Usage](docs/usage.md)
 - [LDAP configuration](docs/ldap.md)
 - [Identity provider association](docs/idproviders.md)
-- [Directory resources reference](docs/dirref.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
 - [Configuration reference](docs/config.md)
 - [Project build](docs/build.md)
@@ -53,3 +52,9 @@ Curently two kind of identity providers are supported:
 - External LDAP server(s)
 - CRD (Custom Resources Definition) based directory, stored in Kubernetes. 
 
+From the Kubernetes point of view, `Koobind` must just answer two questions:
+
+- Is this user successfully authenticated?
+- What is the list of groups it belong to?
+
+Based on this, the Kubernetes RBAC system will be able to allow or denied the requested operation.
