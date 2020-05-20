@@ -29,7 +29,7 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Configuration](docs/configuration.md)
 - [LDAP configuration](docs/ldap.md)
 - [Identity provider chaining](docs/providerchain.md)
-- [Token lifecycle](docs/tokenlifecycle.md)
+- [Token sequences](docs/tokensequences.md)
 
 ## Overview
 
