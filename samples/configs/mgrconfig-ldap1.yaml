@@ -18,6 +18,7 @@ data:
           filter: (objectClass=inetOrgPerson)
           loginAttr: uid
           numericalIdAttr: uidNumber
+          cnAttr: cn
         groupSearch:
           baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
           filter: (objectClass=posixgroup)

@@ -77,7 +77,7 @@ But such configuration should never be used in a production context, as they are
 - The 8 first parameters are common to all Identity providers.
 - (1): 389 if insecureNoSSL, 636 otherwise.
 - (2) rootCA and rootCAData are exclusive. The goal is to provide the CA who issued the LDAP server certificate. By providing a file (rootCA) or by   
-- (3) The filter for group/user relationship will be: (<linkGroupAttr>=<Value of LinkUserAttr for the user>). If there is several value for LinkUserAttr, will loop on.
+- (3) The filter for group/user relationship will be: `<linkGroupAttr>=<Value of LinkUserAttr for the user>`. If there is several values for LinkUserAttr, system will loop on.
 
 ## Sample configurations
 
@@ -100,6 +100,7 @@ providers:
       filter: (objectClass=inetOrgPerson)
       loginAttr: uid
       numericalIdAttr: uidNumber
+      cnAttr: cn
     groupSearch:
       baseDN: cn=groups,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
       filter: (objectClass=posixgroup)
@@ -108,7 +109,35 @@ providers:
       nameAttr: cn
 ```
 
-Note there is no insecureNoSSL nor insecureSkipVerify parameters. This means we want to have a secure connection and enforce certificate validation. 
+And another sample, here aimed to access an OpenLDAP server:
+
+```
+logLevel: 0
+adminGroup: "kooadmin"
+providers:
+  - name: ldap1
+    type: ldap
+    host: ldap1
+    port: 636
+    bindDN: cn=Manager,dc=vgr,dc=broadsoftware,dc=com
+    bindPW: LdapAdmin
+    rootCA: /etc/koo/cfg/ldap1-ca1.crt
+    userSearch:
+      baseDN: ou=Users,dc=vgr,dc=broadsoftware,dc=com
+      filter: (objectClass=inetOrgPerson)
+      loginAttr: uid
+      emailAttr: mail
+      numericalIdAttr: uidNumber
+      cnAttr: cn
+    groupSearch:
+      baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
+      filter: (objectClass=posixgroup)
+      nameAttr: cn
+      linkGroupAttr: memberUid
+      linkUserAttr: uid
+```
+
+Note there is no `insecureNoSSL` nor `insecureSkipVerify` parameters. This means we want to have a secure connection and enforce certificate validation. 
 So, we must provide the CA of this server certificate.
 
 For this, the `rootCA` parameters target the `/etc/koo/cfg` folder, which is mapped to the `mgrconfig` configMap (See [Configuration](configuration.md)). 
@@ -133,7 +162,7 @@ $ kubectl -n koo-system delete configmap mgrconfig   # Need to delete previous i
 $ kubectl create configmap mgrconfig -n koo-system --from-file=./ipa1/ 
 ```
 
-Of course, you will need to delete the `koo-manager` pod for the configuration to be effective.
+Of course, you will need to delete the `koo-manager` pod for the deployment to restart it and the configuration to be effective.
 
 An alternate solution could be to generate an intermediate file:
  

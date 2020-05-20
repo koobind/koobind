@@ -141,6 +141,11 @@ Now, if we want to test this new user, we need to logout first. For this, there 
 ```
 $ kubectl koo logout
 Bye!
+```
+
+Now, we can try our new user:
+
+```
 $ kubectl -n koo-system get users
 Login:jsmith
 Password:
@@ -148,7 +153,7 @@ logged successfully..
 Error from server (Forbidden): users.directory.koobind.io is forbidden: User "jsmith" cannot list resource "users" in API group "directory.koobind.io" in the namespace "koo-system"
 ```
 
-Of course, this user is not allowed to perform the requested operation. 
+(Of course, this user is not allowed to perform the requested operation.) 
 
 An alternate solution is to explicitly login using the `koo login` subcommand:
 

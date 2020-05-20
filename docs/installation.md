@@ -82,11 +82,11 @@ $ kubectl -n koo-system logs koo-manager-XXXXXXX
 
 ## Endpoints and certificates
 
-Here is a more detailled overview of the moving parts:
+Here is a more detailled overview of the `koobind` components (In grey): 
 
 ![](./draw/koo1-Installation1.jpg) 
 
-`Koobind` parts are in grey. All dotted items are still to be installed at this stage.
+All dotted items are still to be installed at this stage.
 
 As you can see, `koo-manager` offer two endpoints:
 
@@ -208,9 +208,9 @@ But, unfortunatly, there is an exception for Authenticating Webhook, which must 
 Depending of your installation, the directory mentioned below may differs. 
 Also, this procedure assume the API Server is managed by the Kubelet, as a static Pod. If your API Server is managed by another system (i.e. systemd), you should adapt accordingly.
 
-The following operations must be performed on all nodes hosting an instance of API server`. Typically, all nodes of the control plane.
+The following operations must be performed on all nodes hosting an instance of the Kubernetes API server. Typically, all nodes of the control plane.
 
-Also, these operations require `root`access.
+Also, these operations require `root`access on these node.
 
 First, create a folder dedicated to `Koobind`:
 
@@ -290,7 +290,7 @@ For this, a new `volumeMounts` entry should be added:
     volumeMounts:
     - mountPath: /etc/kubernetes/koo
       name: koo-config
-    - mountPath: ....
+    ....
 ```
 
 And a corresponding new `volumes`  entry:
@@ -301,7 +301,6 @@ And a corresponding new `volumes`  entry:
       path: /etc/kubernetes/koo
       type: ""
     name: koo-config
-  - hostPath:
   ....
 ```
 
@@ -330,7 +329,7 @@ And you will need a real modification. Touch may not be enough. A common trick h
 ## kubectl plugin installation
 
 Installation of the client part is quite simple. As a kubectl extension, the client executable must be in your path, with a specific naming 
-convention: its name must begin by `kubectl-`. Will be `kubectl-koo` in our case.
+convention: its name must begin by `kubectl-`. It will be `kubectl-koo` in our case.
 
 Several client implementation are provided depending of your architecture. Below installation example is for Linux.
 
@@ -429,7 +428,7 @@ metadata:
   name: admin
   namespace: koo-system
 spec:
-  commonName: Koobind Administrator
+  commonName: Koo ADMIN
   passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
 ```
 
@@ -577,5 +576,5 @@ kube-system      kube-apiserver-kspray1                     1/1     Running   0 
 ....
 ```
 
-You can now move on [usage](usage.md) of `Koobind`...
+Installation is now completed. You can now move on [usage](usage.md) of `Koobind`...
 

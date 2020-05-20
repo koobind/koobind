@@ -28,7 +28,7 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Usage](docs/usage.md)
 - [Configuration](docs/configuration.md)
 - [LDAP configuration](docs/ldap.md)
-- [Identity provider chaining](docs/idproviders.md)
+- [Identity provider chaining](docs/providerchain.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
 
 ## Overview

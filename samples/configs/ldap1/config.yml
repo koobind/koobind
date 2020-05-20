@@ -15,6 +15,7 @@ providers:
       loginAttr: uid
       emailAttr: mail
       numericalIdAttr: uidNumber
+      cnAttr: cn
     groupSearch:
       baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
       filter: (objectClass=posixgroup)

@@ -19,6 +19,7 @@ data:
           filter: (objectClass=inetOrgPerson)
           loginAttr: uid
           numericalIdAttr: uidNumber
+          cnAttr: cn
         groupSearch:
           baseDN: cn=groups,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
           filter: (objectClass=posixgroup)
@@ -39,6 +40,7 @@ data:
           loginAttr: uid
           emailAttr: mail
           numericalIdAttr: uidNumber
+          cnAttr: cn
         groupSearch:
           baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
           filter: (objectClass=posixgroup)
