@@ -5,7 +5,7 @@
 **Index**
 
   - [Overview](#overview)
-  - [The `koo-manager` container configuration](#the-koo-manager-container-configuration)
+  - [The koo-manager container configuration](#the-koo-manager-container-configuration)
   - [The configMap](#the-configmap)
   - [Global parameters reference](#global-parameters-reference)
 - [The adminGroup](#the-admingroup)
@@ -43,7 +43,7 @@ It can be described in two parts:
 - A set of global parameters (here logLevel and adminGroup)
 - A list of provider, each with its specific coonfiguration.
 
-## The `koo-manager` container configuration
+## The koo-manager container configuration
 
 Here is an extract of the deployment manifest:
 

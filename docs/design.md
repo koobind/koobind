@@ -1,4 +1,4 @@
-# Token sequences
+# Design
 
 Here is a set of sequence diagrams describing interaction between `Koobind` and Kubernetes components: 
 
