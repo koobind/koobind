@@ -38,7 +38,7 @@ type BaseProviderConfig struct {
 	GroupAuthority      *bool  `yaml:"groupAuthority"`      // Group will be fetched. Default true
 	Critical            *bool  `yaml:"critical"`            // If true (default), a failure on this provider will leads 'invalid login'. Even if another provider grants access
 	GroupPattern        string `yaml:"groupPattern"`        // Group pattern. Default "%s"
-	UidOffet            int    `yaml:"uidOffset"`           // Will be added to the returned offset. Default to 0
+	UidOffet            int    `yaml:"uidOffset"`           // Will be added to the returned Uid. Default to 0
 }
 
 func (this *BaseProviderConfig) InitBase(idx int) error {

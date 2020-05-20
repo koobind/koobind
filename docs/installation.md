@@ -13,17 +13,18 @@ Also, note this procedure has been developed on 'vanilla' Kubernetes cluster, bu
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Index**
 
-- [Prerequisite](#prerequisite)
-- [Manifest deployment](#manifest-deployment)
-- [Endpoints and certificates](#endpoints-and-certificates)
-  - [Fetch the Certificate Authority](#fetch-the-certificate-authority)
-- [API Server configuration](#api-server-configuration)
-  - [Troubleshooting](#troubleshooting)
-- [kubectl plugin installation](#kubectl-plugin-installation)
-- [kubectl plugin configuration](#kubectl-plugin-configuration)
-  - [Kubeconfig file location](#kubeconfig-file-location)
-- [Users creation](#users-creation)
-- [Installation validation](#installation-validation)
+  - [Prerequisite](#prerequisite)
+  - [Manifest deployment](#manifest-deployment)
+  - [Endpoints and certificates](#endpoints-and-certificates)
+    - [Fetch the Certificate Authority](#fetch-the-certificate-authority)
+  - [API Server configuration](#api-server-configuration)
+    - [Troubleshooting](#troubleshooting)
+  - [kubectl plugin installation](#kubectl-plugin-installation)
+  - [kubectl plugin configuration](#kubectl-plugin-configuration)
+    - [Kubeconfig file location](#kubeconfig-file-location)
+  - [Users creation](#users-creation)
+  - [Installation validation](#installation-validation)
+- [Admin configuration](#admin-configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -477,6 +478,8 @@ user:admin  id:  groups:
 ```
 
 Description of these subcommands can be found [here](usage.md)
+
+# Admin configuration
 
 But currently this user, despite his name, can't administrate anything, as there is no role associated.
 

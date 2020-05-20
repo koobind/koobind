@@ -63,7 +63,7 @@ spec:
 
 - The user login is the `metadata.name` field value.
 - All `spec.*` attribute are optionals.
-- Namespace must be `koo-system` (This is not 'hard coded'. See [configuration reference](config.md))
+- Namespace must be `koo-system` (This is not 'hard coded'. See [configuration reference](configuration.md))
 - `spec.commonName`, `spec.email`, `spec.uid` and `spec.comment` attributes are for user description, and have no impact on the way this user is handled by `Koobind` and Kubernetes.
 - Setting `spec.disabled` to `True` would make this user unable to login.
 
@@ -241,6 +241,8 @@ $ kubectl koo describe  tokens
  jtaoyzandgoxmsnnybwkfseqbztpfmtg admin     clusteradmin,kooadmin 05-17 11:09:51 11:15:04
 ```
 
+Now, the user `jsmith` will have to log again. (This operation can be required if you modify some user's attribute and want it to be activated immediatly.)
+
 ## Context
 
 When testing authentication/authorization rules, switching back and forth to different users by logout/login can quickly be painful.
@@ -275,7 +277,7 @@ current-context: koo2@mycluster.local
 
 Then, you can open two terminals and set appropriate value in KUBECONFIG environment variable:
 
-On terminal1
+- On terminal1
 
 ```
 $ export KUBECONFIG=/etc/koobind/kubeconfig1
@@ -291,7 +293,7 @@ jsmith   John SMITH    jsmith@mycompany.com   100001   A sample user
 user:admin  id:  groups:clusteradmin,kooadmin
 ```
 
-On terminal 2
+- On terminal 2
 
 ```
 export KUBECONFIG=/etc/koobind/kubeconfig2

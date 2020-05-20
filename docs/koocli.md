@@ -1,1 +1,0 @@
-# Kubectl-koo plugin usage

@@ -1,0 +1,111 @@
+apiVersion: v1
+data:
+  config.yml: |2+
+
+    logLevel: 0
+    adminGroup: "kooadmin"
+    providers:
+
+      - name: ipa1
+        type: ldap
+        host: ipa1.vgr.broadsoftware.com
+        port: 636
+        rootCA: /etc/koo/cfg/ipa1-cert.pem
+        bindDN: uid=admin,cn=users,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+        bindPW: ipaadmin
+        userSearch:
+          baseDN: cn=users,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+          emailAttr: mail
+          filter: (objectClass=inetOrgPerson)
+          loginAttr: uid
+          numericalIdAttr: uidNumber
+        groupSearch:
+          baseDN: cn=groups,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+          filter: (objectClass=posixgroup)
+          linkGroupAttr: member
+          linkUserAttr: DN
+          nameAttr: cn
+
+      - name: ldap1
+        type: ldap
+        host: ldap1
+        port: 636
+        bindDN: cn=Manager,dc=vgr,dc=broadsoftware,dc=com
+        bindPW: LdapAdmin
+        rootCA: /etc/koo/cfg/ldap1-ca1.crt
+        userSearch:
+          baseDN: ou=Users,dc=vgr,dc=broadsoftware,dc=com
+          filter: (objectClass=inetOrgPerson)
+          loginAttr: uid
+          emailAttr: mail
+          numericalIdAttr: uidNumber
+        groupSearch:
+          baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
+          filter: (objectClass=posixgroup)
+          nameAttr: cn
+          linkGroupAttr: memberUid
+          linkUserAttr: uid
+
+      - name: crdsys
+        type: crd
+
+  ipa1-cert.pem: |-
+    -----BEGIN CERTIFICATE-----
+    MIIDaTCCAlGgAwIBAgIBATANBgkqhkiG9w0BAQsFADAgMR4wHAYDVQQDDBV2Z3Iu
+    YnJvYWRzb2Z0d2FyZS5jb20wHhcNMjAwNTE4MTkwMjMyWhcNNDAwNTE4MTkwMjMy
+    WjAgMR4wHAYDVQQDDBV2Z3IuYnJvYWRzb2Z0d2FyZS5jb20wggEiMA0GCSqGSIb3
+    DQEBAQUAA4IBDwAwggEKAoIBAQCa0l/QYz9qpaC9gezEtVFPhLeBCUnxmX1YX6zp
+    zq2N/agQSYWN7frvemtr0dW4UkzcMQyE/nIKVgKmBbI2+hWiYh7mA/5n8SDWfs8l
+    Q4E2Ka1mfB6gD2/RKemiGB39jHzbHk7y3Jo4O/28Oc6qZUU0ynnI1WHGzq89Z03b
+    gy//xZbeF6wEYlMuyZTRD3LxLog+aXhq3KVgzxCCTv7UtcMmn32+Gh7z+5lb0Ln2
+    QTycfvHUqfiHfUcOh2Xj+Ud+dmbjP+oDbyRk8qy5K8mCLTf+khRAbqseqP6+TIdt
+    wuBllc6btq2ZVyJakQZStWLLINX+I5MX/9bRra05NfsIL411AgMBAAGjga0wgaow
+    HwYDVR0jBBgwFoAU6exV4CoGeT6fXkbopZZ5ZfooPugwDwYDVR0TAQH/BAUwAwEB
+    /zAOBgNVHQ8BAf8EBAMCAcYwHQYDVR0OBBYEFOnsVeAqBnk+n15G6KWWeWX6KD7o
+    MEcGCCsGAQUFBwEBBDswOTA3BggrBgEFBQcwAYYraHR0cDovL2lwYS1jYS52Z3Iu
+    YnJvYWRzb2Z0d2FyZS5jb20vY2Evb2NzcDANBgkqhkiG9w0BAQsFAAOCAQEAF7pn
+    aGabOItOQxSMu0CsCHie97SdWeAyRoEqqD/+qT+ajlGAkjR/XbhfZW/w2t+cMyk1
+    LMGF4pQUDSJ9OIXoDpIJVkdcyR2ASAQq05haVxpotLGMLoVIFsgpfzoEOUctN1hf
+    QIRxzJhC24AHvmiV7fJLpYnuzbcx79FHXHlj1U7+5F5ClPWpVfREL2N10ur/eln2
+    X+XKLSaRGx+bzuGpM/3stZuZ/TcKvKisix+YgHRQJ7ZQQ7eMcmqObo7fI1hab45x
+    IEQZYjQ6ih6wzy6rysjZMbwvm+smWNVRVfGD2WDFOFE7oX8cYaHXJLY7pro7/lIS
+    j2nA+rrKpkg1F5c0Cw==
+    -----END CERTIFICATE-----
+  ldap1-ca1.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIFdjCCA14CCQCpKFO2s0BFRDANBgkqhkiG9w0BAQsFADB9MQswCQYDVQQGEwJG
+    UjEOMAwGA1UECAwFUGFyaXMxDjAMBgNVBAcMBVBhcmlzMRYwFAYDVQQKDA1CUk9B
+    RFNvZnR3YXJlMRYwFAYDVQQLDA1JVCBEZXBhcnRtZW50MR4wHAYDVQQDDBVjYTEu
+    YnJvYWRzb2Z0d2FyZS5jb20wHhcNMjAwMTI4MTc0MzU0WhcNMzAwMTI1MTc0MzU0
+    WjB9MQswCQYDVQQGEwJGUjEOMAwGA1UECAwFUGFyaXMxDjAMBgNVBAcMBVBhcmlz
+    MRYwFAYDVQQKDA1CUk9BRFNvZnR3YXJlMRYwFAYDVQQLDA1JVCBEZXBhcnRtZW50
+    MR4wHAYDVQQDDBVjYTEuYnJvYWRzb2Z0d2FyZS5jb20wggIiMA0GCSqGSIb3DQEB
+    AQUAA4ICDwAwggIKAoICAQCzwo5DgFhNsRGtz1vKdHe5laOSHQSLRCzGz+xiz12u
+    OOYGMgJ2q9cuWr4xb5RGEQ9uc1tUqPnVrCj/R86y6Dz9C3JGUYtcG4dOCDri8283
+    fgcHjnfiESzhzr42UK9brhCa1n3PTTQTh/hd4Y6pyoapUu1JnQ5nzZXgKCGJiTJ4
+    DJU/PUVjTyxYVt1NA1IDfB/HPg7X0Q1PNXjVfUavdcoxs4G+Xk3W80TuOCuF9OyJ
+    HrpWzj0FjeZjgNJzs0V86f6ZISB6d5Aq0MfPh21zPC/yXcLw9/UbubEm0+1W+GPQ
+    J2rv/G0sC+Dwdqln2voZbcNGRP8cxXiote+ow2wFWqNIpKc1H+w9IluqETshPZ11
+    Ia1XaKjsnI5QQnNcUNuN0VTo8H+Hnr/cGBbvRGZkMDWKZlIduN0Gxp7Yt+JQjadg
+    Ab0ykDrgGC7RhBNwvTIkO3kZtmrfsRiJ4YL1m7k3DPSqHVCDl81fJC5jB0sxPMdy
+    jtl5ELh/iGQafJOPykkxt7BQXa7egQ+trrgiEs/4l3ltlAZnRCP2JIuz4jt+rimS
+    /H/Ju16w/thUQW+TMKOtalMIPP5g3NabIc0iA7s1Iot/o6J/kKCwSNXOTCcujBAX
+    qMm7V2PC3n4iR47GboQvDiTovEDH+0zkYkHYcgzk0f3MIWZK2hU7SFYtvAxzX04r
+    EwIDAQABMA0GCSqGSIb3DQEBCwUAA4ICAQB3qrwDo3Hofl+z259opxP7gXrcK2QP
+    QmUJSrzkP0bDPrEcW7ovaz9m5ofWoju03vzzc1hmtNqXF7JDnH4hwfJLRX7wxK8R
+    efS4+idTQviTdzebaP1RNTX+lv4ejiC5jk6QTjtz53WX9J2nisbebLf+4nbFbJYv
+    KiJqRl0OWl8PmviE1Rcttnl7T0J8VHC2vnWG4wopCvXLTujOsOB1Z8WhNS2KrKAC
+    Jokb3sRAg/fhuYB/HrVbBWLUdgHie6gMU2i77NKqtUZP/ds953VVqDLz7MpsZ3Cb
+    4unvYcn8ZRTxeg5//hmvJfL2oiPOhAyL99GRefqD1PXRpOag0w9oZZi69hN61xp1
+    5dKeZWhDfPU2WD6TTjE4gVjIFK7iXsENVyrn0ZID0rkQ8Z8MuWmi+FbYaazVEZpM
+    zVtJbU/QGR162vI/fXFdcMhCf89k/5G6yCthkLVdnnxmv9gIJcPSP+kqVVyvgZHG
+    FwHyGQ5n+SQdrTrqB8TgrFtbbeqcILdNxQH3VAAabdyDg6XR/eIpBxBV1JKTlG7L
+    3Shp3P85nYnSWjl01LhJAihGQ5CcZNO0K3VnwO6WChRSAmbIAWTyio5AXRFKHX5K
+    Je6wS8yXRHlNV197zgdgFtmJ+WBOtuA0G1M8fWVy0fIq+f5JE7kkcV049XXZ7hzp
+    bZ5PT/+mliL+RQ==
+    -----END CERTIFICATE-----
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: mgrconfig
+  namespace: koo-system

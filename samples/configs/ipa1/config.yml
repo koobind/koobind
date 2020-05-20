@@ -1,0 +1,24 @@
+
+logLevel: 0
+adminGroup: "kooadmin"
+providers:
+  - name: ipa1
+    type: ldap
+    host: ipa1.vgr.broadsoftware.com
+    port: 636
+    rootCA: /etc/koo/cfg/ipa1-cert.pem
+    bindDN: uid=admin,cn=users,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+    bindPW: ipaadmin
+    userSearch:
+      baseDN: cn=users,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+      emailAttr: mail
+      filter: (objectClass=inetOrgPerson)
+      loginAttr: uid
+      numericalIdAttr: uidNumber
+    groupSearch:
+      baseDN: cn=groups,cn=accounts,dc=vgr,dc=broadsoftware,dc=com
+      filter: (objectClass=posixgroup)
+      linkGroupAttr: member
+      linkUserAttr: DN
+      nameAttr: cn
+

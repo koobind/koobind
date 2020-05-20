@@ -1,0 +1,24 @@
+
+logLevel: 0
+adminGroup: "kooadmin"
+providers:
+  - name: ldap1
+    type: ldap
+    host: ldap1
+    port: 636
+    bindDN: cn=Manager,dc=vgr,dc=broadsoftware,dc=com
+    bindPW: LdapAdmin
+    rootCA: /etc/koo/cfg/ldap1-ca1.crt
+    userSearch:
+      baseDN: ou=Users,dc=vgr,dc=broadsoftware,dc=com
+      filter: (objectClass=inetOrgPerson)
+      loginAttr: uid
+      emailAttr: mail
+      numericalIdAttr: uidNumber
+    groupSearch:
+      baseDN: ou=Groups,dc=vgr,dc=broadsoftware,dc=com
+      filter: (objectClass=posixgroup)
+      nameAttr: cn
+      linkGroupAttr: memberUid
+      linkUserAttr: uid
+

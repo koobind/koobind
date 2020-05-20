@@ -10,6 +10,8 @@ One main feature is its ability to **merge result from several identity provider
 
 Another main advantage is it **only require a ReadOnly access to the LDAP/AD server(s)**. User profile can then be enriched with local information.
 
+**Koobind** is a 'pure' CLI tool. As such, it does not require any browser based interaction, thus allowing usage on remote system without any graphical UI.
+
 ## Warning
 
 **This extension should be considered as Alpha release, still immature and under development. Use it at your own risk.**
@@ -24,11 +26,10 @@ Also, I would like to apologise for the poor English of this documentation. On t
 - [Installation](docs/installation.md)
   - [Ansible installation](docs/ansible.md)
 - [Usage](docs/usage.md)
+- [Configuration](docs/configuration.md)
 - [LDAP configuration](docs/ldap.md)
-- [Identity provider association](docs/idproviders.md)
+- [Identity provider chaining](docs/idproviders.md)
 - [Token lifecycle](docs/tokenlifecycle.md)
-- [Configuration reference](docs/config.md)
-- [Project build](docs/build.md)
 
 ## Overview
 
