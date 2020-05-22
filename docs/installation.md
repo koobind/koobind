@@ -109,7 +109,7 @@ So, the FQDN of this node must be included in the certificate.
 Cut/Paste the following to create a manifest for this certificate definition:
 
 ```yaml
-cat >./patchcert <<EOF
+cat >./patchcert.yaml <<EOF
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -143,14 +143,18 @@ spec:
   - koo-webhook-service.koo-system.svc
   - koo-webhook-service.koo-system.svc.cluster.local
   - node1.mycluster.mycompany.com
+  - node1.mycluster
+  - node1
   - node2.mycluster.mycompany.com
+  - node2.mycluster
+  - node2
   issuerRef:
     kind: Issuer
     name: koo-selfsigned-issuer
   secretName: webhook-server-cert
 ```
 
-We suggest you provide several nodes, thus providing alternate choice when a node is down.
+We suggest you provide several nodes, thus providing alternate choice when a node is down. You can also provide several alias for a node.
 
 > A more sophisticated and robust deployment will use a load balancer in front of the Auth endpoint.
 
@@ -193,6 +197,8 @@ $ cat koomgr-ca.crt
 MIIDWTCCAkGgAwIBAgIQdBEXl09/Mbfie4u9ufhiwTANBgkqhkiG9w0BAQsFADAX
 MRUwEwYDVQQKEwxjZXJ0LW1hbmFnZXIwHhcNMjAwNTExMTAwNzI5WhcNMjAwODA5
 .....
+.....
+.....
 V+oVL8dONYzrDqEWn/QW8lllNF8n0Ad3lqbWFjHdWAa0w3JVRxGZ4LWDF7REgwWN
 n/901mrWtCEiMcSkReAmZrJ9S20kgDilKTA+24zkspzAubSu0OfH3I660/CK
 -----END CERTIFICATE-----
@@ -215,7 +221,7 @@ Also, these operations require `root`access on these node.
 First, create a folder dedicated to `Koobind`:
 
 ```
-# mkdir /etc/kubernetes/koo
+# mkdir -p /etc/kubernetes/koo
 ```
 
 Then, create the Authentication webhook configuration file in this folder (You can cut/paste the following):
@@ -337,7 +343,7 @@ Several client implementation are provided depending of your architecture. Below
 $ cd /tmp
 $ wget https://github.com/koobind/koobind/releases/download/vX.X.X/koocli_X.X.X_Linux_x86_64.tar.gz
 $ tar xvzf koocli_X.X.X_Linux_x86_64.tar.gz
-$ sudo mv kubectl-koo /user/local/bin
+$ sudo mv kubectl-koo /usr/local/bin
 ```
 
 More information on this [here](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/)
@@ -354,7 +360,7 @@ $ sudo cp .../koomgr-ca.crt  /etc/koobind/certs/
 Then, the `kubeconfig` file must be created:
 
 ```
-# cat >/tmp/kubeconfig <<EOF
+cat >/tmp/kubeconfig <<EOF
 apiVersion: v1
 clusters:
 - cluster:
@@ -380,7 +386,7 @@ users:
       - --server=https://node1.mycluster.mycompany.com:31444    # <---- Adjust FQDN to one of your node you included in the certificate
       - --rootCaFile=/etc/koobind/certs/koomgr-ca.crt           
 EOF
-$ sudo cp /tmp/kubeconfig /etc/koobind
+sudo cp /tmp/kubeconfig /etc/koobind
 ```
 
 In this file, three parts must be adjusted:

@@ -37,7 +37,7 @@ group.directory.koobind.io/devs created
 groupbinding.directory.koobind.io/jsmith-devs created
 ```
 
-Of course, you will need to be allowed to create resources in the `koo-system` namespace. This is the case of the 'admin' user we created during installation procedure. We used it in this sample.
+Of course, you will need to be allowed to create resources in the `koo-system` namespace. This is the case of the 'admin' user we created during installation procedure. We will use it in this chapter.
 
 ### User
 
@@ -70,15 +70,15 @@ spec:
 The only way to define a password it to provide a 'hash'. To generate such appropriate value, a sub-command `kubectl koo hash` is provided:
 
 ```
-export KUBECONFIG=/etc/koobind/kubeconfig
-kubectl koo hash
+$ export KUBECONFIG=/etc/koobind/kubeconfig
+$ kubectl koo hash
 Password:
 Confirm password:
 $2a$10$6B93pPYM5EqejYV2MDCOAuEgJCfXfNysTdTvTCUGc.ON0gEVEY6Q.
 ```
 
 Also, note the `spec.passwordHash` field is optional. What is interest of a user without password ? 
-One answer is when combining several identity providers, user identification ca be provided by another one and this definition may populate this user with more attribute and GroupBinding.
+One answer is when combining several identity providers, user identification can be provided by another one and this definition may populate this user with more attribute and GroupBinding.
 
 ### Group
 
@@ -98,7 +98,7 @@ spec:
 
 - All `spec.*` attribute are optionals.
 - Namespace must be `koo-system`.
-- `spec.description` attribute have no impact on the way this group is handled by `Koobind` and Kubernetes.
+- `spec.description` attribute is for documentation and have no impact on the way this group is handled by `Koobind` and Kubernetes.
 - Setting `spec.disabled` to `True` would make this group not existing. It will not be reported on any user's group list. 
 
 ### GroupBinding
@@ -366,6 +366,8 @@ users:
       - --rootCaFile=/etc/koobind/certs/koomgr-ca.crt
       - --context=koo1@mycluster.local
 ```
+
+The value of this parameter must match the `current-context`
 
 ## k9s
 
