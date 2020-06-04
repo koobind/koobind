@@ -13,8 +13,9 @@
 - [Login / Logout](#login--logout)
 - [Tokens](#tokens)
 - [Context](#context)
-- [Context store](#context-store)
-- [--kubeconfig option](#--kubeconfig-option)
+  - [Context store](#context-store)
+  - [--kubeconfig option](#--kubeconfig-option)
+- [Kubernetes Dashboard](#kubernetes-dashboard)
 - [k9s](#k9s)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -317,7 +318,7 @@ If you switch back and forth between the two terminals, you can check each sessi
 > An alternate solution would be to create a single kubeconfig file with several context inside. 
 Then, you will be able to switch between with the command `kubectl config use-context <newContext>`.
 
-## Context store
+### Context store
 
 The `kubectl-koo` client active tokens are stored locally in the folder `~/.kube/cache/koo/<contextName>/`. 
 
@@ -331,7 +332,7 @@ $ kubectl koo config
   koo@mycluster.local  https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
 ```
 
-## --kubeconfig option
+### --kubeconfig option
 
 Another solution to switch between context is to provide the `--kubeconfig` option on the command line. For this to works:
 
@@ -368,6 +369,27 @@ users:
 ```
 
 The value of this parameter must match the `current-context`
+
+## Kubernetes Dashboard
+
+Login to the Kubernetes dashboard with `koobind` is quite easy.
+
+First, you must be logged using the CLI. Then using the `--token` option of the `koo whoami` command, you can get your current allocated token:  
+
+```
+$ kubectl koo login
+Login:admin
+Password:
+logged successfully..
+$ kubectl koo whoami --token
+user:admin  id:  groups:clusteradmin,kooadmin  token:aqebwddpvtmbrulzissqqljhxcuyqwvi
+```
+
+Now, you just have to cut and paste the token value in the dashboard login screen:
+
+![](draw/dashboard-login.png)
+
+Of course, the set of operation you will be able to perform through the dashboard will be limited by the logged user's permissions.
 
 ## k9s
 
