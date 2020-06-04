@@ -246,7 +246,7 @@ func (this *ldapProvider) lookupGroups(conn *ldap.Conn, user ldap.Entry) ([]stri
 	groups := []string{}
 	for _, attr := range getAttrs(user, this.GroupSearch.LinkUserAttr) {
 		var req *ldap.SearchRequest
-		filter := "(objectClass=top)" // The only way I found to have a pass throught filter
+		filter := "(objectClass=top)" // The only way I found to have a pass through filter
 		if this.GroupSearch.Filter != "" {
 			filter = this.GroupSearch.Filter
 		}

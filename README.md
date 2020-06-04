@@ -18,8 +18,6 @@ Another main advantage is it **only require a ReadOnly access to the LDAP/AD ser
 
 And of course, all contribution are welcome.
 
-Also, I would like to apologise for the poor English of this documentation. On this topic also, contribution will be appreciated.
-
 ## Index
 
 - [Overview](#overview)

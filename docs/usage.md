@@ -393,3 +393,15 @@ This one using `koogroupbinding`:
 
 ![](draw/k9s-groupbindings.png)
 
+Of course, k9s can't do more than what the launching user is allowed to do. This user can be authenticated using `koobind`, but it must have a minimum set of rights to behave correctly. 
+
+For example, you can launch k9s under the `admin` user account we have set up in the installation process.
+
+```
+$ kubectl koo login --user admin
+Password:
+logged successfully..
+$ k9s
+....
+```
+
