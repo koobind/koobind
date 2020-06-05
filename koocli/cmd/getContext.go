@@ -27,12 +27,13 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(configCmd)
+	getCmd.AddCommand(getContextCmd)
 }
 
-var configCmd = &cobra.Command{
-	Use:	"config",
-	Short:  "Display configuration",
+var getContextCmd = &cobra.Command{
+	Use:	"context",
+	Short:  "Display local context configuration",
+	Aliases: []string{"contexts"},
 	Run:    func(cmd *cobra.Command, args []string) {
 
 		currentContext := context

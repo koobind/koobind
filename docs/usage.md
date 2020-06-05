@@ -208,10 +208,10 @@ Another aspect about token is time to live. `Koobind` implements two time limits
 
 The last mechanism is similar to the usual cookie based session logic used for most Web applications.
  
-One can display the active tokens using the `koo describe tokens` subcommand:
+One can display the active tokens using the `koo get tokens` subcommand:
 
 ```
-$ kubectl koo describe  tokens
+$ kubectl koo get tokens
 TOKEN                            USER   UID    GROUPS                CREATED ON     LAST HIT
 uzvbzgjrhoqzdqzpjxomamrxqopdedba admin         clusteradmin,kooadmin 05-17 11:09:04 11:09:04
 boqpsyrvhxjlimkusvacuvdyvxyqmphc jsmith 100001 devs                  05-17 11:09:34 11:09:34
@@ -221,7 +221,7 @@ jtaoyzandgoxmsnnybwkfseqbztpfmtg admin         clusteradmin,kooadmin 05-17 11:09
 Of course, you must be member of the 'kooadmin' group. If not:
 
 ```
-$ kubectl koo describe tokens
+$ kubectl koo get tokens
 ERROR: You are not allowed to perform this operation!
 ```
 
@@ -241,7 +241,7 @@ As tokens represents active sessions, it could be useful to be able to cancel th
 $ kubectl koo cancel token boqpsyrvhxjlimkusvacuvdyvxyqmphc
 Token boqpsyrvhxjlimkusvacuvdyvxyqmphc is successfully cancelled
  
-$ kubectl koo describe  tokens
+$ kubectl koo get tokens
  TOKEN                            USER  UID GROUPS                CREATED ON     LAST HIT
  uzvbzgjrhoqzdqzpjxomamrxqopdedba admin     clusteradmin,kooadmin 05-17 11:09:04 11:09:04
  jtaoyzandgoxmsnnybwkfseqbztpfmtg admin     clusteradmin,kooadmin 05-17 11:09:51 11:15:04
@@ -322,10 +322,10 @@ Then, you will be able to switch between with the command `kubectl config use-co
 
 The `kubectl-koo` client active tokens are stored locally in the folder `~/.kube/cache/koo/<contextName>/`. 
 
-A `koo config` subcommand will allow to display the different context used. With the active one spotted by a `*`.
+A `koo get context` subcommand will allow to display the different context used. With the active one spotted by a `*`.
 
 ``` 
-$ kubectl koo config
+$ kubectl koo get context
   CONTEXT              SERVER                CA
   koo1@mycluster.local https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
 * koo2@mycluster.local https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
@@ -342,7 +342,7 @@ Another solution to switch between context is to provide the `--kubeconfig` opti
 $ kubectl koo logout --kubeconfig=/etc/koobind/kubeconfig1 
 ```
 
-- A `context' parameter with the relevant context name must be provided to the command in the 'kubeconfig' files:
+- A `context` parameter with the relevant context name must be provided to the command in the 'kubeconfig' files:
 
 ```
 $ sudo vi kubeconfig1
@@ -368,7 +368,7 @@ users:
       - --context=koo1@mycluster.local
 ```
 
-The value of this parameter must match the `current-context`
+The value of this `context` parameter **must match the `current-context`**
 
 ## Kubernetes Dashboard
 

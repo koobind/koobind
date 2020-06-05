@@ -26,12 +26,12 @@ import (
 var jsonOutput bool
 
 func init() {
-	rootCmd.AddCommand(describeCmd)
-	describeCmd.PersistentFlags().BoolVarP(&jsonOutput, "json", "", false, "Output in JSON")
+	rootCmd.AddCommand(getCmd)
+	getCmd.PersistentFlags().BoolVarP(&jsonOutput, "json", "", false, "Output in JSON")
 }
 
-var describeCmd = &cobra.Command{
-	Use:	"describe",
-	Short:  "Describe ressources",
+var getCmd = &cobra.Command{
+	Use:	"get",
+	Short:  "Get ressources",
 }
 

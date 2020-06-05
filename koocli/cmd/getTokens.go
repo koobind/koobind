@@ -32,27 +32,21 @@ import (
 )
 
 func init() {
-	describeCmd.AddCommand(usersCmd)
+	getCmd.AddCommand(getTokensCmd)
 }
 
-var usersCmd = &cobra.Command{
-	Use:	"user",
-	//Aliases: []string{"users"},
-	Short:  "Describe a specified user (admin)",
+var getTokensCmd = &cobra.Command{
+	Use:	"token",
+	Aliases: []string{"tokens"},
+	Short:  "List currently active token (Admin)",
 	Hidden: false,
-	//Args: cobra.MinimumNArgs(1),
 	Run:    func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Printf("ERROR: A username must be provided!\n")
-			os.Exit(2)
-		}
 		initHttpConnection()
-		userName := args[0]
 		token := retrieveToken()
 		if token == "" {
 			token = doLogin("", "")
 		}
-		response, err := httpConnection.Get(common.V1Admin + "users/" + userName, &internal.HttpAuth{Token: token},  nil)
+		response, err := httpConnection.Get(common.V1Admin + "tokens", &internal.HttpAuth{Token: token},  nil)
 		if err != nil {
 			panic(err)
 		}
@@ -61,30 +55,17 @@ var usersCmd = &cobra.Command{
 				data, _ := ioutil.ReadAll(response.Body)
 				fmt.Print(string(data))
 			} else {
-				var userDescribeResponse common.UserDescribeResponse
-				err = json.NewDecoder(response.Body).Decode(&userDescribeResponse)
+				var tokenListResponse common.TokenListResponse
+				err = json.NewDecoder(response.Body).Decode(&tokenListResponse)
 				if err != nil {
 					panic(err)
 				}
+				//fmt.Print(tokenListResponse)
 				tw := new(tabwriter.Writer)
 				tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
-				_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
-				authorityFound := false
-				for _, userStatus := range userDescribeResponse.UserStatuses {
-					var found = ""
-					var authority = ""
-					if userStatus.Found {
-						found = "*"
-						if userStatus.Authority {
-							if !authorityFound {
-								authority = "*"
-								authorityFound = true
-							} else {
-								authority = "+"
-							}
-						}
-					}
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userStatus.ProviderName, found, authority, userStatus.Uid, array2String(userStatus.Groups), userStatus.Email, userStatus.CommonName, array2String(userStatus.Messages))
+				_, _ = fmt.Fprintf(tw, "TOKEN\tUSER\tUID\tGROUPS\tCREATED ON\tLAST HIT")
+				for _, ut := range tokenListResponse.Tokens {
+					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s", ut.Token, ut.User.Username, ut.User.Uid, strings.Join(ut.User.Groups, ","), ut.Creation.Format("01-02 15:04:05"), ut.LastHit.Format("15:04:05"))
 				}
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()
@@ -102,9 +83,3 @@ var usersCmd = &cobra.Command{
 	},
 }
 
-func array2String(a []string) string {
-	if a == nil || len(a) == 0 {
-		return ""
-	}
-	return fmt.Sprintf("[%s]", strings.Join(a, ","))
-}

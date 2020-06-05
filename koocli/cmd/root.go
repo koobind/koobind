@@ -96,7 +96,7 @@ func init() {
 				rootCaFile = path.Join(cwd, rootCaFile)
 			}
 		}
-		if cmd != configCmd {
+		if cmd != getContextCmd {
 			config = internal.LoadConfig(context)
 			if config == nil {
 				if server == "" {

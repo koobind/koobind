@@ -75,10 +75,10 @@ Password:
 logged successfully..
 ```
 
-Then, it can issue the `koo describe user` subcommand:
+Then, it can issue the `koo get user` subcommand:
 
 ```
-$ kubectl koo describe user oriley
+$ kubectl koo get user oriley
 PROVIDER FOUND AUTH UID       GROUPS        EMAIL                COMMON NAME  COMMENT
 ipa1     *     *    870200001 [users,itdep] oriley@mycompany.com Oliver RILEY
 ldap1    *     +    2004      [auditors]                         Oliver RILEY
@@ -96,7 +96,7 @@ We can see than:
 Of course, we can also figure out how our `admin` user is defined:
 
 ``` 
-kubectl koo describe user admin
+$ kubectl koo get user admin
 PROVIDER FOUND AUTH UID GROUPS                  EMAIL COMMON NAME COMMENT
 ipa1
 ldap1
@@ -106,7 +106,7 @@ crdsys   *     *        [clusteradmin,kooadmin]       Koo ADMIN
 Now, let's assume we have a user 'jsmith' defined in **ldap1**. And also this user is already defined in our CRD provider, as performed in the [usage](usage.md) chapter.
 
 ```
-$ kubectl koo describe user jsmith
+$ kubectl koo get user jsmith
 PROVIDER FOUND AUTH UID    GROUPS     EMAIL                COMMON NAME  COMMENT
 ipa1
 ldap1    *     *    2005   [all,devs]                      Johnny SMITH
@@ -128,8 +128,8 @@ user:jsmith  id:2005  groups:all,devs
 
 Now, let's say we want to grant our 'oriley' user full admin rights on our cluster.
 
-The obvious solution would be to create the kooadmin group on the corporate LDAP and to bind this user on. But, let's say this request can't be fulfilled (at least in a reasonable amount of time).
-So, we don't want to modify the corporate LDAP provider. 
+The obvious solution would be to create the `kooadmin` group on the corporate LDAP and to bind this user on. But, let's say this request can't be fulfilled (at least in a reasonable amount of time).
+So, we don't want to modify the corporate LDAP server. 
 
 So, we will grant this locally by applying the following manifest:
 
@@ -161,7 +161,7 @@ spec:
   group: clusteradmin
 ```
 
-In this manifest we recreate the user, for local coherency and then bind it to the 'kooadmin' and 'clusteradmin' groups.
+In this manifest we recreate the user, for local coherency and then bind it to the `kooadmin` and `clusteradmin` groups.
 
 To apply it:
 
@@ -179,7 +179,7 @@ $ kubectl koo login --user oriley  # Need to re-log to activate the new bindings
 Password:
 logged successfully..
 
-$ kubectl koo describe user oriley
+$ kubectl koo get user oriley
 PROVIDER FOUND AUTH UID       GROUPS                  EMAIL                COMMON NAME  COMMENT
 ipa1     *     *    870200001 [users,itdep]           oriley@mycompany.com Oliver RILEY
 ldap1    *     +    2004      [auditors]                                   Oliver RILEY
@@ -199,7 +199,7 @@ cert-manager     cert-manager-webhook-8444c4bc77-c62sv      1/1     Running   8 
 Let's have a look back on our user 'jsmith':
 
 ```
-$ kubectl koo describe user jsmith
+$ kubectl koo get user jsmith
 PROVIDER FOUND AUTH UID    GROUPS     EMAIL                COMMON NAME  COMMENT
 ipa1
 ldap1    *     *    2005   [all,devs]                      Johnny SMITH
@@ -236,7 +236,7 @@ providers:
 Now, under 'admin' account:
  
 ```
-$ kubectl koo describe user jsmith
+$ kubectl koo get user jsmith
 PROVIDER FOUND AUTH UID    GROUPS             EMAIL                COMMON NAME  COMMENT
 ipa1
 ldap1    *     *    2005   [dep-all,dep-devs]                      Johnny SMITH
