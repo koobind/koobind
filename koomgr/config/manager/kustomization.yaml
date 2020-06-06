@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: koobind/manager
-  newTag: 0.1.0
+  newTag: X.X.X

@@ -63,13 +63,11 @@ func (this *AdminV1Handler) init() {
 }
 
 func describeUser(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
-	userStatuses, err := handler.Providers.DescribeUser(remainingPath)
+	userDescribeResponse, err := handler.Providers.DescribeUser(remainingPath)
 	if err != nil {
 		http.Error(response, err.Error(), http.StatusInternalServerError)
 	}
-	handler.ServeJSON(response, common.UserDescribeResponse{
-		UserStatuses: userStatuses,
-	})
+	handler.ServeJSON(response, userDescribeResponse)
 }
 
 func listToken(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {

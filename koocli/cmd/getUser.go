@@ -31,8 +31,11 @@ import (
 	"text/tabwriter"
 )
 
+var explainAuth bool
+
 func init() {
 	getCmd.AddCommand(usersCmd)
+	getCmd.PersistentFlags().BoolVarP(&explainAuth, "explain", "", false, "Explain user authentication")
 }
 
 var usersCmd = &cobra.Command{
@@ -68,22 +71,27 @@ var usersCmd = &cobra.Command{
 				}
 				tw := new(tabwriter.Writer)
 				tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
-				_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
-				//authorityFound := false
-				for _, userStatus := range userDescribeResponse.UserStatuses {
-					var found = ""
-					var authority = ""
-					if userStatus.Found {
-						found = "*"
-						if userStatus.Authority {
-							if userStatus.ProviderName == userDescribeResponse.Authority {
-								authority = "*"
-							} else {
-								authority = "+"
+				if explainAuth {
+					_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
+					//authorityFound := false
+					for _, userStatus := range userDescribeResponse.UserStatuses {
+						var found = ""
+						var authority = ""
+						if userStatus.Found {
+							found = "*"
+							if userStatus.Authority {
+								if userStatus.ProviderName == userDescribeResponse.Authority {
+									authority = "*"
+								} else {
+									authority = "+"
+								}
 							}
 						}
+						_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userStatus.ProviderName, found, authority, userStatus.Uid, array2String(userStatus.Groups), userStatus.Email, userStatus.CommonName, array2String(userStatus.Messages))
 					}
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userStatus.ProviderName, found, authority, userStatus.Uid, array2String(userStatus.Groups), userStatus.Email, userStatus.CommonName, array2String(userStatus.Messages))
+				} else {
+					_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tAUTHORITY")
+					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", userDescribeResponse.User.Username, userDescribeResponse.User.Uid, strings.Join(userDescribeResponse.User.Groups, ","), userDescribeResponse.Authority)
 				}
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()

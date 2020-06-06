@@ -34,8 +34,12 @@ type UserToken struct {
 	Lifecycle *TokenLifecycle	`json:"lifecycle"`
 }
 
+// NB: User and Authority are redundant as they can be computed from UserStatuses. But, we prefer code the logic of this in one place, on the server,
+// instead recomputing each time we need such info.
 type UserDescribeResponse struct {
 	UserStatuses []UserStatus	`json:"userStatuses"`
+	User User					`json:"user"`			// This field is computed
+	Authority string			`json:"authority"`
 }
 
 

@@ -152,20 +152,16 @@ func (this *providerChain) Login(login, password string) (common.User, bool, str
 	}
 }
 
-func unique(stringSlice []string) []string {
-	keys := make(map[string]bool)
-	list := []string{}
-	for _, entry := range stringSlice {
-		if _, exists := keys[entry]; !exists {
-			keys[entry] = true
-			list = append(list, entry)
-		}
+func (this *providerChain) DescribeUser(login string) (common.UserDescribeResponse, error) {
+	result := common.UserDescribeResponse{
+		UserStatuses: []common.UserStatus{},
+		Authority:    "",
+		User: common.User{
+			Username: login,
+			Uid:      "",
+			Groups:   []string{},
+		},
 	}
-	return list
-}
-
-func (this *providerChain) DescribeUser(login string) ([]common.UserStatus, error) {
-	userStatuses := []common.UserStatus{}
 	for _, prvd := range this.providers {
 		userStatus, err := prvd.GetUserStatus(login, "", false)
 		if err != nil {
@@ -177,8 +173,29 @@ func (this *providerChain) DescribeUser(login string) ([]common.UserStatus, erro
 			pcLog.Error(err, "", "provider", prvd.GetName())
 		} else {
 			pcLog.V(1).Info("", "user", login, "provider", prvd.GetName(), "found", userStatus.Found, "passwordSatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups, "messages", userStatus.Messages)
+			if userStatus.Found {
+				if result.Authority == "" && userStatus.Authority {
+					result.Authority = userStatus.ProviderName
+					result.User.Uid = userStatus.Uid
+				}
+				result.User.Groups = append(result.User.Groups, userStatus.Groups...)
+			}
 		}
-		userStatuses = append(userStatuses, userStatus)
+		result.UserStatuses = append(result.UserStatuses, userStatus)
 	}
-	return userStatuses, nil
+	result.User.Groups = unique(result.User.Groups)
+	sort.Strings(result.User.Groups)
+	return result, nil
+}
+
+func unique(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, exists := keys[entry]; !exists {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
