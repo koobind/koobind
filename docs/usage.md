@@ -154,7 +154,13 @@ logged successfully..
 Error from server (Forbidden): users.directory.koobind.io is forbidden: User "jsmith" cannot list resource "users" in API group "directory.koobind.io" in the namespace "koo-system"
 ```
 
-(Of course, this user is not allowed to perform the requested operation.) 
+Of course, this user is not allowed to perform the requested operation. But we can check the authentication is successful by using the `koo whoami` subcommand:
+
+```
+$ kubectl koo whoami
+USER     ID       GROUPS
+jsmith   100001   devs
+```
 
 An alternate solution is to explicitly login using the `koo login` subcommand:
 
@@ -165,7 +171,8 @@ Password:
 logged successfully..
 
 $ kubectl koo whoami
-user:jsmith  id:100001  groups:devs
+USER     ID       GROUPS
+jsmith   100001   devs
 ```
 
 (If a user was previously logged, a logout is performed)
@@ -178,7 +185,8 @@ Password:
 logged successfully..
 
 $ kubectl koo whoami
-user:jsmith  id:100001  groups:devs
+USER     ID       GROUPS
+jsmith   100001   devs
 ```
 
 or:
@@ -188,7 +196,8 @@ $ kubectl koo login --user jsmith --password smithj
 logged successfully..
 
 $ kubectl koo whoami
-user:jsmith  id:100001  groups:devs
+USER     ID       GROUPS
+jsmith   100001   devs
 ```
 
 > Of course, providing the password in clear text such this way is a huge security issue. Use it as your own risk. 
@@ -212,10 +221,10 @@ One can display the active tokens using the `koo get tokens` subcommand:
 
 ```
 $ kubectl koo get tokens
-TOKEN                            USER   UID    GROUPS                CREATED ON     LAST HIT
-uzvbzgjrhoqzdqzpjxomamrxqopdedba admin         clusteradmin,kooadmin 05-17 11:09:04 11:09:04
-boqpsyrvhxjlimkusvacuvdyvxyqmphc jsmith 100001 devs                  05-17 11:09:34 11:09:34
-jtaoyzandgoxmsnnybwkfseqbztpfmtg admin         clusteradmin,kooadmin 05-17 11:09:51 11:10:26
+TOKEN                              USER     UID      GROUPS                  CREATED ON       LAST HIT
+uzvbzgjrhoqzdqzpjxomamrxqopdedba   admin             clusteradmin,kooadmin   05-17 11:09:04   11:09:04
+boqpsyrvhxjlimkusvacuvdyvxyqmphc   jsmith   100001   devs                    05-17 11:09:34   11:09:34
+jtaoyzandgoxmsnnybwkfseqbztpfmtg   admin             clusteradmin,kooadmin   05-17 11:09:51   11:10:26
 ```
 
 Of course, you must be member of the 'kooadmin' group. If not:
@@ -242,12 +251,12 @@ $ kubectl koo cancel token boqpsyrvhxjlimkusvacuvdyvxyqmphc
 Token boqpsyrvhxjlimkusvacuvdyvxyqmphc is successfully cancelled
  
 $ kubectl koo get tokens
- TOKEN                            USER  UID GROUPS                CREATED ON     LAST HIT
- uzvbzgjrhoqzdqzpjxomamrxqopdedba admin     clusteradmin,kooadmin 05-17 11:09:04 11:09:04
- jtaoyzandgoxmsnnybwkfseqbztpfmtg admin     clusteradmin,kooadmin 05-17 11:09:51 11:15:04
+ TOKEN                              USER    UID   GROUPS                  CREATED ON       LAST HIT
+ uzvbzgjrhoqzdqzpjxomamrxqopdedba   admin         clusteradmin,kooadmin   05-17 11:09:04   11:09:04
+ jtaoyzandgoxmsnnybwkfseqbztpfmtg   admin         clusteradmin,kooadmin   05-17 11:09:51   11:15:04
 ```
 
-Now, the user `jsmith` will have to log again. (This operation can be required if you modify some user's attribute and want it to be activated immediatly.)
+Now, the user `jsmith` will have to log again. (This operation can be required if you modify some user's attribute and want it to be activated immediately.)
 
 ## Context
 
@@ -295,8 +304,9 @@ NAME     COMMON NAME   EMAIL                  UID      COMMENT         DISABLED
 admin    Koo ADMIN
 jsmith   John SMITH    jsmith@mycompany.com   100001   A sample user
 
-[15:57:39 sa@kspray1:/etc/koobind]$ kubectl koo whoami
-user:admin  id:  groups:clusteradmin,kooadmin
+$ kubectl koo whoami
+USER    ID   GROUPS
+admin        clusteradmin,kooadmin
 ```
 
 - On terminal 2
@@ -310,7 +320,8 @@ logged successfully..
 Error from server (Forbidden): users.directory.koobind.io is forbidden: User "jsmith" cannot list resource "users" in API group "directory.koobind.io" in the namespace "koo-system"
 
 $ kubectl koo whoami
-user:jsmith  id:100001  groups:devs
+USER     ID       GROUPS
+jsmith   100001   devs
 ```
 
 If you switch back and forth between the two terminals, you can check each session is isolated.
@@ -326,10 +337,10 @@ A `koo get context` subcommand will allow to display the different context used.
 
 ``` 
 $ kubectl koo get context
-  CONTEXT              SERVER                CA
-  koo1@mycluster.local https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
-* koo2@mycluster.local https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
-  koo@mycluster.local  https://kspray1:31444 /etc/koobind/certs/koomgr-ca.crt
+    CONTEXT                SERVER                  CA
+    koo1@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
+*   koo2@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
+    koo@mycluster.local    https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
 ```
 
 ### --kubeconfig option
@@ -368,7 +379,7 @@ users:
       - --context=koo1@mycluster.local
 ```
 
-The value of this `context` parameter **must match the `current-context`**
+The value of this `context` parameter **must match** the `current-context`
 
 ## Kubernetes Dashboard
 
@@ -381,8 +392,10 @@ $ kubectl koo login
 Login:admin
 Password:
 logged successfully..
+
 $ kubectl koo whoami --token
-user:admin  id:  groups:clusteradmin,kooadmin  token:aqebwddpvtmbrulzissqqljhxcuyqwvi
+USER    ID   GROUPS                  TOKEN
+admin        clusteradmin,kooadmin   majwzilcacwkrsuzrnfbzyuvywltsuxo
 ```
 
 Now, you just have to cut and paste the token value in the dashboard login screen:

@@ -479,7 +479,8 @@ Beside handling authentication, the `koobind` plugin provide several subcommands
 ```
 $ export KUBECONFIG=/etc/koobind/kubeconfig
 $ kubectl koo whoami
-user:admin  id:  groups:
+USER    ID   GROUPS
+admin
 ```
 
 Description of these subcommands can be found [here](usage.md)
@@ -560,12 +561,13 @@ This will:
 
 > The `cluster-admin` ClusterRole was defined at the cluster creation in our case. May be, depending of your configuration, you will need to adapt this.
 
-Now, our `admin` user should be able to do everything on this cluster:
+Now, our `admin` user should be able to do everything on this cluster (Provided it will logout/login to refresh its status):
 
 ```
 $ export KUBECONFIG=/etc/koobind/kubeconfig
 $ kubectl koo logout
 Bye!
+
 $ kubectl get pods --all-namespaces
 Login:admin
 Password:

@@ -60,7 +60,8 @@ Password:
 logged successfully..
 
 $ kubectl koo whoami
-user:oriley  id:870200001  groups:auditors,itdep,users
+USER     ID          GROUPS
+oriley   870200001   auditors,itdep,users
 ```
 
 We see we can log under this user, it has a numerical id of 870200001 and belong to 3 groups (auditors,itdep,users).
@@ -75,42 +76,53 @@ Password:
 logged successfully..
 ```
 
-Then, it can issue the `koo get user` subcommand:
+Then, it can issue the `koo get user <userName>` subcommand:
 
 ```
-$ kubectl koo get user oriley
-PROVIDER FOUND AUTH UID       GROUPS        EMAIL                COMMON NAME  COMMENT
-ipa1     *     *    870200001 [users,itdep] oriley@mycompany.com Oliver RILEY
-ldap1    *     +    2004      [auditors]                         Oliver RILEY
+$  kubectl koo get user oriley
+USER     ID          GROUPS                 AUTHORITY
+oriley   870200001   auditors,itdep,users   ipa1
+```
+
+Here, we have one more information: The provider who authenticated this user is **ipa1**.
+
+But, as a system admin, we may need more information about how this user is authenticated. For this, we can add the `--explain` flag to the previous command:
+
+```
+$  kubectl koo get user oriley --explain
+PROVIDER   FOUND   AUTH   UID         GROUPS          EMAIL                  COMMON NAME    COMMENT
+ipa1       *       *      870200001   [users,itdep]   oriley@mycompany.com   Oliver RILEY
+ldap1      *       +      2004        [auditors]                             Oliver RILEY
 crdsys
 ```
 
-We can see than:
+This option will list all configured Identity Provider and provide their satus for this user. Here, we can see than:
 
 - This user exists in both **ipa1** and **ldap1** providers
-- This user will be authenticated by **ipa1** provider. 
+- This user will be authenticated by **ipa1** provider.
 - **ldap1** provider would be also able to authenticate this user by itself. But this will not be the case, has **ipa1** take precedence (Was before in the provider list).
 - **ipa1** and **ldap1** provider both provide a numerical id. But only the one from **ipa1** (who authenticate this user) is retained.
 - The resulting user's group list is the concatenation of all groups found in all providers
+- This user is not defined in the **crdsys** provider.
 
 Of course, we can also figure out how our `admin` user is defined:
 
 ``` 
-$ kubectl koo get user admin
-PROVIDER FOUND AUTH UID GROUPS                  EMAIL COMMON NAME COMMENT
+$  kubectl koo get user admin --explain
+PROVIDER   FOUND   AUTH   UID   GROUPS                    EMAIL   COMMON NAME   COMMENT
 ipa1
 ldap1
-crdsys   *     *        [clusteradmin,kooadmin]       Koo ADMIN
+crdsys     *       *            [kooadmin,clusteradmin]           Koo ADMIN
 ```
 
 Now, let's assume we have a user 'jsmith' defined in **ldap1**. And also this user is already defined in our CRD provider, as performed in the [usage](usage.md) chapter.
 
 ```
-$ kubectl koo get user jsmith
-PROVIDER FOUND AUTH UID    GROUPS     EMAIL                COMMON NAME  COMMENT
+$  kubectl koo get user jsmith --explain
+PROVIDER   FOUND   AUTH   UID      GROUPS       EMAIL                  COMMON NAME    COMMENT
 ipa1
-ldap1    *     *    2005   [all,devs]                      Johnny SMITH
-crdsys   *     +    100001 [devs]     jsmith@mycompany.com John SMITH
+ldap1      *       *      2005     [all,devs]                          Johnny SMITH
+crdsys     *       +      100001   [devs]       jsmith@mycompany.com   John SMITH
 ```
 
 For this user to log successfully, only the password matching the value in the **ldap1** provider is valid. Ths password defined in our **crdsys** CRD provider is now 'hidden'. 
@@ -120,8 +132,9 @@ $ kubectl koo login
 Login:jsmith
 Password:
 logged successfully..
-[13:37:25 sa@kspray1:~]$ kubectl koo whoami
-user:jsmith  id:2005  groups:all,devs
+$ kubectl koo whoami
+USER     ID     GROUPS
+jsmith   2005   all,devs
 ```
 
 ## User enrichment
@@ -166,26 +179,38 @@ In this manifest we recreate the user, for local coherency and then bind it to t
 To apply it:
 
 ```
+$ kubectl koo login     # Need to be logged as 'admin' user
+Login:admin
+Password:
+logged successfully..
+
 $ kubectl apply -f https://raw.githubusercontent.com/koobind/koobind/master/samples/oriley-admin.yaml
 user.directory.koobind.io/oriley created
 groupbinding.directory.koobind.io/oriley-kooadmin created
 groupbinding.directory.koobind.io/oriley-cluseradmin created
 ```
 
-Then:
+Then, as admin, we can check this user belong the `kooadmin` and `clusteradmin` groups:
 
 ```
-$ kubectl koo login --user oriley  # Need to re-log to activate the new bindings
+$ kubectl koo get user oriley
+USER     ID          GROUPS                                       AUTHORITY
+oriley   870200001   auditors,clusteradmin,itdep,kooadmin,users   ipa1
+
+$ kubectl koo get user oriley --explain
+PROVIDER   FOUND   AUTH   UID         GROUPS                    EMAIL                  COMMON NAME    COMMENT
+ipa1       *       *      870200001   [users,itdep]             oriley@mycompany.com   Oliver RILEY
+ldap1      *       +      2004        [auditors]                                       Oliver RILEY
+crdsys     *                          [kooadmin,clusteradmin]                                         [No password]
+```
+
+We can now ensure thus user have full admin rights on the cluster:
+
+```
+$ kubectl koo login --user oriley 
 Password:
 logged successfully..
 
-$ kubectl koo get user oriley
-PROVIDER FOUND AUTH UID       GROUPS                  EMAIL                COMMON NAME  COMMENT
-ipa1     *     *    870200001 [users,itdep]           oriley@mycompany.com Oliver RILEY
-ldap1    *     +    2004      [auditors]                                   Oliver RILEY
-crdsys   *                    [clusteradmin,kooadmin]                                   [No password]
-
-# Ensure we have full admin rights on the cluster:
 $ kubectl get pods --all-namespaces
 NAMESPACE        NAME                                       READY   STATUS    RESTARTS   AGE
 cert-manager     cert-manager-6f578f4565-n5k8l              1/1     Running   10         61d
@@ -200,20 +225,17 @@ Let's have a look back on our user 'jsmith':
 
 ```
 $ kubectl koo get user jsmith
-PROVIDER FOUND AUTH UID    GROUPS     EMAIL                COMMON NAME  COMMENT
+USER     ID     GROUPS     AUTHORITY
+jsmith   2005   all,devs   ldap1
+
+$ kubectl koo get user jsmith --explain
+PROVIDER   FOUND   AUTH   UID      GROUPS       EMAIL                  COMMON NAME    COMMENT
 ipa1
-ldap1    *     *    2005   [all,devs]                      Johnny SMITH
-crdsys   *     +    100001 [devs]     jsmith@mycompany.com John SMITH
-
-$ kubectl koo login --user jsmith
-Password:
-logged successfully..
-
-$ kubectl koo whoami
-user:jsmith  id:2005  groups:all,devs
+ldap1      *       *      2005     [all,devs]                          Johnny SMITH
+crdsys     *       +      100001   [devs]       jsmith@mycompany.com   John SMITH
 ```
 
-One can see both providers grant it access to the 'devs' group.
+One can see both providers grant it accesses to the 'devs' group.
 
 If you want to distinguish groups from different providers, the `groupPattern` parameter will allow you to add prefix or suffix for all groups of a given provider.
 
@@ -229,7 +251,7 @@ providers:
     type: ldap
     host: ldap1
     port: 636
-    groupPattern: "dep-%s"
+    groupPattern: "it_%s"
     ....
 ```
 
@@ -237,16 +259,14 @@ Now, under 'admin' account:
  
 ```
 $ kubectl koo get user jsmith
-PROVIDER FOUND AUTH UID    GROUPS             EMAIL                COMMON NAME  COMMENT
-ipa1
-ldap1    *     *    2005   [dep-all,dep-devs]                      Johnny SMITH
-crdsys   *     +    100001 [devs]             jsmith@mycompany.com John SMITH
+USER     ID     GROUPS                AUTHORITY
+jsmith   2005   devs,it_all,it_devs   ldap1
 
-$ kubectl koo login --user jsmith
-Password:
-logged successfully..
-[16:34:44 sa@kspray1:~]$ kubectl koo whoami
-user:jsmith  id:2005  groups:dep-all,dep-devs,devs
+$ kubectl koo get user jsmith --explain
+PROVIDER   FOUND   AUTH   UID      GROUPS             EMAIL                  COMMON NAME    COMMENT
+ipa1
+ldap1      *       *      2005     [it_all,it_devs]                          Johnny SMITH
+crdsys     *       +      100001   [devs]             jsmith@mycompany.com   John SMITH
 ``` 
 
 ## Unique authentication reference
