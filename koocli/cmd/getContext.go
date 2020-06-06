@@ -39,7 +39,7 @@ var getContextCmd = &cobra.Command{
 		currentContext := context
 		contexts := internal.ListContext()
 		tw := new(tabwriter.Writer)
-		tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
+		tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 		_, _ = fmt.Fprintf(tw, " \tCONTEXT\tSERVER\tCA")
 		for _, ctx := range contexts {
 			var mark string

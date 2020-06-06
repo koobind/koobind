@@ -62,7 +62,7 @@ var getTokensCmd = &cobra.Command{
 				}
 				//fmt.Print(tokenListResponse)
 				tw := new(tabwriter.Writer)
-				tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
+				tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 				_, _ = fmt.Fprintf(tw, "TOKEN\tUSER\tUID\tGROUPS\tCREATED ON\tLAST HIT")
 				for _, ut := range tokenListResponse.Tokens {
 					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s", ut.Token, ut.User.Username, ut.User.Uid, strings.Join(ut.User.Groups, ","), ut.Creation.Format("01-02 15:04:05"), ut.LastHit.Format("15:04:05"))

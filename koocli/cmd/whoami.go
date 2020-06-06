@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
+	"text/tabwriter"
 )
 
 var displayToken bool
@@ -41,11 +42,17 @@ var whoamiCmd = &cobra.Command{
 		initHttpConnection()
 		tokenBag := internal.LoadTokenBag(context)
 		if user := getUser(tokenBag); user != nil {
+			tw := new(tabwriter.Writer)
+			tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 			if displayToken {
-				fmt.Printf("user:%s  id:%s  groups:%s  token:%s\n", user.Username, user.Uid, strings.Join(user.Groups, ","), tokenBag.Token)
+				_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tTOKEN")
+				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", user.Username, user.Uid, strings.Join(user.Groups, ","), tokenBag.Token)
 			} else {
-				fmt.Printf("user:%s  id:%s  groups:%s\n", user.Username, user.Uid, strings.Join(user.Groups, ","))
+				_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS")
+				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s", user.Username, user.Uid, strings.Join(user.Groups, ","))
 			}
+			_, _ = fmt.Fprintf(tw, "\n")
+			_ = tw.Flush()
 		} else {
 			fmt.Printf("Nobody! (Not logged)\n")
 			os.Exit(3)

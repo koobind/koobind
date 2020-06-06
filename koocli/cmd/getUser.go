@@ -67,18 +67,17 @@ var usersCmd = &cobra.Command{
 					panic(err)
 				}
 				tw := new(tabwriter.Writer)
-				tw.Init(os.Stdout, 2, 4, 1, ' ', 0)
+				tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 				_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
-				authorityFound := false
+				//authorityFound := false
 				for _, userStatus := range userDescribeResponse.UserStatuses {
 					var found = ""
 					var authority = ""
 					if userStatus.Found {
 						found = "*"
 						if userStatus.Authority {
-							if !authorityFound {
+							if userStatus.ProviderName == userDescribeResponse.Authority {
 								authority = "*"
-								authorityFound = true
 							} else {
 								authority = "+"
 							}
