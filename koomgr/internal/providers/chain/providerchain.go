@@ -152,7 +152,7 @@ func (this *providerChain) Login(login, password string) (common.User, bool, str
 	}
 }
 
-func (this *providerChain) DescribeUser(login string) (common.UserDescribeResponse, error) {
+func (this *providerChain) DescribeUser(login string) (bool, common.UserDescribeResponse) {
 	result := common.UserDescribeResponse{
 		UserStatuses: []common.UserStatus{},
 		Authority:    "",
@@ -162,6 +162,7 @@ func (this *providerChain) DescribeUser(login string) (common.UserDescribeRespon
 			Groups:   []string{},
 		},
 	}
+	found := false
 	for _, prvd := range this.providers {
 		userStatus, err := prvd.GetUserStatus(login, "", false)
 		if err != nil {
@@ -178,6 +179,7 @@ func (this *providerChain) DescribeUser(login string) (common.UserDescribeRespon
 					result.Authority = userStatus.ProviderName
 					result.User.Uid = userStatus.Uid
 				}
+				found = true
 				result.User.Groups = append(result.User.Groups, userStatus.Groups...)
 			}
 		}
@@ -185,7 +187,7 @@ func (this *providerChain) DescribeUser(login string) (common.UserDescribeRespon
 	}
 	result.User.Groups = unique(result.User.Groups)
 	sort.Strings(result.User.Groups)
-	return result, nil
+	return found, result
 }
 
 func unique(stringSlice []string) []string {

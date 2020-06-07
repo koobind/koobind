@@ -63,9 +63,9 @@ func (this *AdminV1Handler) init() {
 }
 
 func describeUser(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
-	userDescribeResponse, err := handler.Providers.DescribeUser(remainingPath)
-	if err != nil {
-		http.Error(response, err.Error(), http.StatusInternalServerError)
+	found, userDescribeResponse := handler.Providers.DescribeUser(remainingPath)
+	if !found {
+		http.Error(response, fmt.Sprintf("User %s not found", remainingPath), http.StatusNotFound)
 	}
 	handler.ServeJSON(response, userDescribeResponse)
 }
