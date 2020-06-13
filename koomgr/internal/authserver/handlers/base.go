@@ -28,10 +28,9 @@ import (
 )
 
 type BaseHandler struct {
-	Logger       logr.Logger
-	TokenBasket  token.TokenBasket
-	PrefixLength int
-	RequestId    int
+	Logger      logr.Logger
+	TokenBasket token.TokenBasket
+	RequestId   int
 }
 
 func (this *BaseHandler) ServeJSON(response http.ResponseWriter, data interface{}) {

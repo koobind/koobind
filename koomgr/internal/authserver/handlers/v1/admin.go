@@ -20,57 +20,30 @@ package v1
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
-	"html/template"
 	"net/http"
-	"path"
-	"strings"
 )
 
 type AdminV1Handler struct {
 	handlers.AuthHandler
-	AdminGroup   string
-	TemplatePath string
-	subEntries   []subEntry
-}
-
-type handlerFunc func(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request)
-
-type subEntry struct {
-	method      string
-	path        string
+	AdminGroup  string
 	handlerFunc handlerFunc
 }
 
-func (this *AdminV1Handler) init() {
-	this.subEntries = make([]subEntry, 0, 2)
-	this.subEntries = append(this.subEntries, subEntry{
-		method:      "DELETE",
-		path:        "tokens/",
-		handlerFunc: deleteToken,
-	})
-	this.subEntries = append(this.subEntries, subEntry{
-		method:      "GET",
-		path:        "tokens",
-		handlerFunc: listToken,
-	})
-	this.subEntries = append(this.subEntries, subEntry{
-		method:      "GET",
-		path:        "users/",
-		handlerFunc: describeUser,
-	})
-}
+type handlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
 
-func describeUser(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
-	found, userDescribeResponse := handler.Providers.DescribeUser(remainingPath)
+func describeUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+	user := mux.Vars(request)["user"]
+	found, userDescribeResponse := handler.Providers.DescribeUser(user)
 	if !found {
-		http.Error(response, fmt.Sprintf("User %s not found", remainingPath), http.StatusNotFound)
+		http.Error(response, fmt.Sprintf("User %s not found", user), http.StatusNotFound)
 	}
 	handler.ServeJSON(response, userDescribeResponse)
 }
 
-func listToken(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
+func listToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	list, err := handler.TokenBasket.GetAll()
 	if err != nil {
 		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
@@ -82,8 +55,9 @@ func listToken(handler *AdminV1Handler, usr common.User, remainingPath string, r
 	handler.ServeJSON(response, data)
 }
 
-func deleteToken(handler *AdminV1Handler, usr common.User, remainingPath string, response http.ResponseWriter, request *http.Request) {
-	ok, err := handler.TokenBasket.Delete(remainingPath)
+func deleteToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+	token := mux.Vars(request)["token"]
+	ok, err := handler.TokenBasket.Delete(token)
 	if err != nil {
 		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
 		return
@@ -94,34 +68,15 @@ func deleteToken(handler *AdminV1Handler, usr common.User, remainingPath string,
 }
 
 func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	if this.subEntries == nil {
-		this.init()
-	}
 	this.ServeAuthHTTP(response, request, func(usr common.User) {
 		if this.AdminGroup != "" && stringInSlice(this.AdminGroup, usr.Groups) {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s' allowed to access admin interface", usr.Username))
-			urlpath := request.URL.Path[this.PrefixLength:]
-			for _, entry := range this.subEntries {
-				if entry.method == request.Method && strings.HasPrefix(urlpath, entry.path) {
-					remainingPath := urlpath[len(entry.path):]
-					entry.handlerFunc(this, usr, strings.TrimSpace(remainingPath), response, request)
-					return
-				}
-			}
-			http.Error(response, "Not found", http.StatusNotFound)
+			this.handlerFunc(this, usr, response, request)
 		} else {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s': access to admin interface denied (Not in appropriate group)", usr.Username))
 			http.Error(response, "Unallowed", http.StatusForbidden)
 		}
 	})
-}
-
-func (this *AdminV1Handler) serveHTML(response http.ResponseWriter, data interface{}, tmplName string) {
-	tmpl := template.Must(template.ParseFiles(path.Join(this.TemplatePath, tmplName)))
-	err := tmpl.Execute(response, data)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func stringInSlice(a string, list []string) bool {

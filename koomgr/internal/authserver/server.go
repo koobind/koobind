@@ -22,7 +22,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/koomgr/internal/authserver/certwatcher"
 	"net"
@@ -70,16 +69,6 @@ type Server struct {
 	handlerByPath map[string]http.Handler
 }
 
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		//log.Println(r.RequestURI)
-		fmt.Printf("*************** %s\n", r.RequestURI)
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
-}
-
 // setDefaults does defaulting for the Server.
 func (this *Server) setDefaults() {
 	this.handlerByPath = map[string]http.Handler{}
@@ -113,20 +102,24 @@ func (*Server) NeedLeaderElection() bool {
 	return false
 }
 
+func (s *Server) Init() {
+	s.defaultingOnce.Do(s.setDefaults)
+}
+
 // Register marks the given webhook as being served at the given path.
 // It panics if two hooks are registered on the same path.
-func (s *Server) Register(path string, hook http.Handler) {
-	s.defaultingOnce.Do(s.setDefaults)
-	_, found := s.handlerByPath[path]
-	if found {
-		panic(fmt.Errorf("can't register duplicate path: %v", path))
-	}
-	// TODO(directxman12): call setfields if we've already started the server
-	s.handlerByPath[path] = hook
-	//s.Router.Handle(path, hook)
-	s.Router.PathPrefix(path).Handler(hook)
-	serverLog.Info("registering webhook", "path", path)
-}
+//func (s *Server) Register(path string, hook http.Handler) {
+//	s.defaultingOnce.Do(s.setDefaults)
+//	_, found := s.handlerByPath[path]
+//	if found {
+//		panic(fmt.Errorf("can't register duplicate path: %v", path))
+//	}
+//	// TODO(directxman12): call setfields if we've already started the server
+//	s.handlerByPath[path] = hook
+//	//s.Router.Handle(path, hook)
+//	s.Router.PathPrefix(path).Handler(hook)
+//	serverLog.Info("registering webhook", "path", path)
+//}
 
 func (this *Server) Start(stop <-chan struct{}) error {
 	serverLog.Info("Starting Auth Server")
