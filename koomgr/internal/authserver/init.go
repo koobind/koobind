@@ -55,22 +55,22 @@ func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain 
 		panic(err)
 	}
 
-	authServer.Register(common.V1ValidateTokenUrl, LogHttp(&v1.ValidateTokenHandler{
+	authServer.Register("/auth/v1/validateToken", &v1.ValidateTokenHandler{
 		BaseHandler: handlers.BaseHandler{
 			Logger:       ctrl.Log.WithName(common.V1ValidateTokenUrl),
 			TokenBasket:  tokenBasket,
 			PrefixLength: len(common.V1ValidateTokenUrl),
 		},
-	}))
-	authServer.Register(common.V1GetToken, LogHttp(&v1.GetTokenHandler{
+	})
+	authServer.Register("/auth/v1/getToken", &v1.GetTokenHandler{
 		BaseHandler: handlers.BaseHandler{
 			Logger:       ctrl.Log.WithName(common.V1GetToken),
 			TokenBasket:  tokenBasket,
 			PrefixLength: len(common.V1GetToken),
 		},
 		Providers: providerChain,
-	}))
-	authServer.Register(common.V1Admin, LogHttp(&v1.AdminV1Handler{
+	})
+	authServer.Register("/auth/v1/admin/", &v1.AdminV1Handler{
 		AuthHandler: handlers.AuthHandler{
 			BaseHandler: handlers.BaseHandler{
 				Logger:       ctrl.Log.WithName(common.V1Admin),
@@ -80,7 +80,7 @@ func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain 
 			Providers: providerChain,
 		},
 		AdminGroup: config.Conf.AdminGroup,
-	}))
+	})
 
 	err = manager.Add(&Cleaner{
 		Period:      60 * time.Second,

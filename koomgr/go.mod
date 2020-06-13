@@ -7,6 +7,7 @@ replace github.com/koobind/koobind/common v0.1.0 => ../common
 require (
 	github.com/go-logr/logr v0.1.0
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
+	github.com/gorilla/mux v1.7.4
 	github.com/koobind/koobind/common v0.1.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.5.1

@@ -23,6 +23,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/koomgr/internal/authserver/certwatcher"
 	"net"
 	"net/http"
@@ -56,7 +57,8 @@ type Server struct {
 	KeyName string
 
 	// WebhookMux is the multiplexer that handles different handlerByPath.
-	Mux *http.ServeMux
+	//Mux *http.ServeMux
+	Router *mux.Router
 
 	Manager controllerruntime.Manager
 
@@ -68,11 +70,26 @@ type Server struct {
 	handlerByPath map[string]http.Handler
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		//log.Println(r.RequestURI)
+		fmt.Printf("*************** %s\n", r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
+}
+
 // setDefaults does defaulting for the Server.
 func (this *Server) setDefaults() {
 	this.handlerByPath = map[string]http.Handler{}
-	if this.Mux == nil {
-		this.Mux = http.NewServeMux()
+	//if this.Mux == nil {
+	//	//this.Mux = http.NewServeMux()
+	//	this.Mux = mux.
+	//}
+	if this.Router == nil {
+		this.Router = mux.NewRouter()
+		this.Router.Use(LogHttp)
 	}
 
 	if this.Port <= 0 {
@@ -106,7 +123,8 @@ func (s *Server) Register(path string, hook http.Handler) {
 	}
 	// TODO(directxman12): call setfields if we've already started the server
 	s.handlerByPath[path] = hook
-	s.Mux.Handle(path, hook)
+	//s.Router.Handle(path, hook)
+	s.Router.PathPrefix(path).Handler(hook)
 	serverLog.Info("registering webhook", "path", path)
 }
 
@@ -140,7 +158,7 @@ func (this *Server) Start(stop <-chan struct{}) error {
 	serverLog.Info("serving Auth server", "host", this.Host, "port", this.Port)
 
 	srv := &http.Server{
-		Handler: this.Mux,
+		Handler: this.Router,
 	}
 
 	idleConnsClosed := make(chan struct{})

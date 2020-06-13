@@ -75,7 +75,7 @@ var getTokensCmd = &cobra.Command{
 		} else if response.StatusCode == http.StatusUnauthorized {
 			fmt.Printf("ERROR: Unable to authenticate!\n")
 		} else {
-			fmt.Printf("ERROR: Invalid http response: %d, (Status:%d) Contact server administrator\n", response.Status, response.StatusCode)
+			fmt.Printf("ERROR: Invalid http response: %s, (Status:%d) Contact server administrator\n", response.Status, response.StatusCode)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

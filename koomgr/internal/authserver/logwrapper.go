@@ -24,13 +24,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-type LoggedHandler interface {
-	http.Handler
-}
-
 var httpLog = ctrl.Log.WithName("http")
 
-func LogHttp(h LoggedHandler) http.Handler {
+func LogHttp(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if httpLog.V(1).Enabled() {
 			httpLog.V(1).Info(fmt.Sprintf("--------- %s %s (from %s)", r.Method, r.RequestURI, r.RemoteAddr))
