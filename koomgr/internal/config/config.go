@@ -90,3 +90,7 @@ func (this *BaseProviderConfig) GetName() string {
 func (this *BaseProviderConfig) IsEnabled() bool {
 	return this.Enabled == nil || *this.Enabled
 }
+
+func (this *BaseProviderConfig) GetType() string {
+	return this.Type
+}

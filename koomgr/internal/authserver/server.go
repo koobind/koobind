@@ -106,21 +106,6 @@ func (s *Server) Init() {
 	s.defaultingOnce.Do(s.setDefaults)
 }
 
-// Register marks the given webhook as being served at the given path.
-// It panics if two hooks are registered on the same path.
-//func (s *Server) Register(path string, hook http.Handler) {
-//	s.defaultingOnce.Do(s.setDefaults)
-//	_, found := s.handlerByPath[path]
-//	if found {
-//		panic(fmt.Errorf("can't register duplicate path: %v", path))
-//	}
-//	// TODO(directxman12): call setfields if we've already started the server
-//	s.handlerByPath[path] = hook
-//	//s.Router.Handle(path, hook)
-//	s.Router.PathPrefix(path).Handler(hook)
-//	serverLog.Info("registering webhook", "path", path)
-//}
-
 func (this *Server) Start(stop <-chan struct{}) error {
 	serverLog.Info("Starting Auth Server")
 	this.defaultingOnce.Do(this.setDefaults)

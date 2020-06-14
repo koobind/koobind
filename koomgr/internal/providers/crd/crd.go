@@ -30,20 +30,16 @@ import (
 	"strconv"
 )
 
-type crdProvider struct {
+type CrdProvider struct {
 	*CrdProviderConfig
 	logger logr.Logger
 }
 
-func (this *crdProvider) GetName() string {
-	return this.Name
-}
-
-func (this *crdProvider) IsCritical() bool {
+func (this *CrdProvider) IsCritical() bool {
 	return *this.Critical
 }
 
-func (this *crdProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
+func (this *CrdProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
 	userStatus := common.UserStatus{
 		ProviderName:   this.Name,
 		Authority:      *this.CredentialAuthority,

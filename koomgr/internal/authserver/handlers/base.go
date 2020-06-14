@@ -33,14 +33,36 @@ type BaseHandler struct {
 	RequestId   int
 }
 
+// Each REST call must be concluded by one of these function
 func (this *BaseHandler) ServeJSON(response http.ResponseWriter, data interface{}) {
 	response.Header().Set("Content-Type", "application/json")
 	if this.Logger.V(1).Enabled() {
-		this.Logger.V(1).Info(fmt.Sprintf("Emit JSON:%s", common.JSON2String(data)))
-
+		this.Logger.V(1).Info(fmt.Sprintf("------ httpClose:Emit JSON:%s", common.JSON2String(data)))
 	}
+	response.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(response).Encode(data)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func (this *BaseHandler) HttpError(response http.ResponseWriter, message string, httpCode int) {
+	if this.Logger.V(1).Enabled() {
+		this.Logger.V(1).Info("------ httpError", "message", message, "httpCode", httpCode)
+	}
+	http.Error(response, message, httpCode)
+}
+
+func (this *BaseHandler) HttpClose(response http.ResponseWriter, message string, httpCode int) {
+	if this.Logger.V(1).Enabled() {
+		this.Logger.V(1).Info("------ httpClose", "message", message, "httpCode", httpCode)
+	}
+	if message != "" {
+		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.Header().Set("X-Content-Type-Options", "nosniff")
+		response.WriteHeader(httpCode)
+		_, _ = fmt.Fprintln(response, message)
+	} else {
+		response.WriteHeader(httpCode)
 	}
 }

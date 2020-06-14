@@ -34,7 +34,7 @@ func (this *CrdProviderConfig) Open(idx int, configFolder string) (providers.Pro
 	if err := this.InitBase(idx); err != nil {
 		return nil, err
 	}
-	prvd := crdProvider{
+	prvd := CrdProvider{
 		CrdProviderConfig: this,
 	}
 	if prvd.Namespace == "" {

@@ -33,10 +33,6 @@ type staticProvider struct {
 
 var spLog = ctrl.Log.WithName("static")
 
-func (this *staticProvider) GetName() string {
-	return this.Name
-}
-
 func (this *staticProvider) IsCritical() bool {
 	return *this.Critical
 }

@@ -19,18 +19,24 @@
 package authserver
 
 import (
+	"fmt"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers/v1"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/token"
+	"github.com/koobind/koobind/koomgr/internal/token/crd"
+	"github.com/koobind/koobind/koomgr/internal/token/memory"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"time"
 )
 
-func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain providers.ProviderChain) {
+func Init(manager manager.Manager, kubeClient client.Client, providerChain providers.ProviderChain) {
+
+	tokenBasket := NewTokenBasket(kubeClient)
 
 	// There is two endpoint:
 	// - Webhook server, handling all handlerByPath (Mutating, validating an authitication). Called only by API server
@@ -56,7 +62,7 @@ func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain 
 
 	authServer.Init()
 
-	v1.InitRoutes(authServer.Router, tokenBasket, providerChain)
+	v1.InitRoutes(authServer.Router, tokenBasket, kubeClient, providerChain)
 
 	err = manager.Add(&Cleaner{
 		Period:      60 * time.Second,
@@ -66,4 +72,14 @@ func Init(manager manager.Manager, tokenBasket token.TokenBasket, providerChain 
 		panic(err)
 	}
 
+}
+
+func NewTokenBasket(kubeClient client.Client) token.TokenBasket {
+	if config.Conf.TokenStorage == "memory" {
+		return memory.NewTokenBasket()
+	} else if config.Conf.TokenStorage == "crd" {
+		return crd.NewTokenBasket(kubeClient)
+	} else {
+		panic(fmt.Sprintf("Invalid token storage value:%s", config.Conf.TokenStorage))
+	}
 }

@@ -20,52 +20,20 @@ package v1
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
 	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type AdminV1Handler struct {
 	handlers.AuthHandler
 	AdminGroup  string
+	kubeClient  client.Client
 	handlerFunc handlerFunc
 }
 
 type handlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
-
-func describeUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
-	user := mux.Vars(request)["user"]
-	found, userDescribeResponse := handler.Providers.DescribeUser(user)
-	if !found {
-		http.Error(response, fmt.Sprintf("User %s not found", user), http.StatusNotFound)
-	}
-	handler.ServeJSON(response, userDescribeResponse)
-}
-
-func listToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
-	list, err := handler.TokenBasket.GetAll()
-	if err != nil {
-		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
-		return
-	}
-	data := common.TokenListResponse{
-		Tokens: list,
-	}
-	handler.ServeJSON(response, data)
-}
-
-func deleteToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
-	token := mux.Vars(request)["token"]
-	ok, err := handler.TokenBasket.Delete(token)
-	if err != nil {
-		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
-		return
-	}
-	if !ok {
-		http.Error(response, "Not found", http.StatusNotFound)
-	}
-}
 
 func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	this.ServeAuthHTTP(response, request, func(usr common.User) {

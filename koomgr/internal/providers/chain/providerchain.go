@@ -190,6 +190,37 @@ func (this *providerChain) DescribeUser(login string) (bool, common.UserDescribe
 	return found, result
 }
 
+func (this *providerChain) GetNamespace(providerName string) (namespace string, err error) {
+	if providerName == "_" {
+		ns := ""
+		for _, prvd := range this.providers {
+			if prvd.GetType() == "crd" {
+				if ns != "" {
+					return "", fmt.Errorf("There is more than one provider of type 'crd'. A provider name must be given!")
+				}
+				crdProvider := (prvd).(*crd.CrdProvider)
+				ns = crdProvider.Namespace
+			}
+		}
+		if ns == "" {
+			return "", fmt.Errorf("There is no 'crd' provider in this configuration!")
+		} else {
+			return ns, nil
+		}
+	} else {
+		for _, prvd := range this.providers {
+			if prvd.GetName() == providerName {
+				crdProvider, ok := (prvd).(*crd.CrdProvider)
+				if !ok {
+					return "", fmt.Errorf("Provider '%s' is not of type 'crd'.", providerName)
+				}
+				return crdProvider.Namespace, nil
+			}
+		}
+		return "", fmt.Errorf("There is no provider named '%s' defined in this configuration", providerName)
+	}
+}
+
 func unique(stringSlice []string) []string {
 	keys := make(map[string]bool)
 	list := []string{}

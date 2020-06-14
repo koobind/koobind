@@ -37,10 +37,6 @@ type ldapProvider struct {
 	logger           logr.Logger
 }
 
-func (this *ldapProvider) GetName() string {
-	return this.Name
-}
-
 func (this *ldapProvider) IsCritical() bool {
 	return *this.Critical
 }

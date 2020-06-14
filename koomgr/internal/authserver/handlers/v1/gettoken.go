@@ -62,8 +62,8 @@ func (this *GetTokenHandler) ServeHTTP(response http.ResponseWriter, request *ht
 						Token:     userToken.Token,
 						ClientTTL: userToken.Lifecycle.ClientTTL,
 					}
-					this.ServeJSON(response, data)
 					this.Logger.Info(fmt.Sprintf("Token '%s' granted to user:'%s'  uid:%s, groups=%v", data.Token, usr.Username, usr.Uid, usr.Groups))
+					this.ServeJSON(response, data)
 				}
 			} else {
 				this.Logger.Info(fmt.Sprintf("No token granted to user '%s'. Unable to validate this login.", login))
