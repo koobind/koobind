@@ -24,14 +24,19 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/koomgr/internal/authserver/certwatcher"
+	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
+	v1 "github.com/koobind/koobind/koomgr/internal/authserver/handlers/v1"
+	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/providers"
+	"github.com/koobind/koobind/koomgr/internal/token"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	controllerruntime "sigs.k8s.io/controller-runtime"
+	ctrlrt "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
-	"sync"
 )
 
 var serverLog = logf.Log.WithName("Auth server")
@@ -59,10 +64,7 @@ type Server struct {
 	//Mux *http.ServeMux
 	Router *mux.Router
 
-	Manager controllerruntime.Manager
-
-	// defaultingOnce ensures that the default fields are only ever set once.
-	defaultingOnce sync.Once
+	Manager ctrlrt.Manager
 
 	// handlerByPath keep track of all registered handlers for dependency injection,
 	// and to provide better panic messages on duplicate handler registration.
@@ -102,13 +104,49 @@ func (*Server) NeedLeaderElection() bool {
 	return false
 }
 
-func (s *Server) Init() {
-	s.defaultingOnce.Do(s.setDefaults)
+func (s *Server) Init(tokenBasket token.TokenBasket, kubeClient client.Client, providerChain providers.ProviderChain) {
+	s.setDefaults()
+
+	s.Router.Handle("/auth/v1/validateToken", &v1.ValidateTokenHandler{
+		BaseHandler: handlers.BaseHandler{
+			Logger:      ctrlrt.Log.WithName("authV1validateToken"),
+			TokenBasket: tokenBasket,
+		},
+	}).Methods("GET", "POST") // POST is from Api server while GET is from our client
+
+	s.Router.Handle("/auth/v1/getToken", &v1.GetTokenHandler{
+		BaseHandler: handlers.BaseHandler{
+			Logger:      ctrlrt.Log.WithName("v1getToken"),
+			TokenBasket: tokenBasket,
+		},
+		Providers: providerChain,
+	}).Methods("GET")
+
+	newAdminHandler := func(hf v1.HandlerFunc, loggerName string) *v1.AdminV1Handler {
+		return &v1.AdminV1Handler{
+			AuthHandler: handlers.AuthHandler{
+				BaseHandler: handlers.BaseHandler{
+					Logger:      ctrlrt.Log.WithName(loggerName),
+					TokenBasket: tokenBasket,
+				},
+				Providers: providerChain,
+			},
+			AdminGroup:  config.Conf.AdminGroup,
+			KubeClient:  kubeClient,
+			HandlerFunc: hf,
+		}
+	}
+
+	s.Router.Handle("/auth/v1/admin/tokens/{token}", newAdminHandler(v1.DeleteToken, "adminV1deleteToken")).Methods("DELETE")
+	s.Router.Handle("/auth/v1/admin/tokens", newAdminHandler(v1.ListToken, "adminV1listToken")).Methods("GET")
+	s.Router.Handle("/auth/v1/admin/users/{user}", newAdminHandler(v1.DescribeUser, "adminV1describeUser")).Methods("GET")
+	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.AddUser, "adminV1addUser")).Methods("POST")
+	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.DeleteUser, "adminV1addUser")).Methods("DELETE")
+
 }
 
 func (this *Server) Start(stop <-chan struct{}) error {
 	serverLog.Info("Starting Auth Server")
-	this.defaultingOnce.Do(this.setDefaults)
 	certPath := filepath.Join(this.CertDir, this.CertName)
 	keyPath := filepath.Join(this.CertDir, this.KeyName)
 

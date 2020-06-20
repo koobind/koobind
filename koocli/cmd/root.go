@@ -68,12 +68,12 @@ func init() {
 	var logJson bool
 	var kubeconfig string
 
-	rootCmd.PersistentFlags().StringVarP(&context, "context", "", "", "Context" )
-	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Kubeconfig file path. Used to lookup context" )
-	rootCmd.PersistentFlags().StringVarP(&rootCaFile, "rootCaFile", "", "", "Cert authority for client connection" )
-	rootCmd.PersistentFlags().StringVarP(&server, "server", "", "", "Authentication server" )
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "logLevel", "", "INFO", "Log level" )
-	rootCmd.PersistentFlags().BoolVarP(&logJson, "logJson", "j", false, "logs in JSON")
+	rootCmd.PersistentFlags().StringVar(&context, "context", "", "Context" )
+	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup context" )
+	rootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection" )
+	rootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server" )
+	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level" )
+	rootCmd.PersistentFlags().BoolVar(&logJson, "logJson", false, "logs in JSON")
 
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		internal.ConfigureLogger(logLevel, logJson)

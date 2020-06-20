@@ -23,11 +23,11 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(cancelCmd)
+	rootCmd.AddCommand(deleteCmd)
 }
 
-var cancelCmd = &cobra.Command{
-	Use:	"cancel",
-	Short:  "Cancel some resources",
+var deleteCmd = &cobra.Command{
+	Use:	"delete",
+	Short:  "Delete some resources",
 }
 

@@ -19,32 +19,43 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
+	"net/http"
 	"os"
 )
 
 
-var login string
-var login_password string
-
 func init() {
-	rootCmd.AddCommand(loginCmd)
-	loginCmd.PersistentFlags().StringVar(&login, "user", "", "User name")
-	loginCmd.PersistentFlags().StringVar(&login_password, "password", "", "User password")
-
+	deleteCmd.AddCommand(deleteTokenCmd)
 }
 
-
-var loginCmd = &cobra.Command{
-	Use:	"login",
-	Short:  "Logout and get a new token",
+var deleteTokenCmd = &cobra.Command{
+	Use:	"token <token>",
+	Short:  "Delete a token (Unlog the user)",
+	Args: cobra.MinimumNArgs(1),
 	Run:    func(cmd *cobra.Command, args []string) {
 		initHttpConnection()
-		internal.DeleteTokenBag(context)	// Logout first. Don't stay logged with old token if we are unable to login
-		t := doLogin(login, login_password)
-		if t == "" {
-			os.Exit(3)
+		targetToken := args[0]
+		token := retrieveToken()
+		if token == "" {
+			token = doLogin("", "")
+		}
+		response, err := httpConnection.Do("DELETE", "/auth/v1/admin/tokens/" + targetToken, &internal.HttpAuth{Token: token}, nil)
+		if err != nil {
+			panic(err)
+		}
+		if response.StatusCode == http.StatusOK {
+			fmt.Printf("Token %s is successfully deleted\n", targetToken)
+		} else if response.StatusCode == http.StatusNotFound {
+			fmt.Printf("ERROR: Token %s does not exists\n", targetToken)
+		} else {
+			printHttpResponseMessage(response)
+		}
+		if response.StatusCode != http.StatusOK {
+			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))
 		}
 	},
 }
+

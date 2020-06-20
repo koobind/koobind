@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func listToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func ListToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	list, err := handler.TokenBasket.GetAll()
 	if err != nil {
 		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
@@ -18,7 +18,7 @@ func listToken(handler *AdminV1Handler, usr common.User, response http.ResponseW
 	handler.ServeJSON(response, data)
 }
 
-func deleteToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DeleteToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	token := mux.Vars(request)["token"]
 	ok, err := handler.TokenBasket.Delete(token)
 	if err != nil {
@@ -27,6 +27,7 @@ func deleteToken(handler *AdminV1Handler, usr common.User, response http.Respons
 	}
 	if !ok {
 		http.Error(response, "Not found", http.StatusNotFound)
+		return
 	}
 	handler.HttpClose(response, "", http.StatusOK)
 }

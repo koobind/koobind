@@ -20,7 +20,6 @@ package authserver
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
 	"github.com/koobind/koobind/koomgr/internal/authserver/handlers/v1"
 	"github.com/koobind/koobind/koomgr/internal/config"
@@ -43,9 +42,9 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 	// - Auth server, handling all requests from koocli. Exposed externally by a nodeport
 	// ValidateTokenHandler is set on both, as will be called from API server (POST) and koocli (GET)
 
-	manager.GetWebhookServer().Register(common.V1ValidateTokenUrl, LogHttp(&v1.ValidateTokenHandler{
+	manager.GetWebhookServer().Register("/auth/v1/validateToken", LogHttp(&v1.ValidateTokenHandler{
 		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrl.Log.WithName(common.V1ValidateTokenUrl),
+			Logger:      ctrl.Log.WithName("webHookV1validateToken"),
 			TokenBasket: tokenBasket,
 		},
 	}))
@@ -55,14 +54,12 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 		Port:    config.Conf.AuthServer.Port,
 		CertDir: config.Conf.AuthServer.CertDir,
 	}
+	authServer.Init(tokenBasket, kubeClient, providerChain)
+
 	err := manager.Add(&authServer)
 	if err != nil {
 		panic(err)
 	}
-
-	authServer.Init()
-
-	v1.InitRoutes(authServer.Router, tokenBasket, kubeClient, providerChain)
 
 	err = manager.Add(&Cleaner{
 		Period:      60 * time.Second,

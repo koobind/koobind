@@ -71,10 +71,10 @@ func NewHttpConnection(baseUrl string, rootCaFile string) *HttpConnection {
 	}
 }
 
-func (this *HttpConnection) Get(urlPath string, auth *HttpAuth, body io.Reader) (*http.Response, error) {
+func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, body io.Reader) (*http.Response, error) {
 	targetUrl := this.baseUrl + urlPath
 	//fmt.Printf("baseUrl:'%s'   urlPath:'%s'   targetUrl:'%s'\n", this.baseUrl, urlPath, targetUrl)
-	request, err := http.NewRequest("GET", targetUrl, body)
+	request, err := http.NewRequest(method, targetUrl, body)
 	if err != nil {
 		return nil, err
 	}
@@ -89,22 +89,26 @@ func (this *HttpConnection) Get(urlPath string, auth *HttpAuth, body io.Reader) 
 	return this.httpClient.Do(request)
 }
 
-func (this *HttpConnection) Delete(urlPath string, auth *HttpAuth) (*http.Response, error) {
-	targetUrl := this.baseUrl + urlPath
-	request, err := http.NewRequest("DELETE", targetUrl, nil)
-	if err != nil {
-		return nil, err
-	}
-	if auth != nil {
-		if auth.Login != "" {
-			request.SetBasicAuth(auth.Login, auth.Password)
-		}
-		if auth.Token != "" {
-			request.Header.Set("Authorization", "Bearer "+ auth.Token)
-		}
-	}
-	return this.httpClient.Do(request)
-}
+
+
+//
+//
+//func (this *HttpConnection) Delete(urlPath string, auth *HttpAuth) (*http.Response, error) {
+//	targetUrl := this.baseUrl + urlPath
+//	request, err := http.NewRequest("DELETE", targetUrl, nil)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if auth != nil {
+//		if auth.Login != "" {
+//			request.SetBasicAuth(auth.Login, auth.Password)
+//		}
+//		if auth.Token != "" {
+//			request.Header.Set("Authorization", "Bearer "+ auth.Token)
+//		}
+//	}
+//	return this.httpClient.Do(request)
+//}
 
 
 

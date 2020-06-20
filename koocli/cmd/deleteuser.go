@@ -20,45 +20,43 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 )
 
-
 func init() {
-	cancelCmd.AddCommand(cancelTokenCmd)
+	deleteCmd.AddCommand(deleteUserCmd)
 }
 
-var cancelTokenCmd = &cobra.Command{
-	Use:	"token <token>",
-	Short:  "Cancel a token (Unlog the user)",
-	Args: cobra.MinimumNArgs(1),
-	Run:    func(cmd *cobra.Command, args []string) {
+
+var deleteUserCmd = &cobra.Command{
+	Use:     "user",
+	Aliases: []string{},
+	Short:   "Create new user (Admin)",
+	Hidden:  false,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			fmt.Printf("ERROR: A username must be provided!\n")
+			os.Exit(2)
+		}
 		initHttpConnection()
-		targetToken := args[0]
+		userName := args[0]
 		token := retrieveToken()
 		if token == "" {
 			token = doLogin("", "")
 		}
-		response, err := httpConnection.Delete(common.V1Admin + "tokens/" + targetToken, &internal.HttpAuth{Token: token})
+		response, err := httpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/users/%s", provider, userName) , &internal.HttpAuth{Token: token}, nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("Token %s is successfully cancelled\n", targetToken)
-		} else if response.StatusCode == http.StatusNotFound {
-			fmt.Printf("ERROR: Token %s does not exists\n", targetToken)
-		} else if response.StatusCode == http.StatusForbidden {
-			fmt.Printf("ERROR: You are not allowed to perform this operation!\n")
-		} else if response.StatusCode == http.StatusUnauthorized {
-			fmt.Printf("ERROR: Unable to authenticate!\n")
+			fmt.Printf("User deleted sucessfully.\n")
 		} else {
-			fmt.Printf("ERROR: Invalid http response: %s, (Status:%d) Contact server administrator\n", response.Status, response.StatusCode)
+			printHttpResponseMessage(response)
 		}
-		if response.StatusCode != http.StatusOK {
+		if response.StatusCode != http.StatusCreated {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))
 		}
 	},

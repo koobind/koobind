@@ -32,7 +32,7 @@ var displayToken bool
 
 func init() {
 	rootCmd.AddCommand(whoamiCmd)
-	whoamiCmd.PersistentFlags().BoolVarP(&displayToken, "token", "", false, "Display token")
+	whoamiCmd.PersistentFlags().BoolVar(&displayToken, "token", false, "Display token")
 }
 
 var whoamiCmd = &cobra.Command{

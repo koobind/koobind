@@ -33,7 +33,7 @@ var hash_password string
 
 func init() {
 	rootCmd.AddCommand(hashCmd)
-	hashCmd.PersistentFlags().StringVarP(&hash_password, "password", "", "", "User password")
+	hashCmd.PersistentFlags().StringVar(&hash_password, "password", "", "User password")
 
 }
 

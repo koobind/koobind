@@ -35,7 +35,7 @@ var explainAuth bool
 
 func init() {
 	getCmd.AddCommand(usersCmd)
-	getCmd.PersistentFlags().BoolVarP(&explainAuth, "explain", "", false, "Explain user authentication")
+	getCmd.PersistentFlags().BoolVar(&explainAuth, "explain", false, "Explain user authentication")
 }
 
 var usersCmd = &cobra.Command{
@@ -55,7 +55,7 @@ var usersCmd = &cobra.Command{
 		if token == "" {
 			token = doLogin("", "")
 		}
-		response, err := httpConnection.Get(common.V1Admin + "users/" + userName, &internal.HttpAuth{Token: token},  nil)
+		response, err := httpConnection.Do("GET", "/auth/v1/admin/users/" + userName, &internal.HttpAuth{Token: token},  nil)
 		if err != nil {
 			panic(err)
 		}
@@ -96,14 +96,10 @@ var usersCmd = &cobra.Command{
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()
 			}
-		} else if response.StatusCode == http.StatusForbidden {
-			fmt.Printf("ERROR: You are not allowed to perform this operation!\n")
-		} else if response.StatusCode == http.StatusUnauthorized {
-			fmt.Printf("ERROR: Unable to authenticate!\n")
 		} else if response.StatusCode == http.StatusNotFound {
 			fmt.Printf("ERROR: User %s does not exists!\n", userName)
 		} else {
-			fmt.Printf("ERROR: Invalid http response: %s, (Status:%d) Contact server administrator\n", response.Status, response.StatusCode)
+			printHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

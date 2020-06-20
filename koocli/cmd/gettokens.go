@@ -46,7 +46,7 @@ var getTokensCmd = &cobra.Command{
 		if token == "" {
 			token = doLogin("", "")
 		}
-		response, err := httpConnection.Get(common.V1Admin + "tokens", &internal.HttpAuth{Token: token},  nil)
+		response, err := httpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: token},  nil)
 		if err != nil {
 			panic(err)
 		}
@@ -70,12 +70,8 @@ var getTokensCmd = &cobra.Command{
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()
 			}
-		} else if response.StatusCode == http.StatusForbidden {
-			fmt.Printf("ERROR: You are not allowed to perform this operation!\n")
-		} else if response.StatusCode == http.StatusUnauthorized {
-			fmt.Printf("ERROR: Unable to authenticate!\n")
 		} else {
-			fmt.Printf("ERROR: Invalid http response: %s, (Status:%d) Contact server administrator\n", response.Status, response.StatusCode)
+			printHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

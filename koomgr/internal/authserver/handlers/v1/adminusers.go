@@ -21,7 +21,7 @@ import (
 // curl -k  -u admin:admin -X GET https://koomgrdev:9444/auth/v1/admin/users/jsmith | jq
 // curl -k -i -u admin:admin -X GET https://koomgrdev:9444/auth/v1/admin/users/jsmith
 
-func describeUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DescribeUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	user := mux.Vars(request)["user"]
 	found, userDescribeResponse := handler.Providers.DescribeUser(user)
 	if !found {
@@ -33,7 +33,7 @@ func describeUser(handler *AdminV1Handler, usr common.User, response http.Respon
 
 func getUser(handler *AdminV1Handler, namespace string, userName string) (crdUser *v1alpha1.User, err error) {
 	crdUser = &v1alpha1.User{}
-	err = handler.kubeClient.Get(context.TODO(), client.ObjectKey{
+	err = handler.KubeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: namespace,
 		Name:      userName,
 	}, crdUser)
@@ -50,7 +50,7 @@ func getUser(handler *AdminV1Handler, namespace string, userName string) (crdUse
 // curl -k -i -u admin:admin -X POST https://koomgrdev:9444/auth/v1/admin/_/users/jsmith3 -d '{ "email": "xx@xx" }'
 // curl -k -i -u admin:admin -X POST https://koomgrdev:9444/auth/v1/admin/_/users/jsmith4 -d '{ "email": "xx@xx", "commonName": "John smith4", "passwordHash": "$2a$10$SxKQu8Ny54c/MuujiltVD.9J9P8kvSM01UK.sTh/bhAxYhoLGwjLi", "uid": 10009, "comment": "A test User", "disabled": false }'
 
-func addUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func AddUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {
@@ -85,10 +85,36 @@ func addUser(handler *AdminV1Handler, usr common.User, response http.ResponseWri
 		Spec:   userSpec,
 		Status: v1alpha1.UserStatus{},
 	}
-	err = handler.kubeClient.Create(context.TODO(), crdUser)
+	err = handler.KubeClient.Create(context.TODO(), crdUser)
 	if err != nil {
 		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	handler.HttpClose(response, "", http.StatusCreated)
+}
+
+func DeleteUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+	provider := mux.Vars(request)["provider"]
+	namespace, err := handler.Providers.GetNamespace(provider)
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Check if user exists
+	userName := mux.Vars(request)["user"]
+	crdUser, err := getUser(handler, namespace, userName)
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if crdUser == nil {
+		handler.HttpError(response, "User does not exists!", http.StatusNotFound)
+		return
+	}
+	err = handler.KubeClient.Delete(context.TODO(), crdUser, client.GracePeriodSeconds(0))
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	handler.HttpClose(response, "", http.StatusOK)
 }

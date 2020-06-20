@@ -29,17 +29,17 @@ import (
 type AdminV1Handler struct {
 	handlers.AuthHandler
 	AdminGroup  string
-	kubeClient  client.Client
-	handlerFunc handlerFunc
+	KubeClient  client.Client
+	HandlerFunc HandlerFunc
 }
 
-type handlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
+type HandlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
 
 func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	this.ServeAuthHTTP(response, request, func(usr common.User) {
 		if this.AdminGroup != "" && stringInSlice(this.AdminGroup, usr.Groups) {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s' allowed to access admin interface", usr.Username))
-			this.handlerFunc(this, usr, response, request)
+			this.HandlerFunc(this, usr, response, request)
 		} else {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s': access to admin interface denied (Not in appropriate group)", usr.Username))
 			http.Error(response, "Unallowed", http.StatusForbidden)

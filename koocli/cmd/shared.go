@@ -26,6 +26,7 @@ import (
 	. "github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"golang.org/x/crypto/ssh/terminal"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -63,7 +64,7 @@ func doLogin(login, password string) (token string) {
 }
 
 func getTokenFor(login, password string) *GetTokenResponse {
-	response, err := httpConnection.Get(V1GetToken, &internal.HttpAuth{Login: login, Password: password}, nil)
+	response, err := httpConnection.Do("GET", "/auth/v1/getToken", &internal.HttpAuth{Login: login, Password: password}, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -122,7 +123,7 @@ func validateToken(token string) *User {
 		panic(err)
 	}
 	// Will use the service intended for the authentication webhook, but with a GET method
-	response, err2 := httpConnection.Get(V1ValidateTokenUrl, nil, bytes.NewBuffer(body))
+	response, err2 := httpConnection.Do("GET", "/auth/v1/validateToken", nil, bytes.NewBuffer(body))
 	if err2 != nil {
 		panic(err2)
 	}
@@ -165,6 +166,27 @@ func retrieveToken() string {
 		}
 	} else {
 		return ""
+	}
+}
+
+func printHttpResponseMessage(response *http.Response) {
+	data, _ := ioutil.ReadAll(response.Body)
+	if response.StatusCode == http.StatusForbidden {
+		fmt.Printf("ERROR: You are not allowed to perform this operation!\n")
+	} else if response.StatusCode == http.StatusUnauthorized {
+		fmt.Printf("ERROR: Unable to authenticate!\n")
+	} else {
+		if data != nil && len(data) > 0 {
+			m := strings.TrimSpace(string(data))
+			fmt.Printf("ERROR: %s: %s.", response.Status, m)
+		} else {
+			fmt.Printf("ERROR: %s.", response.Status)
+		}
+		if response.StatusCode > http.StatusInternalServerError {
+			fmt.Printf(" Check server logs or contact your server administrator.")
+		} else {
+			fmt.Print("\n")
+		}
 	}
 }
 
