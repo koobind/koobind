@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package misc
 
 import (
 	"fmt"
@@ -32,12 +32,11 @@ import (
 var hash_password string
 
 func init() {
-	rootCmd.AddCommand(hashCmd)
-	hashCmd.PersistentFlags().StringVar(&hash_password, "password", "", "User password")
+	HashCmd.PersistentFlags().StringVar(&hash_password, "password", "", "User password")
 
 }
 
-var hashCmd = &cobra.Command{
+var HashCmd = &cobra.Command{
 	Use:	"hash",
 	Short:  "Provided password hash, for use in config file",
 	Run:    func(cmd *cobra.Command, args []string) {

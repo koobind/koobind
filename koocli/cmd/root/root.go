@@ -16,10 +16,12 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package root
 
 import (
 	"fmt"
+	. "github.com/koobind/koobind/koocli/cmd/common"
+	"github.com/koobind/koobind/koocli/cmd/misc"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -29,17 +31,11 @@ import (
 	"path"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "kubectl-koo",
 	Short: "A kubectl plugin for Kubernetes authentification",
 }
 
-
-// package logger
-var log *logrus.Entry
-
-var context string
-var config *internal.Config
 
 
 func lookupContextInKubeconfig(kubeconfig string) string {
@@ -52,12 +48,12 @@ func lookupContextInKubeconfig(kubeconfig string) string {
 			kubeconfig = path.Join(usr.HomeDir, ".kube/config")
 		}
 	}
-	log.Debugf("kubeconfig=%s", kubeconfig)
+	Log.Debugf("kubeconfig=%s", kubeconfig)
 	config, err := clientcmd.LoadFromFile(kubeconfig)
 	if err != nil {
 		return ""
 	}
-	log.Debugf("kubeconfig=%s   context:%s", kubeconfig, config.CurrentContext)
+	Log.Debugf("kubeconfig=%s   Context:%s", kubeconfig, config.CurrentContext)
 	return config.CurrentContext
 }
 
@@ -68,24 +64,38 @@ func init() {
 	var logJson bool
 	var kubeconfig string
 
-	rootCmd.PersistentFlags().StringVar(&context, "context", "", "Context" )
-	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup context" )
-	rootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection" )
-	rootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server" )
-	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level" )
-	rootCmd.PersistentFlags().BoolVar(&logJson, "logJson", false, "logs in JSON")
+	// We must declare child in parent.
+	// Performing RootCmd.AddCommand(...) in the child init() function will not works as there is chance the child package will not be loaded, as not imported by any package.
+	RootCmd.AddCommand(GetCmd)
+	RootCmd.AddCommand(DescribeCmd)
+	RootCmd.AddCommand(DeleteCmd)
+	RootCmd.AddCommand(CreateCmd)
+	RootCmd.AddCommand(misc.AuthCmd)
+	RootCmd.AddCommand(misc.HashCmd)
+	RootCmd.AddCommand(misc.LoginCmd)
+	RootCmd.AddCommand(misc.LogoutCmd)
+	RootCmd.AddCommand(misc.WhoamiCmd)
+	RootCmd.AddCommand(misc.VersionCmd)
 
-	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+
+	RootCmd.PersistentFlags().StringVar(&Context, "Context", "", "Context" )
+	RootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup Context" )
+	RootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection" )
+	RootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server" )
+	RootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level" )
+	RootCmd.PersistentFlags().BoolVar(&logJson, "logJson", false, "logs in JSON")
+
+	RootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		internal.ConfigureLogger(logLevel, logJson)
-		log = logrus.WithFields(logrus.Fields{"package": "cmd"})
+		Log = logrus.WithFields(logrus.Fields{"package": "cmd"})
 
-		if context == "" {
-			context = lookupContextInKubeconfig(kubeconfig)
-			if context == "" {
-				context = "default"
+		if Context == "" {
+			Context = lookupContextInKubeconfig(kubeconfig)
+			if Context == "" {
+				Context = "default"
 			}
 		}
-		log.Debugf("context:%s", context)
+		Log.Debugf("Context:%s", Context)
 
 		if rootCaFile != "" {
 			if !path.IsAbs(rootCaFile) {
@@ -96,9 +106,9 @@ func init() {
 				rootCaFile = path.Join(cwd, rootCaFile)
 			}
 		}
-		if cmd != getContextCmd {
-			config = internal.LoadConfig(context)
-			if config == nil {
+		if cmd != misc.GetContextCmd {
+			Config = internal.LoadConfig(Context)
+			if Config == nil {
 				if server == "" {
 					_, _ = fmt.Fprintf(os.Stderr, "\nERROR: Missing 'server' parameter on initial call\n\n")
 					os.Exit(2)
@@ -107,23 +117,23 @@ func init() {
 					_, _ = fmt.Fprintf(os.Stderr, "\nERROR: Missing 'rootCaFile' parameter on initial call\n\n")
 					os.Exit(2)
 				}
-				config = &internal.Config{
+				Config = &internal.Config{
 					Server:     server,
 					RootCaFile: rootCaFile,
 				}
-				internal.SaveConfig(context, config)
+				internal.SaveConfig(Context, Config)
 			} else {
 				dirtyConfig := false
-				if server != "" && server != config.Server {
-					config.Server = server
+				if server != "" && server != Config.Server {
+					Config.Server = server
 					dirtyConfig = true
 				}
-				if rootCaFile != "" && rootCaFile != config.RootCaFile {
-					config.RootCaFile = rootCaFile
+				if rootCaFile != "" && rootCaFile != Config.RootCaFile {
+					Config.RootCaFile = rootCaFile
 					dirtyConfig = true
 				}
 				if dirtyConfig {
-					internal.SaveConfig(context, config)
+					internal.SaveConfig(Context, Config)
 				}
 			}
 		}
@@ -141,7 +151,7 @@ func Execute() {
 			}
 		}
 	}()
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		//fmt.Println(err)
 		os.Exit(2)
 	}

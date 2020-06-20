@@ -16,22 +16,23 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package root
 
 import (
+	"github.com/koobind/koobind/koocli/cmd/token"
+	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
 
-
-var jsonOutput bool
-
 func init() {
-	rootCmd.AddCommand(getCmd)
-	getCmd.PersistentFlags().BoolVarP(&jsonOutput, "json", "", false, "Output in JSON")
+	DeleteCmd.AddCommand(user.DeleteUserCmd)
+	DeleteCmd.AddCommand(token.DeleteTokenCmd)
+
+
 }
 
-var getCmd = &cobra.Command{
-	Use:	"get",
-	Short:  "Get ressources",
+var DeleteCmd = &cobra.Command{
+	Use:	"delete",
+	Short:  "Delete some resources",
 }
 

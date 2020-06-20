@@ -16,11 +16,12 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package misc
 
 import (
 	"fmt"
 	. "github.com/koobind/koobind/common"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"os"
@@ -31,16 +32,15 @@ import (
 var displayToken bool
 
 func init() {
-	rootCmd.AddCommand(whoamiCmd)
-	whoamiCmd.PersistentFlags().BoolVar(&displayToken, "token", false, "Display token")
+	WhoamiCmd.PersistentFlags().BoolVar(&displayToken, "token", false, "Display token")
 }
 
-var whoamiCmd = &cobra.Command{
+var WhoamiCmd = &cobra.Command{
 	Use:	"whoami",
 	Short:  "Display current logged user, if any",
 	Run:    func(cmd *cobra.Command, args []string) {
-		initHttpConnection()
-		tokenBag := internal.LoadTokenBag(context)
+		InitHttpConnection()
+		tokenBag := internal.LoadTokenBag(Context)
 		if user := getUser(tokenBag); user != nil {
 			tw := new(tabwriter.Writer)
 			tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
@@ -64,7 +64,7 @@ var whoamiCmd = &cobra.Command{
 // getUser() trigger a server exchange (validateToken) in all cases, as we have no local storage of user info.
 func getUser(tokenBag *internal.TokenBag) *User {
 	if tokenBag != nil {
-		user := validateToken(tokenBag.Token)
+		user := ValidateToken(tokenBag.Token)
 		if user != nil {
 			return user
 		}

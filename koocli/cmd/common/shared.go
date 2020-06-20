@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package common
 
 import (
 	"bufio"
@@ -25,6 +25,7 @@ import (
 	"fmt"
 	. "github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koocli/internal"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"net/http"
@@ -34,26 +35,39 @@ import (
 	"time"
 )
 
-var httpConnection *internal.HttpConnection
 
-func initHttpConnection() {
-	httpConnection = internal.NewHttpConnection(config.Server, config.RootCaFile)
+// Global variables. Shared by all commands
+var HttpConnection *internal.HttpConnection
+// package logger
+var Log *logrus.Entry
+
+var Context string
+var Config *internal.Config
+
+// Variable shared by at least two packages
+var JsonOutput bool
+var Provider string
+
+
+
+func InitHttpConnection() {
+	HttpConnection = internal.NewHttpConnection(Config.Server, Config.RootCaFile, Log)
 }
 
 
-func doLogin(login, password string) (token string) {
+func DoLogin(login, password string) (token string) {
 	var getTokenResponse *GetTokenResponse
 	for i := 0; i < 3; i++ {
 		login, password = inputCredentials(login, password)
 		getTokenResponse = getTokenFor(login, password)
 		if getTokenResponse != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "logged successfully..\n")
-			internal.SaveTokenBag(context, &internal.TokenBag{
+			internal.SaveTokenBag(Context, &internal.TokenBag{
 				Token:      getTokenResponse.Token,
 				ClientTTL:  getTokenResponse.ClientTTL,
 				LastAccess: time.Now(),
 			} )
-			log.Debugf("TokenResponse:%v\n", getTokenResponse)
+			Log.Debugf("TokenResponse:%v\n", getTokenResponse)
 			return getTokenResponse.Token
 		}
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid login!\n")
@@ -64,7 +78,7 @@ func doLogin(login, password string) (token string) {
 }
 
 func getTokenFor(login, password string) *GetTokenResponse {
-	response, err := httpConnection.Do("GET", "/auth/v1/getToken", &internal.HttpAuth{Login: login, Password: password}, nil)
+	response, err := HttpConnection.Do("GET", "/auth/v1/getToken", &internal.HttpAuth{Login: login, Password: password}, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -112,7 +126,7 @@ func inputCredentials(login, password string) (string, string) {
 	return login, password
 }
 
-func validateToken(token string) *User {
+func ValidateToken(token string) *User {
 	validateTokenRequest := ValidateTokenRequest{
 		ApiVersion: "",
 		Kind:       "",
@@ -123,7 +137,7 @@ func validateToken(token string) *User {
 		panic(err)
 	}
 	// Will use the service intended for the authentication webhook, but with a GET method
-	response, err2 := httpConnection.Do("GET", "/auth/v1/validateToken", nil, bytes.NewBuffer(body))
+	response, err2 := HttpConnection.Do("GET", "/auth/v1/validateToken", nil, bytes.NewBuffer(body))
 	if err2 != nil {
 		panic(err2)
 	}
@@ -147,20 +161,20 @@ func validateToken(token string) *User {
 
 
 // Retrieve the token locally, or, if expired, validate again against the server. Return "" if there is no valid token
-func retrieveToken() string {
-	tokenBag := internal.LoadTokenBag(context)
+func RetrieveToken() string {
+	tokenBag := internal.LoadTokenBag(Context)
 	if tokenBag != nil {
 		now := time.Now()
 		if now.Before(tokenBag.LastAccess.Add(tokenBag.ClientTTL.Duration)) {
 			// tokenBag still valid
 			return tokenBag.Token
 		} else {
-			if user := validateToken(tokenBag.Token); user != nil {
+			if user := ValidateToken(tokenBag.Token); user != nil {
 				tokenBag.LastAccess = time.Now()
-				internal.SaveTokenBag(context, tokenBag)
+				internal.SaveTokenBag(Context, tokenBag)
 				return tokenBag.Token
 			} else {
-				internal.DeleteTokenBag(context)
+				internal.DeleteTokenBag(Context)
 				return ""
 			}
 		}
@@ -169,7 +183,7 @@ func retrieveToken() string {
 	}
 }
 
-func printHttpResponseMessage(response *http.Response) {
+func PrintHttpResponseMessage(response *http.Response) {
 	data, _ := ioutil.ReadAll(response.Body)
 	if response.StatusCode == http.StatusForbidden {
 		fmt.Printf("ERROR: You are not allowed to perform this operation!\n")

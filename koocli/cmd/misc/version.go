@@ -16,12 +16,21 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package main
+package misc
 
 import (
-	"github.com/koobind/koobind/koocli/cmd/root"
+	"fmt"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	root.Execute()
+
+var VersionCmd = &cobra.Command{
+	Use:	"version",
+	Short:  "Display current version",
+	Run:    func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Version %s\n", version)
+	},
 }
+
+
+

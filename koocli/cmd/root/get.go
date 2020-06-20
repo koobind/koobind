@@ -16,18 +16,22 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package root
 
 import (
+	"github.com/koobind/koobind/koocli/cmd/misc"
+	"github.com/koobind/koobind/koocli/cmd/token"
 	"github.com/spf13/cobra"
 )
 
+
 func init() {
-	rootCmd.AddCommand(deleteCmd)
+	GetCmd.AddCommand(token.GetTokensCmd)
+	GetCmd.AddCommand(misc.GetContextCmd)
 }
 
-var deleteCmd = &cobra.Command{
-	Use:	"delete",
-	Short:  "Delete some resources",
+var GetCmd = &cobra.Command{
+	Use:	"get",
+	Short:  "Get ressources",
 }
 

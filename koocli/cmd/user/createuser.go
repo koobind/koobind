@@ -16,12 +16,13 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package user
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	"github.com/spf13/cobra"
@@ -29,28 +30,25 @@ import (
 	"os"
 )
 
+// kubectl koo create user titi --provider crdsys --commonName "TITI" --comment "Small bird" --email "titi@cartoon.com" --passwordHash '$2a$10$dO9pDmqhwCVHkqBKdjynTONHRExZm2iDX3yzii/RUgNMt0U/wvNtG' --uid 2001
+
 var crdUserSpec *v1alpha1.UserSpec
 var uid int
-var provider string
 
 func init() {
 	crdUserSpec = &v1alpha1.UserSpec{
 	}
-	CreateCmd.AddCommand(createUserCmd)
-	createUserCmd.PersistentFlags().StringVar(&provider, "provider", "_", "")
-	createUserCmd.PersistentFlags().BoolVar(&crdUserSpec.Disabled, "disabled", false, "")
-	createUserCmd.PersistentFlags().StringVar(&crdUserSpec.CommonName, "commonName", "", "")
-	createUserCmd.PersistentFlags().StringVar(&crdUserSpec.Email, "email", "", "")
-	createUserCmd.PersistentFlags().StringVar(&crdUserSpec.Comment, "comment", "", "")
-	createUserCmd.PersistentFlags().StringVar(&crdUserSpec.PasswordHash, "passwordHash", "", "")
-	createUserCmd.PersistentFlags().IntVar(&uid, "uid", 0, "")
-	if createUserCmd.PersistentFlags().Lookup("uid").Changed {
-		crdUserSpec.Uid = &uid
-	}
+	CreateUserCmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
+	CreateUserCmd.PersistentFlags().BoolVar(&crdUserSpec.Disabled, "disabled", false, "")
+	CreateUserCmd.PersistentFlags().StringVar(&crdUserSpec.CommonName, "commonName", "", "")
+	CreateUserCmd.PersistentFlags().StringVar(&crdUserSpec.Email, "email", "", "")
+	CreateUserCmd.PersistentFlags().StringVar(&crdUserSpec.Comment, "comment", "", "")
+	CreateUserCmd.PersistentFlags().StringVar(&crdUserSpec.PasswordHash, "passwordHash", "", "")
+	CreateUserCmd.PersistentFlags().IntVar(&uid, "uid", 0, "")
 }
 
 
-var createUserCmd = &cobra.Command{
+var CreateUserCmd = &cobra.Command{
 	Use:     "user",
 	Aliases: []string{},
 	Short:   "Create new user (Admin)",
@@ -60,21 +58,25 @@ var createUserCmd = &cobra.Command{
 			fmt.Printf("ERROR: A username must be provided!\n")
 			os.Exit(2)
 		}
-		initHttpConnection()
+		InitHttpConnection()
 		userName := args[0]
-		token := retrieveToken()
+		token := RetrieveToken()
 		if token == "" {
-			token = doLogin("", "")
+			token = DoLogin("", "")
+		}
+		if cmd.PersistentFlags().Lookup("uid").Changed {
+			fmt.Printf("Set uid to %d\n", uid)
+			crdUserSpec.Uid = &uid
 		}
 		body, err := json.Marshal(crdUserSpec)
-		response, err := httpConnection.Do("POST", fmt.Sprintf("/auth/v1/admin/%s/users/%s", provider, userName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
+		response, err := HttpConnection.Do("POST", fmt.Sprintf("/auth/v1/admin/%s/users/%s", Provider, userName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusCreated {
 			fmt.Printf("User created sucessfully.\n")
 		} else {
-			printHttpResponseMessage(response)
+			PrintHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusCreated {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

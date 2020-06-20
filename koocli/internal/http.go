@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -33,6 +34,7 @@ import (
 type HttpConnection struct {
 	httpClient *http.Client
 	baseUrl string
+	log *logrus.Entry
 }
 
 
@@ -43,12 +45,13 @@ type HttpAuth struct {
 }
 
 
-func NewHttpConnection(baseUrl string, rootCaFile string) *HttpConnection {
+func NewHttpConnection(baseUrl string, rootCaFile string, log *logrus.Entry) *HttpConnection {
 	baseUrl = strings.TrimRight(baseUrl, "/")		// No trailing '/'
 	if rootCaFile == "" {
 		return &HttpConnection{
 			httpClient: http.DefaultClient,
 			baseUrl: baseUrl,
+			log: log,
 		}
 	} else {
 		rootPEM, err := ioutil.ReadFile(rootCaFile)
@@ -73,7 +76,7 @@ func NewHttpConnection(baseUrl string, rootCaFile string) *HttpConnection {
 
 func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, body io.Reader) (*http.Response, error) {
 	targetUrl := this.baseUrl + urlPath
-	//fmt.Printf("baseUrl:'%s'   urlPath:'%s'   targetUrl:'%s'\n", this.baseUrl, urlPath, targetUrl)
+	logrus.Debugf("%s  %s\n", method, targetUrl)
 	request, err := http.NewRequest(method, targetUrl, body)
 	if err != nil {
 		return nil, err

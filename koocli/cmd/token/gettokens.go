@@ -16,12 +16,13 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package token
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/common"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -32,26 +33,27 @@ import (
 )
 
 func init() {
-	getCmd.AddCommand(getTokensCmd)
+	GetTokensCmd.PersistentFlags().BoolVarP(&JsonOutput, "json", "", false, "Output in JSON")
 }
 
-var getTokensCmd = &cobra.Command{
+
+var GetTokensCmd = &cobra.Command{
 	Use:	"token",
 	Aliases: []string{"tokens"},
 	Short:  "List currently active token (Admin)",
 	Hidden: false,
 	Run:    func(cmd *cobra.Command, args []string) {
-		initHttpConnection()
-		token := retrieveToken()
+		InitHttpConnection()
+		token := RetrieveToken()
 		if token == "" {
-			token = doLogin("", "")
+			token = DoLogin("", "")
 		}
-		response, err := httpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: token},  nil)
+		response, err := HttpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: token},  nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			if jsonOutput {
+			if JsonOutput {
 				data, _ := ioutil.ReadAll(response.Body)
 				fmt.Print(string(data))
 			} else {
@@ -71,7 +73,7 @@ var getTokensCmd = &cobra.Command{
 				_ = tw.Flush()
 			}
 		} else {
-			printHttpResponseMessage(response)
+			PrintHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

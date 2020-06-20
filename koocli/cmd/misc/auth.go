@@ -16,43 +16,50 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package misc
 
 import (
-	"fmt"
-	"github.com/koobind/koobind/koocli/internal"
+	"encoding/json"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/spf13/cobra"
 	"os"
-	"text/tabwriter"
 )
 
-func init() {
-	getCmd.AddCommand(getContextCmd)
-}
-
-var getContextCmd = &cobra.Command{
-	Use:	"context",
-	Short:  "Display local context configuration",
-	Aliases: []string{"contexts"},
+var AuthCmd = &cobra.Command{
+	Use:	"auth",
+	Short:  "To be used as client-go exec plugin",
+	Hidden: true,
 	Run:    func(cmd *cobra.Command, args []string) {
-
-		currentContext := context
-		contexts := internal.ListContext()
-		tw := new(tabwriter.Writer)
-		tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
-		_, _ = fmt.Fprintf(tw, " \tCONTEXT\tSERVER\tCA")
-		for _, ctx := range contexts {
-			var mark string
-			if ctx == currentContext {
-				mark = "*"
-			} else {
-				mark = ""
-			}
-			myConfig := internal.LoadConfig(ctx)
-			_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", mark, ctx, myConfig.Server, myConfig.RootCaFile)
+		InitHttpConnection()
+		token := RetrieveToken()
+		if token == "" {
+			token = DoLogin("", "")
 		}
-		_, _ = fmt.Fprintf(tw, "\n")
-		_ = tw.Flush()
-		//fmt.Printf("Contexts:%v\n", contexts)
+		ec := ExecCredential{
+			ApiVersion: "client.authentication.k8s.io/v1beta1",
+			Kind: "ExecCredential",
+		}
+		if token == "" {
+			// No token
+		} else {
+			ec.Status.Token = token
+		}
+		err := json.NewEncoder(os.Stdout).Encode(ec)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
+
+
+
+type ExecCredential struct {
+	ApiVersion string	`json:"apiVersion"`
+	Kind string			`json:"kind"`
+	Status struct {
+		Token string	`json:"token"`
+	}					`json:"status"`
+}
+
+
+

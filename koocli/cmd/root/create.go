@@ -16,23 +16,22 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package root
 
 import (
-	"fmt"
-	"github.com/koobind/koobind/koocli/internal"
+	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
 
+
 func init() {
-	rootCmd.AddCommand(logoutCmd)
+	CreateCmd.AddCommand(user.CreateUserCmd)
+
 }
 
-var logoutCmd = &cobra.Command{
-	Use:	"logout",
-	Short:  "Clear local token",
-	Run:    func(cmd *cobra.Command, args []string) {
-		internal.DeleteTokenBag(context)
-		fmt.Printf("Bye!\n")
-	},
+var CreateCmd = &cobra.Command{
+	Use:	"create",
+	Short:  "Create ressources",
 }
+
+

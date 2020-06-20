@@ -16,9 +16,10 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package misc
 
 import (
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"os"
@@ -29,20 +30,18 @@ var login string
 var login_password string
 
 func init() {
-	rootCmd.AddCommand(loginCmd)
-	loginCmd.PersistentFlags().StringVar(&login, "user", "", "User name")
-	loginCmd.PersistentFlags().StringVar(&login_password, "password", "", "User password")
-
+	LoginCmd.PersistentFlags().StringVar(&login, "user", "", "User name")
+	LoginCmd.PersistentFlags().StringVar(&login_password, "password", "", "User password")
 }
 
 
-var loginCmd = &cobra.Command{
+var LoginCmd = &cobra.Command{
 	Use:	"login",
 	Short:  "Logout and get a new token",
 	Run:    func(cmd *cobra.Command, args []string) {
-		initHttpConnection()
-		internal.DeleteTokenBag(context)	// Logout first. Don't stay logged with old token if we are unable to login
-		t := doLogin(login, login_password)
+		InitHttpConnection()
+		internal.DeleteTokenBag(Context)	// Logout first. Don't stay logged with old token if we are unable to login
+		t := DoLogin(login, login_password)
 		if t == "" {
 			os.Exit(3)
 		}

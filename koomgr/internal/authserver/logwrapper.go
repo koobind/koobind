@@ -21,6 +21,7 @@ package authserver
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -31,12 +32,16 @@ func LogHttp(h http.Handler) http.Handler {
 		if httpLog.V(1).Enabled() {
 			httpLog.V(1).Info(fmt.Sprintf("--------- %s %s (from %s)", r.Method, r.RequestURI, r.RemoteAddr))
 			if httpLog.V(2).Enabled() {
-				for hdr := range r.Header {
-					httpLog.V(2).Info(fmt.Sprintf("Header:%s - > %v", hdr, r.Header[hdr]))
+				dump, err := httputil.DumpRequest(r, true)
+				if err != nil {
+					http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+					return
 				}
-
+				httpLog.V(2).Info(fmt.Sprintf("%q", dump))
+				//for hdr := range r.Header {
+				//	httpLog.V(2).Info(fmt.Sprintf("Header:%s - > %v", hdr, r.Header[hdr]))
+				//}
 			}
-
 		}
 		h.ServeHTTP(w, r)
 	})

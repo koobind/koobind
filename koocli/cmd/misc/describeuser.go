@@ -16,12 +16,13 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package misc
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/common"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -34,11 +35,11 @@ import (
 var explainAuth bool
 
 func init() {
-	getCmd.AddCommand(usersCmd)
-	getCmd.PersistentFlags().BoolVar(&explainAuth, "explain", false, "Explain user authentication")
+	DescribeUserCmd.PersistentFlags().BoolVarP(&JsonOutput, "json", "", false, "Output in JSON")
+	DescribeUserCmd.PersistentFlags().BoolVar(&explainAuth, "explain", false, "Explain user authentication")
 }
 
-var usersCmd = &cobra.Command{
+var DescribeUserCmd = &cobra.Command{
 	Use:	"user",
 	Aliases: []string{"users"},
 	Short:  "Describe a specified user (admin)",
@@ -49,18 +50,18 @@ var usersCmd = &cobra.Command{
 			fmt.Printf("ERROR: A username must be provided!\n")
 			os.Exit(2)
 		}
-		initHttpConnection()
+		InitHttpConnection()
 		userName := args[0]
-		token := retrieveToken()
+		token := RetrieveToken()
 		if token == "" {
-			token = doLogin("", "")
+			token = DoLogin("", "")
 		}
-		response, err := httpConnection.Do("GET", "/auth/v1/admin/users/" + userName, &internal.HttpAuth{Token: token},  nil)
+		response, err := HttpConnection.Do("GET", "/auth/v1/admin/users/" + userName, &internal.HttpAuth{Token: token},  nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			if jsonOutput {
+			if JsonOutput {
 				data, _ := ioutil.ReadAll(response.Body)
 				fmt.Print(string(data))
 			} else {
@@ -99,7 +100,7 @@ var usersCmd = &cobra.Command{
 		} else if response.StatusCode == http.StatusNotFound {
 			fmt.Printf("ERROR: User %s does not exists!\n", userName)
 		} else {
-			printHttpResponseMessage(response)
+			PrintHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

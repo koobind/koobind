@@ -16,20 +16,21 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cmd
+package root
 
 import (
+	"github.com/koobind/koobind/koocli/cmd/misc"
 	"github.com/spf13/cobra"
 )
 
 
 func init() {
-	rootCmd.AddCommand(CreateCmd)
+	DescribeCmd.AddCommand(misc.DescribeUserCmd)
 }
 
-var CreateCmd = &cobra.Command{
-	Use:	"create",
-	Short:  "Create ressources",
+var DescribeCmd = &cobra.Command{
+	Use:	"describe",
+	Short:  "describe ressources",
 }
 
 
