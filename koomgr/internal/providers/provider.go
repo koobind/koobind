@@ -38,7 +38,7 @@ type ProviderChain interface {
 	DescribeUser(login string) (found bool, result common.UserDescribeResponse)
 	String() string
 	// Relevant only for providers of type 'crd'
-	// By convention, if providerName == '*' and there is only one of type 'crd', its namespace is provided. If there is several this is an error
+	// By convention, if providerName == '_' and there is only one of type 'crd', its namespace is provided. If there is several this is an error
 	GetNamespace(providerName string) (namespace string, err error)
 }
 

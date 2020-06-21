@@ -25,17 +25,17 @@ import (
 // kubectl koo create user titi --provider crdsys --commonName "TITI" --comment "Small bird" --email "titi@cartoon.com" --passwordHash '$2a$10$dO9pDmqhwCVHkqBKdjynTONHRExZm2iDX3yzii/RUgNMt0U/wvNtG' --uid 2001
 
 func init() {
-	initUserParams(CreateUserCmd)
+	initUserParams(PatchUserCmd)
 }
 
 
-var CreateUserCmd = &cobra.Command{
+var PatchUserCmd = &cobra.Command{
 	Use:     "user",
 	Aliases: []string{},
-	Short:   "Create new user (Admin)",
+	Short:   "Patch existing user (Admin)",
 	Hidden:  false,
 	Run: func(cmd *cobra.Command, args []string) {
-		applyUserCommand(cmd, args, "POST")
+		applyUserCommand(cmd, args, "PATCH")
 	},
 }
 
