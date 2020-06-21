@@ -70,7 +70,7 @@ func init() {
 	RootCmd.AddCommand(DescribeCmd)
 	RootCmd.AddCommand(DeleteCmd)
 	RootCmd.AddCommand(CreateCmd)
-	RootCmd.AddCommand(EnsureCmd)
+	RootCmd.AddCommand(ApplyCmd)
 	RootCmd.AddCommand(PatchCmd)
 	RootCmd.AddCommand(misc.AuthCmd)
 	RootCmd.AddCommand(misc.HashCmd)

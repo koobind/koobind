@@ -16,25 +16,22 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package user
+package root
 
 import (
+	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
 
-// kubectl koo create user titi --provider crdsys --commonName "TITI" --comment "Small bird" --email "titi@cartoon.com" --passwordHash '$2a$10$dO9pDmqhwCVHkqBKdjynTONHRExZm2iDX3yzii/RUgNMt0U/wvNtG' --uid 2001
 
 func init() {
-	initUserParams(EnsureUserCmd)
+	ApplyCmd.AddCommand(user.ApplyUserCmd)
+}
+
+var ApplyCmd = &cobra.Command{
+	Use:	"apply",
+	Short:  "Ensure resources is in the defined state (update or create if needed)",
 }
 
 
-var EnsureUserCmd = &cobra.Command{
-	Use:     "user",
-	Aliases: []string{},
-	Short:   "Create or update user (Admin)",
-	Hidden:  false,
-	Run: func(cmd *cobra.Command, args []string) {
-		applyUserCommand(cmd, args, "PUT")
-	},
-}
+
