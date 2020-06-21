@@ -221,7 +221,7 @@ func PatchUser(handler *AdminV1Handler, usr common.User, response http.ResponseW
 	if userSpec.CommonName != "" {
 		crdUser.Spec.CommonName = userSpec.CommonName
 	}
-	if userSpec.Disabled {
+	if userSpec.Disabled != nil {
 		crdUser.Spec.Disabled = userSpec.Disabled
 	}
 	err = handler.KubeClient.Update(context.TODO(), crdUser)

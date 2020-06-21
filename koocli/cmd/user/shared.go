@@ -12,16 +12,19 @@ import (
 	"os"
 )
 
-var crdUserSpec *v1alpha1.UserSpec
-var uid int
-
-
+var (
+	crdUserSpec =  &v1alpha1.UserSpec{}
+	uid int
+	disabled bool
+	enabled bool
+	_true = true
+	_false = false
+)
 
 func initUserParams(cmd *cobra.Command) {
-	crdUserSpec = &v1alpha1.UserSpec{
-	}
 	cmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
-	cmd.PersistentFlags().BoolVar(&crdUserSpec.Disabled, "disabled", false, "")
+	cmd.PersistentFlags().BoolVar(&disabled, "disabled", false, "")
+	cmd.PersistentFlags().BoolVar(&enabled, "enabled", false, "")
 	cmd.PersistentFlags().StringVar(&crdUserSpec.CommonName, "commonName", "", "")
 	cmd.PersistentFlags().StringVar(&crdUserSpec.Email, "email", "", "")
 	cmd.PersistentFlags().StringVar(&crdUserSpec.Comment, "comment", "", "")
@@ -34,6 +37,10 @@ func applyUserCommand(cmd *cobra.Command, args []string, method string) {
 		fmt.Printf("ERROR: A username must be provided!\n")
 		os.Exit(2)
 	}
+	if enabled && disabled {
+		fmt.Printf("ERROR: A user can be both enabled and disabled!\n")
+		os.Exit(2)
+	}
 	InitHttpConnection()
 	userName := args[0]
 	token := RetrieveToken()
@@ -41,8 +48,13 @@ func applyUserCommand(cmd *cobra.Command, args []string, method string) {
 		token = DoLogin("", "")
 	}
 	if cmd.PersistentFlags().Lookup("uid").Changed {
-		fmt.Printf("Set uid to %d\n", uid)
 		crdUserSpec.Uid = &uid
+	}
+	if enabled {
+		crdUserSpec.Disabled = &_false
+	}
+	if disabled {
+		crdUserSpec.Disabled = &_true
 	}
 	body, err := json.Marshal(crdUserSpec)
 	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/users/%s", Provider, userName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
@@ -59,5 +71,4 @@ func applyUserCommand(cmd *cobra.Command, args []string, method string) {
 	if response.StatusCode != http.StatusCreated {
 		os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))
 	}
-
 }

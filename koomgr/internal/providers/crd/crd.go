@@ -71,7 +71,7 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 		}
 		return userStatus, nil // User not found. Not an error
 	}
-	if usr.Spec.Disabled {
+	if usr.Spec.Disabled != nil && *usr.Spec.Disabled {
 		this.logger.V(1).Info("User found but disabled", "user", login)
 		userStatus.Messages = append(userStatus.Messages, "User disabled")
 		return userStatus, nil // User Disabled. Not an error

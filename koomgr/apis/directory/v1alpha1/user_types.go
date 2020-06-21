@@ -50,7 +50,7 @@ type UserSpec struct {
 
 	// Prevent this user to login. Even if this user is managed by an external provider (i.e LDAP)
 	// +optional
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled *bool `json:"disabled,omitempty"`
 }
 
 // UserStatus defines the observed state of User
