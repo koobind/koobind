@@ -114,7 +114,7 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 		for i := 0; i < len(list.Items); i++ {
 			binding := list.Items[i]
 			this.logger.V(1).Info("lookup", "binding", binding.Name)
-			if binding.Spec.Disabled {
+			if binding.Spec.Disabled != nil && *binding.Spec.Disabled {
 				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("GroupBinding '%s' disabled", binding.Name))
 				continue
 			}
@@ -132,7 +132,7 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("No matching group '%s' for GroupBinding '%s'", binding.Spec.Group, binding.Name))
 				continue
 			}
-			if grp.Spec.Disabled {
+			if grp.Spec.Disabled != nil && *grp.Spec.Disabled {
 				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("Group '%s' disabled", grp.Name))
 				continue
 			}

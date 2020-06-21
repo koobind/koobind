@@ -31,7 +31,7 @@ type GroupSpec struct {
 
 	// Allow to 'hide' this group. Even if defined in another provider
 	// +optional
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled *bool `json:"disabled,omitempty"`
 }
 
 // GroupStatus defines the observed state of Group

@@ -35,7 +35,7 @@ type GroupBindingSpec struct {
 
 	// Allow to 'hide' this groupbinding. Even if defined in another provider
 	// +optional
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled *bool `json:"disabled,omitempty"`
 }
 
 // GroupBindingStatus defines the observed state of GroupBinding

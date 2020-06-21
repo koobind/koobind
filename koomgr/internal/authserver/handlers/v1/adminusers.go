@@ -97,7 +97,7 @@ func AddUser(handler *AdminV1Handler, usr common.User, response http.ResponseWri
 // curl -k -i -u admin:admin -X PUT https://koomgrdev:9444/auth/v1/admin/_/users/jsmith3 -d '{ "email": "xx@xx" }'
 // curl -k -i -u admin:admin -X PUT https://koomgrdev:9444/auth/v1/admin/_/users/jsmith4 -d '{ "email": "xx@xx", "commonName": "John smith4", "passwordHash": "$2a$10$SxKQu8Ny54c/MuujiltVD.9J9P8kvSM01UK.sTh/bhAxYhoLGwjLi", "uid": 10009, "comment": "A test User", "disabled": false }'
 
-func EnsureUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func ApplyUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {
@@ -146,32 +146,6 @@ func EnsureUser(handler *AdminV1Handler, usr common.User, response http.Response
 		}
 		handler.HttpClose(response, "", http.StatusOK)
 	}
-}
-
-func DeleteUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
-	provider := mux.Vars(request)["provider"]
-	namespace, err := handler.Providers.GetNamespace(provider)
-	if err != nil {
-		handler.HttpError(response, err.Error(), http.StatusBadRequest)
-		return
-	}
-	// Check if user exists
-	userName := mux.Vars(request)["user"]
-	crdUser, err := getUser(handler, namespace, userName)
-	if err != nil {
-		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if crdUser == nil {
-		handler.HttpError(response, "User does not exists!", http.StatusNotFound)
-		return
-	}
-	err = handler.KubeClient.Delete(context.TODO(), crdUser, client.GracePeriodSeconds(0))
-	if err != nil {
-		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	handler.HttpClose(response, "", http.StatusOK)
 }
 
 // curl -k -i -u admin:admin -X PATCH https://koomgrdev:9444/auth/v1/admin/_/users/jsmith2 -d '{}'
@@ -225,6 +199,36 @@ func PatchUser(handler *AdminV1Handler, usr common.User, response http.ResponseW
 		crdUser.Spec.Disabled = userSpec.Disabled
 	}
 	err = handler.KubeClient.Update(context.TODO(), crdUser)
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	handler.HttpClose(response, "", http.StatusOK)
+}
+
+// curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/users/jsmith2
+// curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/users/jsmith3
+// curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/users/jsmith4
+
+func DeleteUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+	provider := mux.Vars(request)["provider"]
+	namespace, err := handler.Providers.GetNamespace(provider)
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Check if user exists
+	userName := mux.Vars(request)["user"]
+	crdUser, err := getUser(handler, namespace, userName)
+	if err != nil {
+		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if crdUser == nil {
+		handler.HttpError(response, "User does not exists!", http.StatusNotFound)
+		return
+	}
+	err = handler.KubeClient.Delete(context.TODO(), crdUser, client.GracePeriodSeconds(0))
 	if err != nil {
 		handler.HttpError(response, err.Error(), http.StatusInternalServerError)
 		return

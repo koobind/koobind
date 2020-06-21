@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package user
+package group
 
 import (
 	"bytes"
@@ -31,58 +31,50 @@ import (
 )
 
 var (
-	crdUserSpec =  &v1alpha1.UserSpec{}
-	uid int
-	disabled bool
-	enabled bool
-	_true = true
-	_false = false
+	crdGroupSpec =  &v1alpha1.GroupSpec{}
+	disabled     bool
+	enabled      bool
+	_true        = true
+	_false       = false
 )
 
-func initUserParams(cmd *cobra.Command) {
+func initGroupParams(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
 	cmd.PersistentFlags().BoolVar(&disabled, "disabled", false, "")
 	cmd.PersistentFlags().BoolVar(&enabled, "enabled", false, "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.CommonName, "commonName", "", "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.Email, "email", "", "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.Comment, "comment", "", "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.PasswordHash, "passwordHash", "", "")
-	cmd.PersistentFlags().IntVar(&uid, "uid", 0, "")
+	cmd.PersistentFlags().StringVar(&crdGroupSpec.Description, "description", "", "")
 }
 
-func applyUserCommand(cmd *cobra.Command, args []string, method string) {
+func applyGroupCommand(cmd *cobra.Command, args []string, method string) {
 	if len(args) != 1 {
-		fmt.Printf("ERROR: A username must be provided!\n")
+		fmt.Printf("ERROR: A group name must be provided!\n")
 		os.Exit(2)
 	}
 	if enabled && disabled {
-		fmt.Printf("ERROR: A user can be both enabled and disabled!\n")
+		fmt.Printf("ERROR: A group can be both enabled and disabled!\n")
 		os.Exit(2)
 	}
 	InitHttpConnection()
-	userName := args[0]
+	groupName := args[0]
 	token := RetrieveToken()
 	if token == "" {
 		token = DoLogin("", "")
 	}
-	if cmd.PersistentFlags().Lookup("uid").Changed {
-		crdUserSpec.Uid = &uid
-	}
 	if enabled {
-		crdUserSpec.Disabled = &_false
+		crdGroupSpec.Disabled = &_false
 	}
 	if disabled {
-		crdUserSpec.Disabled = &_true
+		crdGroupSpec.Disabled = &_true
 	}
-	body, err := json.Marshal(crdUserSpec)
-	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/users/%s", Provider, userName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
+	body, err := json.Marshal(crdGroupSpec)
+	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/groups/%s", Provider, groupName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}
 	if response.StatusCode == http.StatusCreated {
-		fmt.Printf("User created sucessfully.\n")
+		fmt.Printf("Group created sucessfully.\n")
 	} else if response.StatusCode == http.StatusOK {
-		fmt.Printf("User updated sucessfully.\n")
+		fmt.Printf("Group updated sucessfully.\n")
 	} else {
 		PrintHttpResponseMessage(response)
 	}

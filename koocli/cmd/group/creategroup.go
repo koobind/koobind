@@ -16,24 +16,26 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package root
+package group
 
 import (
-	"github.com/koobind/koobind/koocli/cmd/group"
-	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
 
+// kubectl koo create group grp1 --description "Group 1"
 
 func init() {
-	CreateCmd.AddCommand(user.CreateUserCmd)
-	CreateCmd.AddCommand(group.CreateGroupCmd)
-
+	initGroupParams(CreateGroupCmd)
 }
 
-var CreateCmd = &cobra.Command{
-	Use:	"create",
-	Short:  "Create ressources",
-}
 
+var CreateGroupCmd = &cobra.Command{
+	Use:     "group",
+	Aliases: []string{},
+	Short:   "Create new group (Admin)",
+	Hidden:  false,
+	Run: func(cmd *cobra.Command, args []string) {
+		applyGroupCommand(cmd, args, "POST")
+	},
+}
 

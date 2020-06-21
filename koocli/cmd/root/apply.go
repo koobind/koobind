@@ -19,6 +19,7 @@
 package root
 
 import (
+	"github.com/koobind/koobind/koocli/cmd/group"
 	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
@@ -26,6 +27,7 @@ import (
 
 func init() {
 	ApplyCmd.AddCommand(user.ApplyUserCmd)
+	ApplyCmd.AddCommand(group.ApplyGroupCmd)
 }
 
 var ApplyCmd = &cobra.Command{
