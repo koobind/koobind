@@ -65,7 +65,7 @@ func AddUser(handler *AdminV1Handler, usr common.User, response http.ResponseWri
 		return
 	}
 	if crdUser != nil {
-		handler.HttpError(response, "User already exists!", http.StatusConflict)
+		handler.HttpError(response, fmt.Sprintf("User '%s' already exists!", userName), http.StatusConflict)
 		return
 	}
 	// Ok, now, we can create it
@@ -167,7 +167,7 @@ func PatchUser(handler *AdminV1Handler, usr common.User, response http.ResponseW
 		return
 	}
 	if crdUser == nil {
-		handler.HttpError(response, "User does not exists!", http.StatusNotFound)
+		handler.HttpError(response, fmt.Sprintf("User '%s' does not exists!", userName), http.StatusNotFound)
 		return
 	}
 	// Parse the provided user definition
@@ -225,7 +225,7 @@ func DeleteUser(handler *AdminV1Handler, usr common.User, response http.Response
 		return
 	}
 	if crdUser == nil {
-		handler.HttpError(response, "User does not exists!", http.StatusNotFound)
+		handler.HttpError(response, fmt.Sprintf("User '%s' does not exists!", userName), http.StatusNotFound)
 		return
 	}
 	err = handler.KubeClient.Delete(context.TODO(), crdUser, client.GracePeriodSeconds(0))

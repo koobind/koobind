@@ -141,13 +141,15 @@ func (s *Server) Init(tokenBasket token.TokenBasket, kubeClient client.Client, p
 	s.Router.Handle("/auth/v1/admin/tokens", newAdminHandler(v1.ListToken, "adminV1listToken")).Methods("GET")
 	s.Router.Handle("/auth/v1/admin/users/{user}", newAdminHandler(v1.DescribeUser, "adminV1describeUser")).Methods("GET")
 	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.AddUser, "adminV1addUser")).Methods("POST")
-	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.ApplyUser, "adminV1addUser")).Methods("PUT")
-	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.PatchUser, "adminV1addUser")).Methods("PATCH")
-	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.DeleteUser, "adminV1addUser")).Methods("DELETE")
+	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.ApplyUser, "adminV1applyUser")).Methods("PUT")
+	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.PatchUser, "adminV1patchUser")).Methods("PATCH")
+	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.DeleteUser, "adminV1deleteUser")).Methods("DELETE")
 	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.AddGroup, "adminV1addGroup")).Methods("POST")
-	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.ApplyGroup, "adminV1addGroup")).Methods("PUT")
-	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.PatchGroup, "adminV1addGroup")).Methods("PATCH")
-	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.DeleteGroup, "adminV1addGroup")).Methods("DELETE")
+	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.ApplyGroup, "adminV1applyGroup")).Methods("PUT")
+	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.PatchGroup, "adminV1patchGroup")).Methods("PATCH")
+	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.DeleteGroup, "adminV1deleteGroup")).Methods("DELETE")
+	s.Router.Handle("/auth/v1/admin/{provider}/groupbindings/{user}/{group}", newAdminHandler(v1.AddApplyPatchGroupBinding, "adminV1addApplyPatchGroupBinding")).Methods("POST", "PUT", "PATCH")
+	s.Router.Handle("/auth/v1/admin/{provider}/groupbindings/{user}/{group}", newAdminHandler(v1.DeleteGroupBinding, "adminV1deleteGroupBinding")).Methods("DELETE")
 }
 
 func (this *Server) Start(stop <-chan struct{}) error {

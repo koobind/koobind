@@ -78,7 +78,7 @@ func applyGroupCommand(cmd *cobra.Command, args []string, method string) {
 	} else {
 		PrintHttpResponseMessage(response)
 	}
-	if response.StatusCode != http.StatusCreated {
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))
 	}
 }

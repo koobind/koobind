@@ -16,25 +16,28 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package root
+package groupbinding
 
 import (
-	"github.com/koobind/koobind/koocli/cmd/group"
-	"github.com/koobind/koobind/koocli/cmd/groupbinding"
-	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
 )
 
+// kubectl koo apply group grp1 --disabled
+// kubectl koo apply group grp1 --description "Group 1" --enabled
 
 func init() {
-	PatchCmd.AddCommand(user.PatchUserCmd)
-	PatchCmd.AddCommand(group.PatchGroupCmd)
-	PatchCmd.AddCommand(groupbinding.PatchGroupBindingCmd)
+	initGroupParams(PatchGroupBindingCmd)
 }
 
-var PatchCmd = &cobra.Command{
-	Use:	"patch",
-	Short:  "Patch ressources",
+
+var PatchGroupBindingCmd = &cobra.Command{
+	Use:     "groupbinding",
+	Aliases: []string{},
+	Short:   "Patch groupBinding (Admin)",
+	Hidden:  false,
+	Run: func(cmd *cobra.Command, args []string) {
+		applyGroupCommand(cmd, args, "PATCH")
+	},
 }
 
 

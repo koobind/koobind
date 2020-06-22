@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
@@ -50,7 +51,7 @@ func AddGroup(handler *AdminV1Handler, usr common.User, response http.ResponseWr
 		return
 	}
 	if crdGroup != nil {
-		handler.HttpError(response, "Group already exists!", http.StatusConflict)
+		handler.HttpError(response, fmt.Sprintf("Group '%s' already exists!", groupName), http.StatusConflict)
 		return
 	}
 	// Ok, now, we can create it
@@ -150,7 +151,7 @@ func PatchGroup(handler *AdminV1Handler, usr common.User, response http.Response
 		return
 	}
 	if crdGroup == nil {
-		handler.HttpError(response, "Group does not exists!", http.StatusNotFound)
+		handler.HttpError(response, fmt.Sprintf("Group '%s' does not exists!", groupName), http.StatusNotFound)
 		return
 	}
 	// Parse the provided group definition
@@ -195,7 +196,7 @@ func DeleteGroup(handler *AdminV1Handler, usr common.User, response http.Respons
 		return
 	}
 	if crdGroup == nil {
-		handler.HttpError(response, "Group does not exists!", http.StatusNotFound)
+		handler.HttpError(response, fmt.Sprintf("Group '%s' does not exists!", groupName), http.StatusNotFound)
 		return
 	}
 	err = handler.KubeClient.Delete(context.TODO(), crdGroup, client.GracePeriodSeconds(0))

@@ -16,45 +16,46 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package group
+package groupbinding
 
 import (
-	"fmt"
-	. "github.com/koobind/koobind/koocli/cmd/common"
-	"github.com/koobind/koobind/koocli/internal"
-	"github.com/spf13/cobra"
-	"net/http"
-	"os"
+"fmt"
+. "github.com/koobind/koobind/koocli/cmd/common"
+"github.com/koobind/koobind/koocli/internal"
+"github.com/spf13/cobra"
+"net/http"
+"os"
 )
 
 func init() {
-	DeleteGroupCmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
+	DeleteGroupBindingCmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
 }
 
 // kubectl koo delete group grp1
 
-var DeleteGroupCmd = &cobra.Command{
-	Use:     "group",
+var DeleteGroupBindingCmd = &cobra.Command{
+	Use:     "groupbinding",
 	Aliases: []string{},
-	Short:   "Delete group (Admin)",
+	Short:   "Delete groupBinding (Admin)",
 	Hidden:  false,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Printf("ERROR: A group name must be provided!\n")
+		if len(args) != 2 {
+			fmt.Printf("ERROR: A user name and a group name must be provided!\n")
 			os.Exit(2)
 		}
 		InitHttpConnection()
-		groupName := args[0]
+		userName := args[0]
+		groupName := args[1]
 		token := RetrieveToken()
 		if token == "" {
 			token = DoLogin("", "")
 		}
-		response, err := HttpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/groups/%s", Provider, groupName) , &internal.HttpAuth{Token: token}, nil)
+		response, err := HttpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName) , &internal.HttpAuth{Token: token}, nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("Group deleted sucessfully.\n")
+			fmt.Printf("GroupBinding deleted sucessfully.\n")
 		} else {
 			PrintHttpResponseMessage(response)
 		}
@@ -63,4 +64,5 @@ var DeleteGroupCmd = &cobra.Command{
 		}
 	},
 }
+
 

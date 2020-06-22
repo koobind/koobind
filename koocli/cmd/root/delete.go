@@ -20,6 +20,7 @@ package root
 
 import (
 	"github.com/koobind/koobind/koocli/cmd/group"
+	"github.com/koobind/koobind/koocli/cmd/groupbinding"
 	"github.com/koobind/koobind/koocli/cmd/token"
 	"github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/spf13/cobra"
@@ -28,9 +29,8 @@ import (
 func init() {
 	DeleteCmd.AddCommand(user.DeleteUserCmd)
 	DeleteCmd.AddCommand(group.DeleteGroupCmd)
+	DeleteCmd.AddCommand(groupbinding.DeleteGroupBindingCmd)
 	DeleteCmd.AddCommand(token.DeleteTokenCmd)
-
-
 }
 
 var DeleteCmd = &cobra.Command{

@@ -57,7 +57,7 @@ var DeleteUserCmd = &cobra.Command{
 		} else {
 			PrintHttpResponseMessage(response)
 		}
-		if response.StatusCode != http.StatusCreated {
+		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))
 		}
 	},
