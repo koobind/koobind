@@ -61,7 +61,7 @@ func DoLogin(login, password string) (token string) {
 		login, password = inputCredentials(login, password)
 		getTokenResponse = getTokenFor(login, password)
 		if getTokenResponse != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "logged successfully..\n")
+			_, _ = fmt.Fprintf(os.Stdout, "logged successfully..\n")
 			internal.SaveTokenBag(Context, &internal.TokenBag{
 				Token:      getTokenResponse.Token,
 				ClientTTL:  getTokenResponse.ClientTTL,
