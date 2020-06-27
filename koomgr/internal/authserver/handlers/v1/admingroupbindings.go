@@ -78,10 +78,9 @@ func AddApplyPatchGroupBinding(handler *AdminV1Handler, usr common.User, respons
 		return
 	}
 	if crdGroupBinding != nil {
-		// GroupBinding exists. Update it if PUT.
+		// GroupBinding exists.
 		if request.Method == "POST" {
 			handler.HttpError(response, fmt.Sprintf("GroupBinding '%s' already exists!", bindingName), http.StatusConflict)
-			return
 		} else {
 			if request.Method == "PUT" {
 				crdGroupBinding.Spec = groupBindingSpec
@@ -102,7 +101,6 @@ func AddApplyPatchGroupBinding(handler *AdminV1Handler, usr common.User, respons
 		// GroupBinding does not exists. Create it
 		if request.Method == "PATCH" {
 			handler.HttpError(response, fmt.Sprintf("GroupBinding '%s' does not exists!", bindingName), http.StatusNotFound)
-			return
 		}
 		crdGroupBinding = &v1alpha1.GroupBinding{
 			ObjectMeta: metav1.ObjectMeta{

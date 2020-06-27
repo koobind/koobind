@@ -8,6 +8,14 @@ To install it:
 go get github.com/SergeAlexandre/ctest
 ```
 
+or
+
+```
+go get -u github.com/SergeAlexandre/ctest
+```
+
+for update
+
 Other requirement are:
 
 - A kubernetes cluster with `koobind` installed.
