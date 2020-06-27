@@ -1,20 +1,22 @@
 
 name: Test koobind/groups
 
+exitOnFail: no
+
 globalSetup:
   - GROUP="t-grp1"
   - DESCRIPTION="what a nice group"
   - DESCRIPTION2="what a very nice group"
   - NS="koo-system"
   - kubectl koo login --user admin --password admin >/dev/null
-
+  - kubectl koo delete group $GROUP >/dev/null || true  # In case of previous failure
 
 globalTearDown: []
 
-setup:
-  - kubectl koo delete group $GROUP >/dev/null || true
+setup: []
 
-tearDown: []
+tearDown:
+  - kubectl koo delete group $GROUP >/dev/null || true
 
 tests:
 
@@ -52,6 +54,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::"
+
       - name: re-apply same value
         command: kubectl koo apply group $GROUP
         retCode: 0
@@ -59,6 +62,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::"
+
       - name: apply All values
         command: kubectl koo apply group $GROUP --description "$DESCRIPTION" --disabled
         retCode: 0
@@ -66,6 +70,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION:true"
+
       - name: apply only description
         command: kubectl koo apply group $GROUP --description "$DESCRIPTION"
         retCode: 0
@@ -73,6 +78,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION:"
+
       - name: apply only disabled
         command: kubectl koo apply group $GROUP --disabled
         retCode: 0
@@ -80,6 +86,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::true"
+
       - name: apply only enabled
         command: kubectl koo apply group $GROUP --enabled
         retCode: 0
@@ -87,6 +94,7 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::false"
+
       - name:  Back to no parameters
         command: kubectl koo apply group $GROUP
         retCode: 0
@@ -95,14 +103,7 @@ tests:
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::"
 
-  - name: Patch on non existing
-    steps:
-      - name: Patch on non existing
-        command: kubectl koo patch group $GROUP
-        retCode: 4
-        outputExp: "404.*Group[\\ ][\\']$GROUP[\\'][\\ ]does[\\ ]not[\\ ]exists"
-
-  - name: Patch
+  - name: Test patch
     steps:
       - name: initial create
         command: kubectl koo create group $GROUP
@@ -110,23 +111,44 @@ tests:
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP::"
+
       - name: Patch description
         command: kubectl koo patch group $GROUP --description "$DESCRIPTION"
+        retCode: 0
+        output: Group updated sucessfully.
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION:"
+
       - name: Patch disabled
         command: kubectl koo patch group $GROUP --disabled
+        retCode: 0
+        output: Group updated sucessfully.
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION:true"
+
       - name: Patch enabled
         command: kubectl koo patch group $GROUP --enabled
+        retCode: 0
+        output: Group updated sucessfully.
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION:false"
+
       - name: Change description
         command: kubectl koo patch group $GROUP --description "$DESCRIPTION2"
+        retCode: 0
+        output: Group updated sucessfully.
       - name: Check resource
         command: kubectl -n $NS get koogroup "$GROUP" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
         output: "$GROUP:$DESCRIPTION2:false"
+
+
+  - name: Test patch on non existing
+    steps:
+      - name: Patch on non existing
+        command: kubectl koo patch group $GROUP
+        retCode: 4
+        outputExp: "404.*Group[\\ ][\\']$GROUP[\\'][\\ ]does[\\ ]not[\\ ]exists"
+

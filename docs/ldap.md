@@ -53,15 +53,15 @@ But such configuration should never be used in a production context, as they are
 | insecureNoSSL              | no   | false   | If true, LDAP host connection will be in clear text                                                                          |
 | insecureSkipVerify         | no   | false   | If true, Server certificate check will be skipped                                                                            |
 | startTLS                   | no   | false   | Connect to the insecure port then issue a StartTLS command to negotiate a secure connection.<br>If false secure connections will use the LDAPS protocol. |
-| rootCA                     | no   | -       | (2) Path to a trusted root certificate file, to check LDAP server certificate                                                    |
-| rootCAData                 | no   | -       | (2) Base64 encoded PEM data containing root CAs, to check LDAP server certificate                                                |
+| rootCA                     | no   | -       | (2) Path to a trusted root certificate file, to check LDAP server certificate                                                |
+| rootCAData                 | no   | -       | (2) Base64 encoded PEM data containing root CAs, to check LDAP server certificate                                            |
 | clientCert                 | no   | -       | Path to client certificate file if LDAP server require client authentication.                                                |
 | clientKey                  | no   | -       | Path to client key file if LDAP server require client authentication.                                                        |
 | bindDN                     | yes  | -       | LDAP admin account. Used to search for users and groups. May be a ReadOnly access                                            |
 | bindPW                     | yes  | -       | Password for the bindDN account                                                                                              |
 | userSearch.baseDN          | yes  | -       | BaseDN to start the user search from. For example "cn=users,dc=example,dc=com"                                               |
 | userSearch.filter          | no   | -       | Optional filter to apply when searching the directory. For example "(objectClass=person)"                                    |
-| userSearch.loginAttr       | yes  | -       | Attribute to match against the login. This will be translated and combined with the other filter as "(<loginAttr>=<login>)". |
+| userSearch.loginAttr       | yes  | -       | Attribute to match against the login. This will be translated and combined with the other filter as "(&lt;loginAttr&gt;=&lt;login&gt;)". |
 | userSearch.scope           | no   | sub     | Can either be:<br>- `sub`: search the whole sub tree<br>- `one`: only search one level                                       |
 | userSearch.numericalIdAttr | no   | -       | The attribute providing the numerical user ID                                                                                |
 | userSearch.emailAttr       | no   | -       | The attribute providing the user's email                                                                                     |
