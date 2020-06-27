@@ -14,5 +14,9 @@ ctest groupbindings.yml | bash
 ((fails=fails+$?))
 
 echo ""
+ctest disabled.yml | bash
+((fails=fails+$?))
+
+echo ""
 echo "Global result: $fails fail(s)"
 

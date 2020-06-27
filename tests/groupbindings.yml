@@ -1,7 +1,7 @@
 
 name: Test koobind/groupbindings
 
-exitOnFail: yes
+exitOnFail: no
 
 globalSetup:
   - GROUP="t-grp1"
@@ -14,8 +14,8 @@ globalSetup:
   - kubectl koo delete groupbinding $USER $GROUP >/dev/null || true  # In case of previous failure
 
 globalTearDown:
-  - kubectl koo delete user $USER >/dev/null
-  - kubectl koo delete group $GROUP >/dev/null
+  - kubectl koo delete user $USER >/dev/null  || true
+  - kubectl koo delete group $GROUP >/dev/null  || true
 
 setup: []
 

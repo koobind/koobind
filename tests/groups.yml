@@ -8,7 +8,9 @@ globalSetup:
   - DESCRIPTION="what a nice group"
   - DESCRIPTION2="what a very nice group"
   - NS="koo-system"
-  - kubectl koo login --user admin --password admin >/dev/null
+  - ADMIN_USER="admin"
+  - ADMIN_PASSWORD="admin"
+  - kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD" >/dev/null
   - kubectl koo delete group $GROUP >/dev/null || true  # In case of previous failure
 
 globalTearDown: []

@@ -1,0 +1,109 @@
+name: Test koobind/disabled
+
+exitOnFail: yes
+
+globalSetup:
+  - GROUP="t-grp1"
+  - USER="t-usr1"
+  - GROUP_BINDING="t-usr1-t-grp1"
+  - NS="koo-system"
+  - PASSWORD="usr1"
+  - ADMIN_USER="admin"
+  - ADMIN_PASSWORD="admin"
+  - kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD" >/dev/null
+
+globalTearDown:
+  - kubectl koo delete groupbinding $USER $GROUP >/dev/null || true
+  - kubectl koo delete user $USER >/dev/null  || true
+  - kubectl koo delete group $GROUP >/dev/null  || true
+
+setup:
+  - kubectl koo apply user $USER --passwordHash $(kubectl koo hash --password $PASSWORD) >/dev/null
+  - kubectl koo apply group $GROUP >/dev/null
+  - kubectl koo apply groupbinding $USER $GROUP >/dev/null
+
+tearDown: []
+
+tests:
+  - name: Test login
+    steps:
+      - name: log as $USER
+        command: kubectl koo login --user $USER --password $PASSWORD
+        retCode: 0
+        output: logged successfully..
+      - name: Test logged user
+        command: kubectl koo whoami
+        retCode: 0
+        outputExp: ".*$USER[[:space:]]*$GROUP"
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        retCode: 0
+        output: $USER:1:$GROUP
+
+  - name: Test group disabled
+    steps:
+      - name: Disable group
+        command: kubectl koo patch group $GROUP --disabled
+        retCode: 0
+      - name: log as $USER
+        command: kubectl koo login --user $USER --password $PASSWORD
+        retCode: 0
+        output: logged successfully..
+      - name: Test logged user
+        command: kubectl koo whoami
+        retCode: 0
+        outputExp: ".*$USER[[:space:]]*$"
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        retCode: 0
+        output: $USER:0:null
+
+  - name: Test groupbinding disabled
+    steps:
+      - name: Disable groupbinding
+        command: kubectl koo patch groupbinding $USER $GROUP --disabled
+        retCode: 0
+      - name: log as $USER
+        command: kubectl koo login --user $USER --password $PASSWORD
+        retCode: 0
+        output: logged successfully..
+      - name: Test logged user
+        command: kubectl koo whoami
+        retCode: 0
+        outputExp: ".*$USER[[:space:]]*$"
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        retCode: 0
+        output: $USER:0:null
+
+
+  - name: Test user disabled
+    steps:
+      - name: Disable groupbinding
+        command: kubectl koo patch user $USER --disabled
+        retCode: 0
+      - name: log as $USER
+        command: "kubectl koo login --user $USER --password $PASSWORD 2>&1"
+        retCode: 3
+        output: '' # Message is in stderr
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user t-usr1
+        retCode: 4
+        output: "ERROR: User $USER does not exists!"
+
+
+
+
+

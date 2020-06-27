@@ -57,7 +57,11 @@ func InitHttpConnection() {
 
 func DoLogin(login, password string) (token string) {
 	var getTokenResponse *GetTokenResponse
-	for i := 0; i < 3; i++ {
+	maxTry := 3
+	if login != "" && password != "" {
+		maxTry = 1		// If all is provided on command line, do not prompt in case of failure
+	}
+	for i := 0; i < maxTry; i++ {
 		login, password = inputCredentials(login, password)
 		getTokenResponse = getTokenFor(login, password)
 		if getTokenResponse != nil {
@@ -73,7 +77,9 @@ func DoLogin(login, password string) (token string) {
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid login!\n")
 		login = ""; password = ""
 	}
-	_, _ = fmt.Fprintf(os.Stderr, "Too many failure !!!\n")
+	if maxTry > 1 {
+		_, _ = fmt.Fprintf(os.Stderr, "Too many failure !!!\n")
+	}
 	return ""
 }
 
