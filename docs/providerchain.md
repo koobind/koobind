@@ -76,10 +76,10 @@ Password:
 logged successfully..
 ```
 
-Then, it can issue the `koo get user <userName>` subcommand:
+Then, it can issue the `koo describe user <userName>` subcommand:
 
 ```
-$  kubectl koo get user oriley
+$  kubectl koo describe user oriley
 USER     ID          GROUPS                 AUTHORITY
 oriley   870200001   auditors,itdep,users   ipa1
 ```
@@ -89,7 +89,7 @@ Here, we have one more information: The provider who authenticated this user is 
 But, as a system admin, we may need more information about how this user is authenticated. For this, we can add the `--explain` flag to the previous command:
 
 ```
-$  kubectl koo get user oriley --explain
+$  kubectl koo describe user oriley --explain
 PROVIDER   FOUND   AUTH   UID         GROUPS          EMAIL                  COMMON NAME    COMMENT
 ipa1       *       *      870200001   [users,itdep]   oriley@mycompany.com   Oliver RILEY
 ldap1      *       +      2004        [auditors]                             Oliver RILEY
@@ -108,7 +108,7 @@ This option will list all configured Identity Provider and provide their satus f
 Of course, we can also figure out how our `admin` user is defined:
 
 ``` 
-$  kubectl koo get user admin --explain
+$  kubectl koo describe user admin --explain
 PROVIDER   FOUND   AUTH   UID   GROUPS                    EMAIL   COMMON NAME   COMMENT
 ipa1
 ldap1
@@ -118,7 +118,7 @@ crdsys     *       *            [kooadmin,clusteradmin]           Koo ADMIN
 Now, let's assume we have a user 'jsmith' defined in **ldap1**. And also this user is already defined in our CRD provider, as performed in the [usage](usage.md) chapter.
 
 ```
-$  kubectl koo get user jsmith --explain
+$  kubectl koo describe user jsmith --explain
 PROVIDER   FOUND   AUTH   UID      GROUPS       EMAIL                  COMMON NAME    COMMENT
 ipa1
 ldap1      *       *      2005     [all,devs]                          Johnny SMITH
@@ -193,11 +193,11 @@ groupbinding.directory.koobind.io/oriley-cluseradmin created
 Then, as admin, we can check this user belong the `kooadmin` and `clusteradmin` groups:
 
 ```
-$ kubectl koo get user oriley
+$ kubectl koo describe user oriley
 USER     ID          GROUPS                                       AUTHORITY
 oriley   870200001   auditors,clusteradmin,itdep,kooadmin,users   ipa1
 
-$ kubectl koo get user oriley --explain
+$ kubectl koo describe user oriley --explain
 PROVIDER   FOUND   AUTH   UID         GROUPS                    EMAIL                  COMMON NAME    COMMENT
 ipa1       *       *      870200001   [users,itdep]             oriley@mycompany.com   Oliver RILEY
 ldap1      *       +      2004        [auditors]                                       Oliver RILEY
@@ -224,11 +224,11 @@ cert-manager     cert-manager-webhook-8444c4bc77-c62sv      1/1     Running   8 
 Let's have a look back on our user 'jsmith':
 
 ```
-$ kubectl koo get user jsmith
+$ kubectl koo describe user jsmith
 USER     ID     GROUPS     AUTHORITY
 jsmith   2005   all,devs   ldap1
 
-$ kubectl koo get user jsmith --explain
+$ kubectl koo describe user jsmith --explain
 PROVIDER   FOUND   AUTH   UID      GROUPS       EMAIL                  COMMON NAME    COMMENT
 ipa1
 ldap1      *       *      2005     [all,devs]                          Johnny SMITH
@@ -258,11 +258,11 @@ providers:
 Now, under 'admin' account:
  
 ```
-$ kubectl koo get user jsmith
+$ kubectl koo describe user jsmith
 USER     ID     GROUPS                AUTHORITY
 jsmith   2005   devs,it_all,it_devs   ldap1
 
-$ kubectl koo get user jsmith --explain
+$ kubectl koo describe user jsmith --explain
 PROVIDER   FOUND   AUTH   UID      GROUPS             EMAIL                  COMMON NAME    COMMENT
 ipa1
 ldap1      *       *      2005     [it_all,it_devs]                          Johnny SMITH
