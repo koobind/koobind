@@ -79,7 +79,7 @@ func (this *User) validate() error {
 	if this.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(this.Spec.PasswordHash), []byte("xxxxx"))
 		if err != nil && err != bcrypt.ErrMismatchedHashAndPassword {
-			return fmt.Errorf("Invalid passwordHash!")
+			return fmt.Errorf("Invalid passwordHash! ('%s')", this.Spec.PasswordHash)
 		}
 	}
 	if this.Spec.Email != "" {

@@ -80,9 +80,9 @@ func applyUserCommand(cmd *cobra.Command, args []string, method string) {
 		panic(err)
 	}
 	if response.StatusCode == http.StatusCreated {
-		fmt.Printf("User created sucessfully.\n")
+		fmt.Printf("User created successfully.\n")
 	} else if response.StatusCode == http.StatusOK {
-		fmt.Printf("User updated sucessfully.\n")
+		fmt.Printf("User updated successfully.\n")
 	} else {
 		PrintHttpResponseMessage(response)
 	}

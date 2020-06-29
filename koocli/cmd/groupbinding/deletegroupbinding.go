@@ -55,7 +55,7 @@ var DeleteGroupBindingCmd = &cobra.Command{
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("GroupBinding deleted sucessfully.\n")
+			fmt.Printf("GroupBinding deleted successfully.\n")
 		} else {
 			PrintHttpResponseMessage(response)
 		}

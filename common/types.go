@@ -93,6 +93,12 @@ func (in *User) DeepCopyInto(out *User) {
 	copy(out.Groups, in.Groups)
 }
 
+type  ChangePasswordRequest struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+// The two following messages are dictated by API server webhook protocol
 type ValidateTokenRequest struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind string `json:"kind"`

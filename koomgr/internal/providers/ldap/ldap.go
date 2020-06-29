@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/koobind/koobind/common"
+	"github.com/koobind/koobind/koomgr/internal/providers"
 	"gopkg.in/ldap.v2"
 	"strconv"
 	"strings"
@@ -307,4 +308,8 @@ func (this *ldapProvider) checkPassword(conn *ldap.Conn, user ldap.Entry, passwo
 	}
 	this.logger.V(2).Info(fmt.Sprintf("%s => success", bindDesc))
 	return common.Checked, nil
+}
+
+func (this *ldapProvider) ChangePassword(user string, oldPassword string, newPassword string) error {
+	return providers.ErrorChangePasswordNotSupported
 }

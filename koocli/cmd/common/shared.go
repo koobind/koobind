@@ -118,19 +118,24 @@ func inputCredentials(login, password string) (string, string) {
 		login = strings.TrimSpace(login)
 	}
 	if password == "" {
-		_, err := fmt.Fprint(os.Stderr, "Password:")
-		if err != nil {
-			panic(err)
-		}
-		bytePassword, err2 := terminal.ReadPassword(int(syscall.Stdin))
-		if err2 != nil {
-			panic(err2)
-		}
-		_, _ = fmt.Fprintf(os.Stderr, "\n")
-		password = strings.TrimSpace(string(bytePassword))
+		password = inputPassword("Password:")
 	}
 	return login, password
 }
+
+func inputPassword(prompt string) string {
+	_, err := fmt.Fprint(os.Stderr, prompt)
+	if err != nil {
+		panic(err)
+	}
+	bytePassword, err2 := terminal.ReadPassword(int(syscall.Stdin))
+	if err2 != nil {
+		panic(err2)
+	}
+	_, _ = fmt.Fprintf(os.Stderr, "\n")
+	return strings.TrimSpace(string(bytePassword))
+}
+
 
 func ValidateToken(token string) *User {
 	validateTokenRequest := ValidateTokenRequest{
@@ -198,9 +203,9 @@ func PrintHttpResponseMessage(response *http.Response) {
 	} else {
 		if data != nil && len(data) > 0 {
 			m := strings.TrimSpace(string(data))
-			fmt.Printf("ERROR: %s: %s.", response.Status, m)
+			fmt.Printf("ERROR: %s: %s", response.Status, m)
 		} else {
-			fmt.Printf("ERROR: %s.", response.Status)
+			fmt.Printf("ERROR: %s", response.Status)
 		}
 		if response.StatusCode > http.StatusInternalServerError {
 			fmt.Printf(" Check server logs or contact your server administrator.")

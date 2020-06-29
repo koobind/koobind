@@ -32,6 +32,6 @@ func init() {
 
 var GetCmd = &cobra.Command{
 	Use:	"get",
-	Short:  "Get ressources",
+	Short:  "Get koobind parameters",
 }
 

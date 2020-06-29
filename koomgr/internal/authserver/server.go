@@ -122,6 +122,16 @@ func (s *Server) Init(tokenBasket token.TokenBasket, kubeClient client.Client, p
 		Providers: providerChain,
 	}).Methods("GET")
 
+	s.Router.Handle("/auth/v1/changePassword", &v1.ChangePasswordHandler{
+		AuthHandler: handlers.AuthHandler{
+			BaseHandler: handlers.BaseHandler{
+				Logger:      ctrlrt.Log.WithName("v1changePassword"),
+				TokenBasket: tokenBasket,
+			},
+			Providers: providerChain,
+		},
+	}).Methods("POST")
+
 	newAdminHandler := func(hf v1.HandlerFunc, loggerName string) *v1.AdminV1Handler {
 		return &v1.AdminV1Handler{
 			AuthHandler: handlers.AuthHandler{

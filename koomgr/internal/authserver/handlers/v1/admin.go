@@ -42,7 +42,7 @@ func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *htt
 			this.HandlerFunc(this, usr, response, request)
 		} else {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s': access to admin interface denied (Not in appropriate group)", usr.Username))
-			http.Error(response, "Unallowed", http.StatusForbidden)
+			this.HttpError(response, "Unallowed", http.StatusForbidden)
 		}
 	})
 }

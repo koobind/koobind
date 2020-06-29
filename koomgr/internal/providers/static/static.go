@@ -21,6 +21,7 @@ package static
 import (
 	"fmt"
 	"github.com/koobind/koobind/common"
+	"github.com/koobind/koobind/koomgr/internal/providers"
 	"golang.org/x/crypto/bcrypt"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
@@ -55,7 +56,6 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 			if err == nil {
 				userStatus.PasswordStatus = common.Checked
 				//this.logger.Debugf("User '%s' found. Login OK", login)
-
 			} else {
 				//this.logger.Debugf("User '%s' found. Login failed", login)
 				spLog.V(1).Info("User found", "user", login)
@@ -90,4 +90,8 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		userStatus.Found = false
 	}
 	return userStatus, nil
+}
+
+func (this *staticProvider) ChangePassword(user string, oldPassword string, newPassword string) error {
+	return providers.ErrorChangePasswordNotSupported
 }

@@ -72,9 +72,9 @@ func applyGroupCommand(cmd *cobra.Command, args []string, method string) {
 		panic(err)
 	}
 	if response.StatusCode == http.StatusCreated {
-		fmt.Printf("Group created sucessfully.\n")
+		fmt.Printf("Group created successfully.\n")
 	} else if response.StatusCode == http.StatusOK {
-		fmt.Printf("Group updated sucessfully.\n")
+		fmt.Printf("Group updated successfully.\n")
 	} else {
 		PrintHttpResponseMessage(response)
 	}

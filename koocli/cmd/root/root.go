@@ -78,7 +78,7 @@ func init() {
 	RootCmd.AddCommand(misc.LogoutCmd)
 	RootCmd.AddCommand(misc.WhoamiCmd)
 	RootCmd.AddCommand(misc.VersionCmd)
-
+	RootCmd.AddCommand(misc.PasswordCmd)
 
 	RootCmd.PersistentFlags().StringVar(&Context, "Context", "", "Context" )
 	RootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup Context" )

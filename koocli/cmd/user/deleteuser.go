@@ -53,7 +53,7 @@ var DeleteUserCmd = &cobra.Command{
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("User deleted sucessfully.\n")
+			fmt.Printf("User deleted successfully.\n")
 		} else {
 			PrintHttpResponseMessage(response)
 		}

@@ -25,6 +25,7 @@ import (
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/config"
+	"github.com/koobind/koobind/koomgr/internal/providers"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
@@ -140,4 +141,29 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 		}
 	}
 	return userStatus, nil
+}
+
+func (this *CrdProvider) ChangePassword(user string, oldPassword string, newPassword string) error {
+	crdUser := &v1alpha1.User{}
+	err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
+		Namespace: this.Namespace,
+		Name:      user,
+	}, crdUser)
+	if err != nil {
+		return err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(crdUser.Spec.PasswordHash), []byte(oldPassword))
+	if err != nil {
+		return providers.ErrorInvalidOldPassword
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	crdUser.Spec.PasswordHash = string(hash)
+	err = config.KubeClient.Update(context.TODO(), crdUser)
+	if err != nil {
+		return err
+	}
+	return nil
 }

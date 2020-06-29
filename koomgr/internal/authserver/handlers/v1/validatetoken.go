@@ -34,7 +34,7 @@ func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, reques
 	var requestPayload ValidateTokenRequest
 	err := json.NewDecoder(request.Body).Decode(&requestPayload)
 	if err != nil {
-		http.Error(response, err.Error(), http.StatusBadRequest)
+		this.HttpError(response, err.Error(), http.StatusBadRequest)
 	} else {
 		data := ValidateTokenResponse{
 			ApiVersion: requestPayload.ApiVersion,
@@ -42,7 +42,7 @@ func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, reques
 		}
 		usr, ok, err := this.TokenBasket.Get(requestPayload.Spec.Token)
 		if err != nil {
-			http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+			this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 			return
 		}
 		if ok {

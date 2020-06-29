@@ -20,7 +20,6 @@ package chain
 
 import (
 	"fmt"
-	"github.com/golang-collections/collections/set"
 	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
@@ -33,7 +32,8 @@ import (
 )
 
 type providerChain struct {
-	providers []providers.Provider
+	providers      []providers.Provider
+	prividerByName map[string]providers.Provider
 }
 
 var pcLog = ctrl.Log.WithName("providerChain")
@@ -52,9 +52,9 @@ var ProviderConfigBuilderFromType = map[string]func() providerConfig{
 
 func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 	this := providerChain{
-		providers: []providers.Provider{},
+		providers:      []providers.Provider{},
+		prividerByName: make(map[string]providers.Provider),
 	}
-	providerNameSet := set.New()
 	for i := 0; i < len(conf.Providers); i++ {
 		//var m map[interface{}]interface{}
 		m, ok := conf.Providers[i].(map[interface{}]interface{})
@@ -83,10 +83,9 @@ func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 			return nil, err
 		}
 		name := providerConfig.GetName()
-		if providerNameSet.Has(name) {
+		if _, ok := this.prividerByName[name]; ok {
 			return nil, fmt.Errorf("two providers are defined with the same name: '%s'", name)
 		}
-		providerNameSet.Insert(name)
 		if providerConfig.IsEnabled() {
 			prvd, err := providerConfig.Open(i, conf.ConfigFolder)
 			if err != nil {
@@ -94,6 +93,7 @@ func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 			}
 			pcLog.Info("Setup provider", "provider", prvd.GetName())
 			this.providers = append(this.providers, prvd)
+			this.prividerByName[name] = prvd
 		}
 	}
 	return &this, nil
@@ -209,17 +209,25 @@ func (this *providerChain) GetNamespace(providerName string) (namespace string, 
 			return ns, nil
 		}
 	} else {
-		for _, prvd := range this.providers {
-			if prvd.GetName() == providerName {
-				crdProvider, ok := (prvd).(*crd.CrdProvider)
-				if !ok {
-					return "", fmt.Errorf("Provider '%s' is not of type 'crd'.", providerName)
-				}
-				return crdProvider.Namespace, nil
+		prvd, ok := this.prividerByName[providerName]
+		if ok {
+			crdProvider, ok := (prvd).(*crd.CrdProvider)
+			if !ok {
+				return "", fmt.Errorf("Provider '%s' is not of type 'crd'.", providerName)
 			}
+			return crdProvider.Namespace, nil
+		} else {
+			return "", fmt.Errorf("There is no provider named '%s' defined in this configuration", providerName)
 		}
-		return "", fmt.Errorf("There is no provider named '%s' defined in this configuration", providerName)
 	}
+}
+
+func (this *providerChain) GetProvider(providerName string) (providers.Provider, error) {
+	p, ok := this.prividerByName[providerName]
+	if !ok {
+		return nil, fmt.Errorf("Provider '%s' does not exists in this configuration.", providerName)
+	}
+	return p, nil
 }
 
 func unique(stringSlice []string) []string {

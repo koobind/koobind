@@ -54,7 +54,7 @@ var DeleteGroupCmd = &cobra.Command{
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("Group deleted sucessfully.\n")
+			fmt.Printf("Group deleted successfully.\n")
 		} else {
 			PrintHttpResponseMessage(response)
 		}

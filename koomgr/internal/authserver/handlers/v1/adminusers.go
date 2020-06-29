@@ -135,7 +135,6 @@ func AddApplyPatchUser(handler *AdminV1Handler, usr common.User, response http.R
 				return
 			}
 			handler.HttpClose(response, "", http.StatusCreated)
-
 		}
 	}
 }

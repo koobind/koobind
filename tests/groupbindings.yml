@@ -29,7 +29,7 @@ tests:
       - name: initial create
         command: kubectl koo create groupbinding $USER $GROUP
         retCode: 0
-        output: GroupBinding created sucessfully.
+        output: GroupBinding created successfully.
         echo: no
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
@@ -44,7 +44,7 @@ tests:
       - name: initial create
         command: kubectl koo create groupbinding $USER $GROUP --disabled
         retCode: 0
-        output: GroupBinding created sucessfully.
+        output: GroupBinding created successfully.
         echo: no
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
@@ -55,7 +55,7 @@ tests:
       - name: Initial apply
         command: kubectl koo apply groupbinding $USER $GROUP
         retCode: 0
-        output: GroupBinding created sucessfully.
+        output: GroupBinding created successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:"
@@ -63,7 +63,7 @@ tests:
       - name: re-apply same value
         command: kubectl koo apply groupbinding $USER $GROUP
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:"
@@ -71,7 +71,7 @@ tests:
       - name: apply only disabled
         command: kubectl koo apply groupbinding $USER $GROUP --disabled
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:true"
@@ -79,7 +79,7 @@ tests:
       - name: apply only enabled
         command: kubectl koo apply groupbinding $USER $GROUP --enabled
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:false"
@@ -87,7 +87,7 @@ tests:
       - name:  Back to no parameters
         command: kubectl koo apply groupbinding $USER $GROUP
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:"
@@ -97,7 +97,7 @@ tests:
       - name: initial create
         command: kubectl koo create groupbinding $USER $GROUP
         retCode: 0
-        output: GroupBinding created sucessfully.
+        output: GroupBinding created successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:"
@@ -105,7 +105,7 @@ tests:
       - name: Patch disabled
         command: kubectl koo patch groupbinding $USER $GROUP --disabled
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:true"
@@ -113,7 +113,7 @@ tests:
       - name: Patch enabled
         command: kubectl koo patch groupbinding $USER $GROUP --enabled
         retCode: 0
-        output: GroupBinding updated sucessfully.
+        output: GroupBinding updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koogroupbinding "$GROUP_BINDING" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
         output: "$GROUP_BINDING:false"

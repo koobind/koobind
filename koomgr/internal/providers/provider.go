@@ -19,6 +19,7 @@
 package providers
 
 import (
+	"errors"
 	"github.com/koobind/koobind/common"
 )
 
@@ -29,9 +30,13 @@ type Provider interface {
 	GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error)
 	GetName() string
 	GetType() string
+	ChangePassword(user string, oldPassword string, newPassword string) error
 	// If critical, a failure will induce 'Invalid login'. Otherwhise, other providers will be used
 	IsCritical() bool
 }
+
+var ErrorInvalidOldPassword = errors.New("Invalid old password.")
+var ErrorChangePasswordNotSupported = errors.New("This provider does not support password change.")
 
 type ProviderChain interface {
 	Login(login, password string) (user common.User, loginOk bool, authenticator string, err error) // authenticator is the name of the provider who authenticate the user
@@ -40,6 +45,7 @@ type ProviderChain interface {
 	// Relevant only for providers of type 'crd'
 	// By convention, if providerName == '_' and there is only one of type 'crd', its namespace is provided. If there is several this is an error
 	GetNamespace(providerName string) (namespace string, err error)
+	GetProvider(providerName string) (Provider, error)
 }
 
 type GetNamespaceError struct {

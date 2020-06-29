@@ -39,7 +39,7 @@ tests:
         command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
         retCode: 0
       - name: Check user description
-        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        command: kubectl koo describe user $USER --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
         retCode: 0
         output: $USER:1:$GROUP
 
@@ -60,7 +60,7 @@ tests:
         command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
         retCode: 0
       - name: Check user description
-        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        command: kubectl koo describe user $USER --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
         retCode: 0
         output: $USER:0:null
 
@@ -81,7 +81,7 @@ tests:
         command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
         retCode: 0
       - name: Check user description
-        command: kubectl koo describe user t-usr1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
+        command: kubectl koo describe user $USER --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0])'
         retCode: 0
         output: $USER:0:null
 
@@ -99,7 +99,7 @@ tests:
         command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
         retCode: 0
       - name: Check user description
-        command: kubectl koo describe user t-usr1
+        command: kubectl koo describe user $USER
         retCode: 4
         output: "ERROR: User $USER does not exists!"
 

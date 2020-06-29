@@ -6,28 +6,28 @@ import (
 	"net/http"
 )
 
-func ListToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
-	list, err := handler.TokenBasket.GetAll()
+func ListToken(this *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+	list, err := this.TokenBasket.GetAll()
 	if err != nil {
-		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+		this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 		return
 	}
 	data := common.TokenListResponse{
 		Tokens: list,
 	}
-	handler.ServeJSON(response, data)
+	this.ServeJSON(response, data)
 }
 
-func DeleteToken(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DeleteToken(this *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
 	token := mux.Vars(request)["token"]
-	ok, err := handler.TokenBasket.Delete(token)
+	ok, err := this.TokenBasket.Delete(token)
 	if err != nil {
-		http.Error(response, "Server error. Check server logs", http.StatusInternalServerError)
+		this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 		return
 	}
 	if !ok {
-		http.Error(response, "Not found", http.StatusNotFound)
+		this.HttpError(response, "Not found", http.StatusNotFound)
 		return
 	}
-	handler.HttpClose(response, "", http.StatusOK)
+	this.HttpClose(response, "", http.StatusOK)
 }

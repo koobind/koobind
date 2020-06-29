@@ -10,6 +10,7 @@ globalSetup:
   - COMMON_NAME="User ONE"
   - EMAIL="user1@test.com"
   - PASSWORD="usr1"
+  - PASSWORDBIS="usr1b"
   - PASSWORD_HASH='$2a$10$gZvOBaxzqZtOvWS6Q/YqreNafTIbU62jvF/y494OyhmdCKq/xNHKe'
   - MY_UID="1222"
   - NS="koo-system"
@@ -32,7 +33,7 @@ tests:
       - name: initial create
         command: kubectl koo create user $USER
         retCode: 0
-        output: User created sucessfully.
+        output: User created successfully.
         echo: no
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
@@ -47,7 +48,7 @@ tests:
       - name: initial create
         command: kubectl koo create user $USER --comment "$COMMENT" --commonName "$COMMON_NAME" --email "$EMAIL" --passwordHash "$PASSWORD_HASH" --uid "$MY_UID" --disabled
         retCode: 0
-        output: User created sucessfully.
+        output: User created successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME:$EMAIL:$MY_UID:$PASSWORD_HASH:true"
@@ -57,7 +58,7 @@ tests:
       - name: Create user
         command: kubectl koo create user $USER --commonName "$COMMON_NAME" --email "$EMAIL" --passwordHash $(kubectl koo hash --password "$PASSWORD") --uid "$MY_UID"
         retCode: 0
-        output: User created sucessfully.
+        output: User created successfully.
       - name: Check login
         command: kubectl koo login --user "$USER" --password "$PASSWORD"
         retCode: 0
@@ -73,7 +74,7 @@ tests:
       - name: Initial apply
         command: kubectl koo apply user $USER
         retCode: 0
-        output: User created sucessfully.
+        output: User created successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER::::::"
@@ -81,7 +82,7 @@ tests:
       - name: re-apply same value
         command: kubectl koo apply user $USER
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER::::::"
@@ -89,7 +90,7 @@ tests:
       - name: apply All values
         command: kubectl koo apply user $USER --comment "$COMMENT" --commonName "$COMMON_NAME" --email "$EMAIL" --passwordHash "$PASSWORD_HASH" --uid "$MY_UID" --disabled
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME:$EMAIL:$MY_UID:$PASSWORD_HASH:true"
@@ -97,7 +98,7 @@ tests:
       - name: apply only comment
         command: kubectl koo apply user $USER --comment "$COMMENT"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:::::"
@@ -105,7 +106,7 @@ tests:
       - name: apply only disabled
         command: kubectl koo apply user $USER --disabled
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER::::::true"
@@ -113,7 +114,7 @@ tests:
       - name: apply only enabled
         command: kubectl koo apply user $USER --enabled
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER::::::false"
@@ -121,7 +122,7 @@ tests:
       - name:  Back to no parameters
         command: kubectl koo apply user $USER
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER::::::"
@@ -138,7 +139,7 @@ tests:
       - name: Patch comment
         command: kubectl koo patch user $USER --comment "$COMMENT"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:::::"
@@ -146,7 +147,7 @@ tests:
       - name: Patch disabled
         command: kubectl koo patch user $USER --disabled
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:::::true"
@@ -154,7 +155,7 @@ tests:
       - name: Patch enabled
         command: kubectl koo patch user $USER --enabled
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:::::false"
@@ -162,7 +163,7 @@ tests:
       - name: Patch commonName
         command: kubectl koo patch user $USER --commonName "$COMMON_NAME"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME::::false"
@@ -170,7 +171,7 @@ tests:
       - name: Patch email
         command: kubectl koo patch user $USER --email "$EMAIL"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME:$EMAIL:::false"
@@ -178,7 +179,7 @@ tests:
       - name: Patch uid
         command: kubectl koo patch user $USER --uid "$MY_UID"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME:$EMAIL:$MY_UID::false"
@@ -186,7 +187,7 @@ tests:
       - name: Patch passwordHash
         command: kubectl koo patch user $USER --passwordHash "$PASSWORD_HASH"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT:$COMMON_NAME:$EMAIL:$MY_UID:$PASSWORD_HASH:false"
@@ -194,11 +195,10 @@ tests:
       - name: Change comment
         command: kubectl koo patch user $USER --comment "$COMMENT2"
         retCode: 0
-        output: User updated sucessfully.
+        output: User updated successfully.
       - name: Check resource
         command: kubectl -n $NS get koouser "$USER" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.passwordHash}:{.spec.disabled}"
         output: "$USER:$COMMENT2:$COMMON_NAME:$EMAIL:$MY_UID:$PASSWORD_HASH:false"
-
 
   - name: Test patch on non existing
     steps:
@@ -206,4 +206,33 @@ tests:
         command: kubectl koo patch user $USER
         retCode: 4
         outputExp: "404.*User[\\ ][\\']$USER[\\'][\\ ]does[\\ ]not[\\ ]exists"
+
+  - name: Check change password
+    steps:
+      - name: Create user
+        command: kubectl koo create user $USER --commonName "$COMMON_NAME" --email "$EMAIL" --passwordHash $(kubectl koo hash --password "$PASSWORD") --uid "$MY_UID"
+        retCode: 0
+        output: User created successfully.
+      - name: Check login
+        command: kubectl koo login --user "$USER" --password "$PASSWORD"
+        retCode: 0
+        output: "logged successfully.."
+      - name: Change my password
+        command: kubectl koo password --oldPassword $PASSWORD --newPassword $PASSWORDBIS
+        retCode: 0
+        output: "Password changed successfully."
+      - name: Check login with new password
+        command: kubectl koo login --user "$USER" --password "$PASSWORDBIS"
+        retCode: 0
+        output: "logged successfully.."
+      - name: Change my password with wrong old one
+        command: kubectl koo password --oldPassword $PASSWORD --newPassword $PASSWORDBIS
+        retCode: 125
+        outputExp: "400.*Invalid[\\ ]old[\\ ]password"
+      - name: Restore admin login
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD" >/dev/null
+        retCode: 0
+
+
+
 

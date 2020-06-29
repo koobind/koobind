@@ -1,0 +1,142 @@
+# This test require a non-standard configuration, with to CRD based provider
+name: Test koobind/2 CRD providers
+
+exitOnFail: yes
+
+globalSetup:
+  - PROVIDER1="crdsys"
+  - PROVIDER2="crdaux"
+  - USER1="t-usr1"
+  - GROUP1="t-grp1"
+  - USER2="t-usr2"
+  - GROUP2="t-grp2"
+  - GROUP_BINDING1="$USER1-$GROUP1"
+  - GROUP_BINDING2="$USER2-$GROUP2"
+  - PASSWORD1="usr1"
+  - PASSWORD2="usr2"
+  - MY_UID1="1001"
+  - MY_UID2="1002"
+  - NS1="koo-system"
+  - NS2="koo-aux"
+  - ADMIN_USER="admin"
+  - ADMIN_PASSWORD="admin"
+  - kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD" >/dev/null
+  - kubectl koo delete groupbinding $USER1 $GROUP1 --provider $PROVIDER1  >/dev/null || true  # In case of previous failure
+  - kubectl koo delete groupbinding $USER2 $GROUP2 --provider $PROVIDER2  >/dev/null || true  # In case of previous failure
+  - kubectl koo delete user $USER1 --provider $PROVIDER1  >/dev/null || true  # In case of previous failure
+  - kubectl koo delete user $USER2 --provider $PROVIDER2  >/dev/null || true  # In case of previous failure
+  - kubectl koo delete group $GROUP1 --provider $PROVIDER1  >/dev/null || true  # In case of previous failure
+  - kubectl koo delete group $GROUP2 --provider $PROVIDER2  >/dev/null || true  # In case of previous failure
+
+globalTearDown: []
+
+setup: []
+
+tearDown:
+  - kubectl koo delete groupbinding $USER1 $GROUP1 --provider $PROVIDER1  >/dev/null || true
+  - kubectl koo delete groupbinding $USER2 $GROUP2 --provider $PROVIDER2  >/dev/null || true
+  - kubectl koo delete user $USER1 --provider $PROVIDER1  >/dev/null || true
+  - kubectl koo delete user $USER2 --provider $PROVIDER2  >/dev/null || true
+  - kubectl koo delete group $GROUP1 --provider $PROVIDER1  >/dev/null || true
+  - kubectl koo delete group $GROUP2 --provider $PROVIDER2  >/dev/null || true
+
+tests:
+  - name: Check we need a provider parameter
+    steps:
+      - name: User create without provider
+        command: kubectl koo create user $USER1
+        retCode: 125
+        echo: no
+        outputExp: "ERROR:[\\ ]*400.*There[\\ ]is[\\ ]more[\\ ]than[\\ ]one[\\ ]provider[\\ ]of[\\ ]type[\\ ].*"
+      - name: Group create without provider
+        command: kubectl koo create group $GROUP1
+        retCode: 125
+        echo: no
+        outputExp: "ERROR:[\\ ]*400.*There[\\ ]is[\\ ]more[\\ ]than[\\ ]one[\\ ]provider[\\ ]of[\\ ]type[\\ ].*"
+      - name: GroupBinding create without provider
+        command: kubectl koo create groupbinding $USER1 $GROUP1
+        retCode: 125
+        echo: no
+        outputExp: "ERROR:[\\ ]*400.*There[\\ ]is[\\ ]more[\\ ]than[\\ ]one[\\ ]provider[\\ ]of[\\ ]type[\\ ].*"
+
+  - name: One user per provider
+    steps:
+      - name: $USER1 creation
+        command: kubectl koo create user $USER1 --passwordHash $(kubectl koo hash --password $PASSWORD1) --provider $PROVIDER1
+        retCode: 0
+        output: User created successfully.
+      - name: $GROUP1 creation
+        command: kubectl koo create group $GROUP1 --provider $PROVIDER1
+        retCode: 0
+        output: Group created successfully.
+      - name: $GROUP_BINDING1 creation
+        command: kubectl koo create groupbinding $USER1 $GROUP1 --provider $PROVIDER1
+        retCode: 0
+        output: GroupBinding created successfully.
+
+      - name: $USER2 creation
+        command: kubectl koo create user $USER2 --passwordHash $(kubectl koo hash --password $PASSWORD2) --provider $PROVIDER2
+        retCode: 0
+        output: User created successfully.
+      - name: $GROUP2 creation
+        command: kubectl koo create group $GROUP2 --provider $PROVIDER2
+        retCode: 0
+        output: Group created successfully.
+      - name: $GROUP_BINDING2 creation
+        command: kubectl koo create groupbinding $USER2 $GROUP2 --provider $PROVIDER2
+        retCode: 0
+        output: GroupBinding created successfully.
+
+      - name: Check $USER1 resource
+        command: kubectl -n $NS1 get koouser "$USER1" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.disabled}"
+        output: "$USER1:::::"
+      - name: Check $GROUP1 resource
+        command: kubectl -n $NS1 get koogroup "$GROUP1" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
+        output: "$GROUP1::"
+      - name: Check $GROUP_BINDING1 resource
+        command: kubectl -n $NS1 get koogroupbinding "$GROUP_BINDING1" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
+        output: "$GROUP_BINDING1:"
+
+      - name: Check $USER2 resource
+        command: kubectl -n $NS2 get koouser "$USER2" -o=jsonpath="{.metadata.name}:{.spec.comment}:{.spec.commonName}:{.spec.email}:{.spec.uid}:{.spec.disabled}"
+        output: "$USER2:::::"
+      - name: Check $GROUP2 resource
+        command: kubectl -n $NS2 get koogroup "$GROUP2" -o=jsonpath="{.metadata.name}:{.spec.description}:{.spec.disabled}"
+        output: "$GROUP2::"
+      - name: Check $GROUP_BINDING2 resource
+        command: kubectl -n $NS2 get koogroupbinding "$GROUP_BINDING2" -o=jsonpath="{.metadata.name}:{.spec.disabled}"
+        output: "$GROUP_BINDING2:"
+
+      - name: log as $USER1
+        command: kubectl koo login --user $USER1 --password $PASSWORD1
+        retCode: 0
+        output: logged successfully..
+      - name: Test logged user
+        command: kubectl koo whoami
+        retCode: 0
+        outputExp: ".*$USER1[[:space:]]*$GROUP1"
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user $USER1 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0]),":",(.authority)'
+        retCode: 0
+        output: $USER1:1:$GROUP1:$PROVIDER1
+
+      - name: log as $USER2
+        command: kubectl koo login --user $USER2 --password $PASSWORD2
+        retCode: 0
+        output: logged successfully..
+      - name: Test logged user
+        command: kubectl koo whoami
+        retCode: 0
+        outputExp: ".*$USER2[[:space:]]*$GROUP2"
+      - name: Login back to admin
+        command: kubectl koo login --user "$ADMIN_USER" --password "$ADMIN_PASSWORD"
+        retCode: 0
+      - name: Check user description
+        command: kubectl koo describe user $USER2 --json | jq -cjr '(.user.username),":",(.user.groups|length),":",(.user.groups[0]),":",(.authority)'
+        retCode: 0
+        output: $USER2:1:$GROUP2:$PROVIDER2
+
+
