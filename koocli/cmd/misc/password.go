@@ -84,7 +84,7 @@ func inputPasswordWithConfirm() string {
 			fmt.Printf("Password did not match. Please retry.\n")
 		}
 		newPassword1 := inputPassword("New password:")
-		newPassword2 := inputPassword("Confirm ew password:")
+		newPassword2 := inputPassword("Confirm new password:")
 		if newPassword1 == newPassword2 {
 			return newPassword1
 		}

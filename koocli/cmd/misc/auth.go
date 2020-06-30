@@ -33,7 +33,7 @@ var AuthCmd = &cobra.Command{
 		InitHttpConnection()
 		token := RetrieveToken()
 		if token == "" {
-			token = DoLogin("", "")
+			token = DoLoginSilently("", "")
 		}
 		ec := ExecCredential{
 			ApiVersion: "client.authentication.k8s.io/v1beta1",

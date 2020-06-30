@@ -54,8 +54,16 @@ func InitHttpConnection() {
 	HttpConnection = internal.NewHttpConnection(Config.Server, Config.RootCaFile, Log)
 }
 
-
 func DoLogin(login, password string) (token string) {
+	token = DoLoginSilently(login, password)
+	if token != "" {
+		_, _ = fmt.Fprintf(os.Stdout, "logged successfully..\n")
+	}
+	return
+}
+
+// Warning: As this function is used by the 'auth' command, which send json result to stdout, it may only send prompt to stderr
+func DoLoginSilently(login, password string) (token string) {
 	var getTokenResponse *GetTokenResponse
 	maxTry := 3
 	if login != "" && password != "" {
@@ -65,7 +73,6 @@ func DoLogin(login, password string) (token string) {
 		login, password = inputCredentials(login, password)
 		getTokenResponse = getTokenFor(login, password)
 		if getTokenResponse != nil {
-			_, _ = fmt.Fprintf(os.Stdout, "logged successfully..\n")
 			internal.SaveTokenBag(Context, &internal.TokenBag{
 				Token:      getTokenResponse.Token,
 				ClientTTL:  getTokenResponse.ClientTTL,

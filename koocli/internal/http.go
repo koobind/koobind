@@ -70,13 +70,14 @@ func NewHttpConnection(baseUrl string, rootCaFile string, log *logrus.Entry) *Ht
 		return &HttpConnection {
 			httpClient: &http.Client{Transport: tr},
 			baseUrl: baseUrl,
+			log: log,
 		}
 	}
 }
 
 func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, body io.Reader) (*http.Response, error) {
 	targetUrl := this.baseUrl + urlPath
-	logrus.Debugf("%s  %s\n", method, targetUrl)
+	this.log.Debugf("%s  %s\n", method, targetUrl)
 	request, err := http.NewRequest(method, targetUrl, body)
 	if err != nil {
 		return nil, err
