@@ -70,6 +70,7 @@ And the logs should not mention any errors:
 
 ```
 $ kubectl -n koo-system logs koo-manager-XXXXXXX
+{"level":"info","ts":1589127827.0740554,"logger":"setup","msg":"koomgr starting","version":"vX.X.X"}
 {"level":"info","ts":1589127827.0832849,"logger":"providerChain","msg":"Setup provider","provider":"crdsys"}
 {"level":"info","ts":1589127827.0833528,"logger":"setup","msg":"Namespaces","kubeClient":["koo-system"],"webhook":["koo-system"]}
 {"level":"info","ts":1589127827.6812227,"logger":"controller-runtime.builder","msg":"Registering a mutating webhook","GVK":"directory.koobind.io/v1alpha1, Kind=User","path":"/mutate-directory-koobind-io-v1alpha1-user"}
@@ -582,6 +583,16 @@ kube-system      calico-node-7pm4n                          1/1     Running   7 
 kube-system      coredns-58687784f9-cn7jw                   1/1     Running   7          55d
 kube-system      kube-apiserver-kspray1                     1/1     Running   0          36h
 ....
+```
+
+And last, but not least, obvious security concerns required the password to be changed. This can be achieved with the `password` koo subcommand:
+
+```
+$ kubectl koo password
+Old password:
+New password:
+Confirm new password:
+Password changed successfully.
 ```
 
 Installation is now completed. You can now move on [usage](usage.md) of `Koobind`...

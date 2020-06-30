@@ -22,11 +22,11 @@ And of course, all contribution are welcome.
 
 - [Overview](#overview)
 - [Installation](docs/installation.md)
-  - [Ansible installation](docs/ansible.md)
 - [Usage](docs/usage.md)
 - [Configuration](docs/configuration.md)
 - [LDAP configuration](docs/ldap.md)
 - [Identity provider chaining](docs/providerchain.md)
+- [Ansible installation](docs/ansible.md)
 - [Design](docs/design.md)
 
 ## Overview

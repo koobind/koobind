@@ -6,11 +6,15 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Index**
 
-- [User and Group management](#user-and-group-management)
+- [User and Group resources](#user-and-group-resources)
   - [User](#user)
   - [Group](#group)
   - [GroupBinding](#groupbinding)
 - [Login / Logout](#login--logout)
+- [User and Group CLI management](#user-and-group-cli-management)
+  - [create and delete user](#create-and-delete-user)
+  - [patch user](#patch-user)
+  - [apply to user](#apply-to-user)
 - [Tokens](#tokens)
 - [Context](#context)
   - [Context store](#context-store)
@@ -21,7 +25,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-## User and Group management
+## User and Group resources
 
 If you have followed up the full installation process, you can now create and manage Kubernetes users and groups as resources.
 
@@ -154,6 +158,8 @@ logged successfully..
 Error from server (Forbidden): users.directory.koobind.io is forbidden: User "jsmith" cannot list resource "users" in API group "directory.koobind.io" in the namespace "koo-system"
 ```
 
+> Remember: Password is `smithj`.
+
 Of course, this user is not allowed to perform the requested operation. But we can check the authentication is successful by using the `koo whoami` subcommand:
 
 ```
@@ -201,6 +207,140 @@ jsmith   100001   devs
 ```
 
 > Of course, providing the password in clear text such this way is a huge security issue. Use it as your own risk. 
+
+`Koobind` provide also a command allowing a user to change its password:
+
+```
+$ kubectl koo password
+Old password:
+New password:
+Confirm new password:
+Password changed successfully.
+```
+
+Or, the non-interactive, risky version:
+
+```
+$ kubectl koo password --oldPassword jsmith --newPassword utemlmhdt$3
+```
+
+## User and Group CLI management
+
+As we saw, `koobind` allow you to manage your users and groups as standard Kubernetes resources. Beside this, it also provides a Command Line Interface to handle theses ressources  
+
+### Create and delete user
+
+For example, to create a user:
+
+```
+$ kubectl koo create user pjohnson
+User created successfully.
+```
+
+We created a user, but without any attribute (including no password).
+
+```
+$ kubectl -n koo-system get users
+NAME       COMMON NAME   EMAIL                  UID      COMMENT         DISABLED
+....
+pjohnson
+....
+```
+
+So, we can delete it:
+
+```
+$ kubectl koo delete user pjohnson
+User deleted successfully.
+```
+
+And recreate it, now with all attributes, including a password, as hashed value:
+
+```
+$ kubectl koo hash
+Password:
+Confirm password:
+$2a$10$3eW8SER9XKDPtcdyAj74t.H2/1luh.6pjOvYqIYrhr1.svqPcpOx.
+
+$ kubectl koo create user pjohnson --comment "P. Johnson" --commonName "Paul JOHNSON" --email "pjohnson@mycompany.com" --uid 2001 --passwordHash '$2a$10$3eW8SER9XKDPtcdyAj74t.H2/1luh.6pjOvYqIYrhr1.svqPcpOx.'
+```
+
+> Note the simple quote to protect the password from shell variable extension.
+
+
+We have now a fully populated user:
+
+```
+$ kubectl -n koo-system get users
+NAME       COMMON NAME    EMAIL                    UID      COMMENT         DISABLED
+....
+pjohnson   Paul JOHNSON   pjohnson@mycompany.com   2001     P. Johnson
+....
+```
+
+Of course, having to cut and paste the hash value can be tedious. So, if we are not afraid to display the password, this can be achieved in one line:
+
+```
+$ kubectl koo create user pjohnson --comment "P. Johnson" --commonName "Paul JOHNSON" --email "pjohnson@mycompany.com" --uid 2001 --passwordHash $(kubectl koo hash --password 'changeme')
+User created successfully.
+```
+
+### Patch user
+
+
+```
+$ kubectl koo patch user pjohnson --email "paul.johnson@mycompany.com"
+User updated successfully.
+$ kubectl -n koo-system get users
+NAME       COMMON NAME    EMAIL                        UID      COMMENT         DISABLED
+....
+pjohnson   Paul JOHNSON   paul.johnson@mycompany.com   2001     P. Johnson
+....
+```
+
+```
+kubectl koo patch user pjohnson --passwordHash $(kubectl koo hash --password 'changemeagain')
+User updated successfully.
+```
+
+
+### Apply to user
+
+```
+$ kubectl koo apply user ajohnson --commonName "Alan JOHNSON" --passwordHash $(kubectl koo hash --password 'changeme')
+User created successfully.
+```
+
+```
+$ kubectl -n koo-system get users
+NAME       COMMON NAME    EMAIL                        UID      COMMENT         DISABLED
+....
+ajohnson   Alan JOHNSON
+....
+```
+
+
+```
+$ kubectl koo apply user ajohnson --commonName "Alan JOHNSON" --passwordHash $(kubectl koo hash --password 'changeme')
+User updated successfully.
+```
+
+
+
+
+
+```
+$ kubectl koo apply user ajohnson --email "a.johnson@mycompany.com"
+User updated successfully.
+
+$ kubectl -n koo-system get users
+NAME       COMMON NAME    EMAIL                        UID      COMMENT         DISABLED
+....
+ajohnson                  a.johnson@mycompany.com
+....
+```
+
+
 
 ## Tokens
 
