@@ -60,6 +60,7 @@ func main() {
 	stLevel := zap.NewAtomicLevelAt(zapcore.Level(zapcore.DPanicLevel)) // No stack trace for WARN and ERROR
 	ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(config.Conf.LogMode == "dev"), crtzap.Level(&ll), crtzap.StacktraceLevel(&stLevel)))
 
+	setupLog.V(0).Info(fmt.Sprintf("koomgr starting"), "version", config.Version)
 	setupLog.V(1).Info("Debug log mode activated")
 	setupLog.V(2).Info(
 		"Trace log mode activated")
