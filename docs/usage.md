@@ -12,9 +12,10 @@
   - [GroupBinding](#groupbinding)
 - [Login / Logout](#login--logout)
 - [User and Group CLI management](#user-and-group-cli-management)
-  - [create and delete user](#create-and-delete-user)
-  - [patch user](#patch-user)
-  - [apply to user](#apply-to-user)
+  - [Create and delete user](#create-and-delete-user)
+  - [Patch user](#patch-user)
+  - [Apply to user](#apply-to-user)
+  - [Groups management](#groups-management)
 - [Tokens](#tokens)
 - [Context](#context)
   - [Context store](#context-store)
@@ -237,7 +238,9 @@ $ kubectl koo create user pjohnson
 User created successfully.
 ```
 
-We created a user, but without any attribute (including no password).
+> Of course, you must be logged as an 'admin' user, member of the 'kooadmin' group. 
+
+We created a user, but without any attribute (and without password).
 
 ```
 $ kubectl -n koo-system get users
@@ -287,6 +290,7 @@ User created successfully.
 
 ### Patch user
 
+Now, what if we just want to change one parameter of the user. We have the `patch` subcommand for this:
 
 ```
 $ kubectl koo patch user pjohnson --email "paul.johnson@mycompany.com"
@@ -298,20 +302,23 @@ pjohnson   Paul JOHNSON   paul.johnson@mycompany.com   2001     P. Johnson
 ....
 ```
 
+Only the email has been changed. Changing the user's password is also possible: 
+
 ```
 kubectl koo patch user pjohnson --passwordHash $(kubectl koo hash --password 'changemeagain')
 User updated successfully.
 ```
 
+This command assumes the user already exists. Otherwise, it will return an error.
 
 ### Apply to user
+
+The `apply` subcommand create the user if it does not exist and adjust all parameters to the provided values. This also means all parameters not provided will be set to empty value.
 
 ```
 $ kubectl koo apply user ajohnson --commonName "Alan JOHNSON" --passwordHash $(kubectl koo hash --password 'changeme')
 User created successfully.
-```
 
-```
 $ kubectl -n koo-system get users
 NAME       COMMON NAME    EMAIL                        UID      COMMENT         DISABLED
 ....
@@ -319,15 +326,7 @@ ajohnson   Alan JOHNSON
 ....
 ```
 
-
-```
-$ kubectl koo apply user ajohnson --commonName "Alan JOHNSON" --passwordHash $(kubectl koo hash --password 'changeme')
-User updated successfully.
-```
-
-
-
-
+For example, setting only email will reset all others parameters.
 
 ```
 $ kubectl koo apply user ajohnson --email "a.johnson@mycompany.com"
@@ -340,6 +339,17 @@ ajohnson                  a.johnson@mycompany.com
 ....
 ```
 
+This ensures the user state is fully described by the `apply` sub commands, whatever state it was before.
+
+> The `apply` subcommand is idempotent.
+
+### Groups management
+
+We have the same set of commands for the koobind `group` entity.
+
+### Group binding
+
+### Disabled flag
 
 
 ## Tokens
