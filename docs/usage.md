@@ -16,6 +16,8 @@
   - [Patch user](#patch-user)
   - [Apply to user](#apply-to-user)
   - [Groups management](#groups-management)
+  - [Group binding](#group-binding)
+  - [Disabled flag](#disabled-flag)
 - [Tokens](#tokens)
 - [Context](#context)
   - [Context store](#context-store)
@@ -281,6 +283,8 @@ pjohnson   Paul JOHNSON   pjohnson@mycompany.com   2001     P. Johnson
 ....
 ```
 
+> The `disabled` flag and option will be explained below. 
+
 Of course, having to cut and paste the hash value can be tedious. So, if we are not afraid to display the password, this can be achieved in one line:
 
 ```
@@ -345,12 +349,71 @@ This ensures the user state is fully described by the `apply` sub commands, what
 
 ### Groups management
 
-We have the same set of commands for the koobind `group` entity.
+We have the same set of commands for the koobind `group` entity. Beside its name, a group have only a `description` attribute. (And a `disabled` flag as described below)
+
+```
+$ kubectl koo create group johnsonbrothers --description "The Johnson brothers team"
+Group created successfully.
+
+$ kubectl koo patch  group johnsonbrothers --description "The Johnson family"
+Group updated successfully.
+
+$ kubectl -n koo-system get groups
+NAME              DESCRIPTION                   DISABLED
+....
+johnsonbrothers   The Johnson family
+....
+
+$ kubectl koo apply  group johnsonbrothers --description ""
+Group updated successfully.
+
+$ kubectl -n koo-system get groups
+NAME              DESCRIPTION                   DISABLED
+....
+johnsonbrothers  
+....
+
+```
 
 ### Group binding
 
+And, there is also the same set of command for the third kind of resources: the `groupbinding`
+
+```
+$ kubectl koo create groupbinding pjohnson johnsonbrothers
+GroupBinding created successfully.
+
+$ kubectl -n koo-system get groupbinding
+NAME                       USER       GROUP             DISABLED
+....
+ajohnson-johnsonbrothers   ajohnson   johnsonbrothers
+....
+pjohnson-johnsonbrothers   pjohnson   johnsonbrothers
+....
+
+$ kubectl koo delete groupbinding pjohnson johnsonbrothers
+GroupBinding deleted successfully.
+
+$ kubectl koo apply groupbinding pjohnson johnsonbrothers
+GroupBinding created successfully.
+$ kubectl koo apply groupbinding pjohnson johnsonbrothers
+GroupBinding updated successfully.
+```
+
+Note this command needs two parameters: The user, then the group.
+
 ### Disabled flag
 
+Each of these resources have a `disabled` flag. The meaning of this flag is obvious. If set, the system behave as if this resource was not existing.
+
+For technical reason, internally, this flag has three state: Unset (nil), true, false. Unset is interpreted as false.
+
+For each corresponding koo subcommands, there are two options: `--disabled` and `enabled`. These options behave differently, depending of the command:
+
+- For `create` and `apply` subcommand, not providing `--disabled` or `--enabled` option means this flag will be unset (equivalent to false). 
+So, setting `--enabled` or no flag leads the same result. 
+
+- For `patch` subcommand, not providing `--disabled` or `--enabled` flag means leave the current value unchanged. To change the value, option must be provided accordingly.
 
 ## Tokens
 
