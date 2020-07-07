@@ -53,9 +53,6 @@ func ParseDurationOrPanic(d string) metav1.Duration {
 	return duration
 }
 
-
-
-
 var lifeCycle2s TokenLifecycle = TokenLifecycle{
 	InactivityTimeout: ParseDurationOrPanic("2s"),
 	MaxTTL:            ParseDurationOrPanic("24h"),
@@ -67,7 +64,6 @@ var lifeCycle3s TokenLifecycle = TokenLifecycle{
 	MaxTTL:            ParseDurationOrPanic("24h"),
 	ClientTTL:         ParseDurationOrPanic("10s"),
 }
-
 
 func newClient() client.Client {
 	kubeconfig := os.Getenv("KUBECONFIG")
@@ -101,7 +97,6 @@ func TestMain(m *testing.M) {
 	stLevel := zap.NewAtomicLevelAt(zapcore.Level(zapcore.DPanicLevel)) // No stack trace for WARN and ERROR
 	ctrl.SetLogger(crtzap.New(crtzap.UseDevMode(config.Conf.LogMode == "dev"), crtzap.Level(&ll), crtzap.StacktraceLevel(&stLevel)))
 
-
 	os.Exit(m.Run())
 }
 
@@ -115,8 +110,6 @@ func TestNew(t *testing.T) {
 	assert.True(t, ok, "ok should be true")
 	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
 }
-
-
 
 func TestTimeout1(t *testing.T) {
 	basket := newTokenBasket(newClient(), &lifeCycle2s)
@@ -163,7 +156,6 @@ func TestTimeout2(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, ok, "ok should be false")
 }
-
 
 func TestMultipleGet(t *testing.T) {
 	basket := newTokenBasket(newClient(), &lifeCycle3s)
