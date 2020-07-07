@@ -187,13 +187,13 @@ Now, you must retrieve the CA which issued this certificate, to provide it to cl
 This can be performed by issuing the following command:
 
 ```
-$ kubectl -n koo-system get secret webhook-server-cert -o=jsonpath='{.data.ca\.crt}' | base64 -d >koomgr-ca.crt
+$ kubectl -n koo-system get secret webhook-server-cert -o=jsonpath='{.data.ca\.crt}' | base64 -d >koomgr_ca.crt
 ```
 
 The result should look like this:
 
 ```
-$ cat koomgr-ca.crt
+$ cat koomgr_ca.crt
 -----BEGIN CERTIFICATE-----
 MIIDWTCCAkGgAwIBAgIQdBEXl09/Mbfie4u9ufhiwTANBgkqhkiG9w0BAQsFADAX
 MRUwEwYDVQQKEwxjZXJ0LW1hbmFnZXIwHhcNMjAwNTExMTAwNzI5WhcNMjAwODA5
@@ -235,7 +235,7 @@ kind: Config
 clusters:
   - name: koomgr
     cluster:
-      certificate-authority: /etc/kubernetes/koo/koomgr-ca.crt        # CA for verifying the remote service.
+      certificate-authority: /etc/kubernetes/koo/koomgr_ca.crt        # CA for verifying the remote service.
       server: https://koo-webhook-service.koo-system.svc:443/auth/v1/validateToken # URL of remote service to query. Must use 'https'.
 
 # users refers to the API server's webhook configuration.
@@ -258,7 +258,7 @@ As you can see in this file, there is a reference to the CA file we fetch previo
 # ls -l /etc/kubernetes/koo
 total 8
 -rw-r--r--. 1 root root  620 May 11 12:36 hookconfig.yaml
--rw-r--r--. 1 root root 1220 May 11 12:58 koomgr-ca.crt
+-rw-r--r--. 1 root root 1220 May 11 12:58 koomgr_ca.crt
 ```
 
 Now, you must edit the API server manifest file (`/etc/kubernetes/manifests/kube-apiserver.yaml`) to load the `hookconfig.yaml` file:
@@ -355,8 +355,11 @@ As it will connect to the `koo-manager`, the client will need to access the CA f
 
 ```
 $ sudo mkdir -p /etc/koobind/certs
-$ sudo cp .../koomgr-ca.crt  /etc/koobind/certs/
+$ sudo cp .../koomgr_ca.crt  /etc/koobind/certs/
 ```
+
+> If the installation was performed using Ansible, the `koomgr_ca.crt` file should have been copied by the role in the current folder. 
+
 
 Then, the `kubeconfig` file must be created:
 
@@ -385,7 +388,7 @@ users:
       args:
       - auth 
       - --server=https://node1.mycluster.mycompany.com:31444    # <---- Adjust FQDN to one of your node you included in the certificate
-      - --rootCaFile=/etc/koobind/certs/koomgr-ca.crt           
+      - --rootCaFile=/etc/koobind/certs/koomgr_ca.crt           
 EOF
 sudo cp /tmp/kubeconfig /etc/koobind
 ```
@@ -394,6 +397,12 @@ In this file, three parts must be adjusted:
 
 - `cluster.certificate-authority-data` and `cluster.server` values must be cut/pasted from another kubeconfig file targeting your cluster
 - `--server=` url must be adjusted to target one of the node of the cluster among the ones provided in the certificate.
+
+> If the installation was performed by Ansible, you can retrieve the list of nodes provided in the certificate using the following command (From a kubectl with full access):
+
+```
+kubectl  get certificates -n koo-system koo-serving-cert -o=jsonpath='{ .spec.dnsNames }'
+```
 
 So:
 

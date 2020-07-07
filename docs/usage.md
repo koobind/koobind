@@ -131,18 +131,32 @@ spec:
 - Namespace must be `koo-system`.
 - Setting `spec.disabled` to `True` would make this binding transparent. It will not contribute to any user's group list.  
 
-## Login / Logout
+### List our resources 
 
-As Users are Kubernetes resources, we can list them:
+As Users and groups are Kubernetes resources, we can list them:
 
 ```
 $ kubectl -n koo-system get users
 NAME     COMMON NAME   EMAIL                  UID      COMMENT         DISABLED
 admin    Koo ADMIN
 jsmith   John SMITH    jsmith@mycompany.com   100001   A sample user
+
+$ kubectl -n koo-system get groups
+NAME           DESCRIPTION                   DISABLED
+clusteradmin   Cluster administrator group
+devs           All developpers               false
+kooadmin       Koobind administrator group
+
+$ kubectl -n koo-system get groupbindings
+NAME                 USER     GROUP          DISABLED
+admin-clusteradmin   admin    clusteradmin
+admin-kooadmin       admin    kooadmin
+jsmith-devs          jsmith   devs           false
 ```
 
 Provided of course we are still logged as 'admin'.
+
+## Login / Logout
 
 Now, if we want to test this new user, we need to logout first. For this, there is the `koo logout` subcommand;
 
@@ -184,7 +198,7 @@ USER     ID       GROUPS
 jsmith   100001   devs
 ```
 
-(If a user was previously logged, a logout is performed)
+(If a user was previously logged, a logout is performed by the `koo login` subcommand)
 
 One can also provide credential on the command line:
 
@@ -229,7 +243,9 @@ $ kubectl koo password --oldPassword jsmith --newPassword utemlmhdt$3
 
 ## User and Group CLI management
 
-As we saw, `koobind` allow you to manage your users and groups as standard Kubernetes resources. Beside this, it also provides a Command Line Interface to handle theses ressources  
+As we saw, `koobind` allow you to manage your users and groups as standard Kubernetes resources. 
+
+Beside this, it also provides a Command Line Interface to handle theses ressources  
 
 ### Create and delete user
 
@@ -283,7 +299,7 @@ pjohnson   Paul JOHNSON   pjohnson@mycompany.com   2001     P. Johnson
 ....
 ```
 
-> The `disabled` flag and option will be explained below. 
+> The `disabled` flag and option will be explained later in this chapter. 
 
 Of course, having to cut and paste the hash value can be tedious. So, if we are not afraid to display the password, this can be achieved in one line:
 
@@ -313,7 +329,7 @@ kubectl koo patch user pjohnson --passwordHash $(kubectl koo hash --password 'ch
 User updated successfully.
 ```
 
-This command assumes the user already exists. Otherwise, it will return an error.
+The `patch` subcommand assumes the user already exists. Otherwise, it will return an error.
 
 ### Apply to user
 
@@ -342,6 +358,8 @@ NAME       COMMON NAME    EMAIL                        UID      COMMENT         
 ajohnson                  a.johnson@mycompany.com
 ....
 ```
+
+`commonName` and `password` hash been reset.
 
 This ensures the user state is fully described by the `apply` sub commands, whatever state it was before.
 
@@ -372,7 +390,6 @@ NAME              DESCRIPTION                   DISABLED
 ....
 johnsonbrothers  
 ....
-
 ```
 
 ### Group binding
@@ -408,12 +425,12 @@ Each of these resources have a `disabled` flag. The meaning of this flag is obvi
 
 For technical reason, internally, this flag has three state: Unset (nil), true, false. Unset is interpreted as false.
 
-For each corresponding koo subcommands, there are two options: `--disabled` and `enabled`. These options behave differently, depending of the command:
+For each corresponding koo subcommands, there are two options: `--disabled` and `--enabled`. These options behave differently, depending of the command:
 
 - For `create` and `apply` subcommand, not providing `--disabled` or `--enabled` option means this flag will be unset (equivalent to false). 
 So, setting `--enabled` or no flag leads the same result. 
 
-- For `patch` subcommand, not providing `--disabled` or `--enabled` flag means leave the current value unchanged. To change the value, option must be provided accordingly.
+- For `patch` subcommand, not providing `--disabled` or `--enabled` flag means leave the current value unchanged. To change the value, this option must be provided accordingly.
 
 ## Tokens
 
@@ -551,9 +568,9 @@ A `koo get context` subcommand will allow to display the different context used.
 ``` 
 $ kubectl koo get context
     CONTEXT                SERVER                  CA
-    koo1@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
-*   koo2@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
-    koo@mycluster.local    https://kspray1:31444   /etc/koobind/certs/koomgr-ca.crt
+    koo1@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr_ca.crt
+*   koo2@mycluster.local   https://kspray1:31444   /etc/koobind/certs/koomgr_ca.crt
+    koo@mycluster.local    https://kspray1:31444   /etc/koobind/certs/koomgr_ca.crt
 ```
 
 ### --kubeconfig option
@@ -588,7 +605,7 @@ users:
       args:
       - auth
       - --server=https://kspray1:31444    # <---- Adjust FQDN to one of your node you included in the certificate
-      - --rootCaFile=/etc/koobind/certs/koomgr-ca.crt
+      - --rootCaFile=/etc/koobind/certs/koomgr_ca.crt
       - --context=koo1@mycluster.local
 ```
 
