@@ -215,7 +215,7 @@ But, unfortunatly, there is an exception for Authenticating Webhook, which must 
 Depending of your installation, the directory mentioned below may differs. 
 Also, this procedure assume the API Server is managed by the Kubelet, as a static Pod. If your API Server is managed by another system (i.e. systemd), you should adapt accordingly.
 
-The following operations must be performed on all nodes hosting an instance of the Kubernetes API server. Typically, all nodes of the control plane.
+**The following operations must be performed on all nodes hosting an instance of the Kubernetes API server**. Typically, all nodes of the control plane.
 
 Also, these operations require `root`access on these node.
 
@@ -321,6 +321,8 @@ And another configuration parameter must be defined. The `dnsPolicy` must be set
 This complete the API Server configuration. Saving the edited file will trigger a restart of the API Server.
 
 For more information, the kubernetes documentation on this topic is [here](https://kubernetes.io/docs/reference/access-authn-authz/webhook/) 
+
+**Remember: Perform this on all nodes hosting an instance of API Server.**
 
 ### Troubleshooting
 
