@@ -22,6 +22,7 @@ In the simplest case, with the default configuration, this role may be used dire
 Where `kube-master` is an Ansible group with all nodes hosting a kube-apiserver instance.
 
 As usual with Ansible, have a look in the `..../defaults/main.yml` file to figure out all the variables which can be set to customize the deployment.
+In particular, depending of the way your inventory is defined, you may need to adjust the `koomgr_domains` variable.
 
 Here is a sample playbook with an LDAP provider definition (Freeipa in this case)
 
@@ -65,8 +66,10 @@ Here is a sample playbook with an LDAP provider definition (Freeipa in this case
 
 You will find full description of LDAP configuration [here](ldap.md). 
 
-A point worth noting: The rootCA attribute in this definition must define the location of the CA file on the local, deployment system. 
+A point worth noting: The `rootCA` attribute in this definition must define the location of the CA file on the local, deployment system. 
 The playbook will take care of copying the file on some location on the target node, and to mount this location in the `koo-manager` container.
 
-It will also take care of modifying the rootCA attribute in the configuration to the 'in container' path.   
+It will also take care of modifying the rootCA attribute in the configuration to the 'in container' path.
+
+Once the cluster itself is configured, you will still need to perform the [client installation](installation.md#kubectl-plugin-installation).
 
