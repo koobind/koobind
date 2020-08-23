@@ -2,4 +2,4 @@
 
 package config
 
-var Version = "v0.2.0"
+var Version = "vX.X.X"

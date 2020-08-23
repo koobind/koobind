@@ -104,19 +104,29 @@ func (this *tokenBasket) NewUserToken(user common.User) (common.UserToken, error
 	return t, nil
 }
 
-func (this *tokenBasket) Get(token string) (common.User, bool, error) {
+func (this *tokenBasket) getToken(token string) (v1alpha1.Token, bool, error) {
 	crdToken := v1alpha1.Token{}
-	err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
-		Namespace: config.Conf.TokenNamespace,
-		Name:      token,
-	}, &crdToken)
-	if client.IgnoreNotFound(err) != nil {
-		tokenLog.Error(err, "token Get() failed", "token", token)
-		return common.User{}, false, err
+	for retry := 0; retry < 4; retry++ {
+		err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
+			Namespace: config.Conf.TokenNamespace,
+			Name:      token,
+		}, &crdToken)
+		if err == nil {
+			return crdToken, true, nil
+		}
+		if client.IgnoreNotFound(err) != nil {
+			tokenLog.Error(err, "token Get() failed", "token", token)
+			return crdToken, false, err
+		}
+		time.Sleep(time.Millisecond * 500)
 	}
-	if err != nil {
-		// Token not found. Not an error (May be cleaned)
-		return common.User{}, false, nil
+	return crdToken, false, nil // Not found is not an error. May be token has been cleaned up.
+}
+
+func (this *tokenBasket) Get(token string) (common.User, bool, error) {
+	crdToken, found, err := this.getToken(token)
+	if !found {
+		return common.User{}, false, err
 	}
 	now := time.Now()
 	if stillValid(&crdToken, now) {
