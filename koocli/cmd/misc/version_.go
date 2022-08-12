@@ -2,5 +2,4 @@
 
 package misc
 
-var version = "v0.2.0"
-
+var version = "vX.X.X"
