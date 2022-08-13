@@ -3,10 +3,9 @@ kind: Namespace
 metadata:
   name: koo-system
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: koo-mutating-webhook-configuration
 webhooks:
 - clientConfig:
@@ -55,10 +54,9 @@ webhooks:
     resources:
     - groupbindings
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: koo-validating-webhook-configuration
 webhooks:
 - clientConfig:

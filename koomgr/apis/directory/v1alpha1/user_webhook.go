@@ -38,7 +38,7 @@ func (r *User) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-user,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=users,verbs=create;update,versions=v1alpha1,name=muser.kb.io
+// +kubebuilder:webhook:path=/mutate-directory-koobind-io-v1alpha1-user,mutating=true,failurePolicy=fail,groups=directory.koobind.io,resources=users,verbs=create;update,versions=v1alpha1,name=muser.kb.io,sideEffects=None,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &User{}
 
@@ -48,7 +48,7 @@ func (this *User) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-user,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=users,versions=v1alpha1,name=vuser.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-directory-koobind-io-v1alpha1-user,mutating=false,failurePolicy=fail,groups=directory.koobind.io,resources=users,versions=v1alpha1,name=vuser.kb.io,sideEffects=None,admissionReviewVersions=v1
 
 var _ webhook.Validator = &User{}
 

@@ -16,9 +16,11 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 package authserver
 
 import (
+	"context"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -36,15 +38,15 @@ func (*Cleaner) NeedLeaderElection() bool {
 	return false
 }
 
-func (this *Cleaner) Start(stop <-chan struct{}) error {
+func (this *Cleaner) Start(ctx context.Context) error {
 	if this.Period == 0 {
 		this.Period = 30 * time.Second
 	}
 	cleanerlog.Info("Cleaner start")
 	go wait.Until(func() {
 		this.TokenBasket.Clean()
-	}, this.Period, stop)
-	<-stop
+	}, this.Period, ctx.Done())
+	<-ctx.Done()
 	cleanerlog.Info("Cleaner shutdown")
 	return nil
 }

@@ -16,6 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 package authserver
 
 import (
@@ -158,7 +159,7 @@ func (s *Server) Init(tokenBasket token.TokenBasket, kubeClient client.Client, p
 	s.Router.Handle("/auth/v1/admin/{provider}/groupbindings/{user}/{group}", newAdminHandler(v1.DeleteGroupBinding, "adminV1deleteGroupBinding")).Methods("DELETE")
 }
 
-func (this *Server) Start(stop <-chan struct{}) error {
+func (this *Server) Start(ctx context.Context) error {
 	serverLog.Info("Starting Auth Server")
 	certPath := filepath.Join(this.CertDir, this.CertName)
 	keyPath := filepath.Join(this.CertDir, this.KeyName)
@@ -169,7 +170,7 @@ func (this *Server) Start(stop <-chan struct{}) error {
 	}
 
 	go func() {
-		if err := certWatcher.Start(stop); err != nil {
+		if err := certWatcher.Start(ctx); err != nil {
 			serverLog.Error(err, "certificate watcher error")
 		}
 	}()
@@ -192,7 +193,7 @@ func (this *Server) Start(stop <-chan struct{}) error {
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
-		<-stop
+		<-ctx.Done()
 		serverLog.Info("shutting down webhook server")
 
 		// TODO: use a context with reasonable timeout

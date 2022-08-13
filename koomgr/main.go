@@ -30,6 +30,7 @@ import (
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	crtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
@@ -109,7 +110,7 @@ func main() {
 
 	authserver.Init(mgr, mgr.GetClient(), providerChain)
 
-	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj runtime.Object) []string {
+	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj client.Object) []string {
 		ugb := rawObj.(*directoryv1alpha1.GroupBinding)
 		return []string{ugb.Spec.User}
 	})

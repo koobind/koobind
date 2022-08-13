@@ -14,12 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// THIS HAS BEEN COPIED FROM sigs.k8s.io/controller-runtime@v0.5.0/pkg/webhook/internal/certwatcher/certwatcher.go
+// THIS HAS BEEN COPIED FROM
+// csigs.k8s.io/controller-runtime@v0.5.0/pkg/webhook/internal/certwatcher/certwatcher.go
 // AS IT WAS 'internal'
+// Updated to:
+// https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.12.3/pkg/certwatcher/certwatcher.go
+// TODO: Use it as it is no not internal anymore
 
 package certwatcher
 
 import (
+	"context"
 	"crypto/tls"
 	"sync"
 
@@ -72,7 +77,7 @@ func (cw *CertWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate,
 }
 
 // Start starts the watch on the certificate and key files.
-func (cw *CertWatcher) Start(stopCh <-chan struct{}) error {
+func (cw *CertWatcher) Start(ctx context.Context) error {
 	files := []string{cw.certPath, cw.keyPath}
 
 	for _, f := range files {
@@ -86,7 +91,7 @@ func (cw *CertWatcher) Start(stopCh <-chan struct{}) error {
 	log.Info("Starting certificate watcher")
 
 	// Block until the stop channel is closed.
-	<-stopCh
+	<-ctx.Done()
 
 	return cw.watcher.Close()
 }
