@@ -47,4 +47,5 @@ spec:
         - name: config
           configMap:
             name: mgrconfig
+      serviceAccountName: koo-manager
       terminationGracePeriodSeconds: 10
