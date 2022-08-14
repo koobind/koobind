@@ -1,0 +1,5 @@
+
+resources:
+- user_admin.yaml
+- group_kooadmin.yaml
+- grant_cluster_admin.yaml

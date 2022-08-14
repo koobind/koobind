@@ -73,6 +73,10 @@ crd: manifests kustomize ## Build CRD
 rbac: manifests kustomize ## Build RBAC
 	$(KUSTOMIZE) build config/rbac -o yaml/rbac.yaml
 
+useradmin: manifests kustomize ## Build RBAC
+	$(KUSTOMIZE) build config/useradmin -o yaml/useradmin.yaml
+
+
 # --------------------------------------- crd
 
 ifndef ignore-not-found
@@ -80,11 +84,11 @@ ifndef ignore-not-found
 endif
 
 .PHONY: crdinstall
-crdinstall: crd ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+crdinstall: crd ## Install CRDs into the configured K8s cluster
 	kubectl apply -f yaml/crd.yaml
 
 .PHONY: crduninstall
-crduninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
+crduninstall: manifests kustomize ## Uninstall CRDs from the configured K8s cluster
 	# Set ignore-not-found=true to ignore resource not found errors during deletion.
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/crd.yaml
 
@@ -97,7 +101,7 @@ crduninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specifi
 # NB: These tasks does not handle authentication webhook installation.
 
 .PHONY: yaml-basic
-yaml-basic: crd rbac ## Generate CRD, RBAC and deployment yaml file with basic configuration.
+yaml-basic: crd rbac useradmin ## Generate CRD, RBAC and deployment yaml file with basic configuration.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(DOCKER_IMG):$(DOCKER_TAG)
 	$(KUSTOMIZE) build --load_restrictor none config/overlays/basic -o yaml/basic/deployment.yaml
 
@@ -106,9 +110,11 @@ yaml-basic: crd rbac ## Generate CRD, RBAC and deployment yaml file with basic c
 install-basic: yaml-basic crdinstall ## Deploy manager to the configured K8s cluster with basic configuration
 	kubectl apply -f yaml/basic/deployment.yaml
 	kubectl apply -f yaml/rbac.yaml
+	kubectl apply -f yaml/useradmin.yaml
 
 # NB: This does not uninstall CRD, as may be locked by existing resources.
 uninstall-basic: ## UNdeploy manager to the K8s configured cluster with basic configuration
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/rbac.yaml
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/basic/deployment.yaml
 
