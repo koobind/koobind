@@ -18,11 +18,18 @@ bases:
 - ../../manager
 - ../../webhook
 - ../../certmanager
+- ../../ingress
 
 patchesStrategicMerge:
 - ../../patches/manager_webhook_patch.yaml
 - ../../patches/webhookcainjection_patch.yaml
+- ../../patches/manager_no_ssl.yaml   # To comment if the ingress is configured with ssl passthrough
 
+patches:
+  - target:
+      kind: Ingress
+      name: auth-ingress
+    path: ./ingress-patch.json
 
 generatorOptions:
   disableNameSuffixHash: true

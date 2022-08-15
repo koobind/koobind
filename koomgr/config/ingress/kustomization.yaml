@@ -1,0 +1,7 @@
+resources:
+#- nodeport.yaml
+- ingress.yaml
+
+#patchesStrategicMerge:
+#  - ./manager_no_ssl.yaml
+

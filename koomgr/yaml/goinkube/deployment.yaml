@@ -172,6 +172,18 @@ type: kubernetes.io/tls
 apiVersion: v1
 kind: Service
 metadata:
+  name: koo-auth-service
+  namespace: koo-system
+spec:
+  ports:
+  - port: 444
+    targetPort: 8444
+  selector:
+    control-plane: koobind-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: koo-external-service
   namespace: koo-system
 spec:
@@ -255,8 +267,11 @@ spec:
         imagePullPolicy: Always
         name: manager
         ports:
-        - containerPort: 9443
+        - containerPort: 8443
           name: webhook-server
+          protocol: TCP
+        - containerPort: 8444
+          name: auth-server
           protocol: TCP
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
@@ -300,6 +315,33 @@ metadata:
 spec:
   ca:
     secretName: koo-koobind-selfsigned-ca
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/issuer: koo-koobind-selfsigned
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+  name: koo-auth-ingress
+  namespace: koo-system
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: auth.kspray5
+    http:
+      paths:
+      - backend:
+          service:
+            name: koo-auth-service
+            port:
+              number: 444
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - auth.kspray5
+    secretName: auth-server-cert
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration

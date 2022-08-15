@@ -61,6 +61,9 @@ type Server struct {
 	// CertName is the server key name. Defaults to tls.key.
 	KeyName string
 
+	// Configure the server in plain text (http://). UNSAFE: Use with care, avoid in production`
+	NoSsl bool
+
 	// WebhookMux is the multiplexer that handles different handlerByPath.
 	//Mux *http.ServeMux
 	Router *mux.Router
@@ -85,19 +88,25 @@ func (this *Server) setDefaults() {
 	}
 
 	if this.Port <= 0 {
-		this.Port = 443
+		if this.NoSsl {
+			this.Port = 80
+		} else {
+			this.Port = 443
+		}
 	}
 
-	if len(this.CertDir) == 0 {
-		this.CertDir = filepath.Join(os.TempDir(), "k8s-webhook-server", "serving-certs")
-	}
+	if !this.NoSsl {
+		if len(this.CertDir) == 0 {
+			this.CertDir = filepath.Join(os.TempDir(), "k8s-webhook-server", "serving-certs")
+		}
 
-	if len(this.CertName) == 0 {
-		this.CertName = "tls.crt"
-	}
+		if len(this.CertName) == 0 {
+			this.CertName = "tls.crt"
+		}
 
-	if len(this.KeyName) == 0 {
-		this.KeyName = "tls.key"
+		if len(this.KeyName) == 0 {
+			this.KeyName = "tls.key"
+		}
 	}
 }
 
@@ -164,28 +173,36 @@ func (this *Server) Start(ctx context.Context) error {
 	certPath := filepath.Join(this.CertDir, this.CertName)
 	keyPath := filepath.Join(this.CertDir, this.KeyName)
 
-	certWatcher, err := certwatcher.New(certPath, keyPath)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		if err := certWatcher.Start(ctx); err != nil {
-			serverLog.Error(err, "certificate watcher error")
+	var listener net.Listener
+	var err error
+	if this.NoSsl {
+		listener, err = net.Listen("tcp", net.JoinHostPort(this.Host, strconv.Itoa(int(this.Port))))
+		if err != nil {
+			return err
 		}
-	}()
+	} else {
+		certWatcher, err := certwatcher.New(certPath, keyPath)
+		if err != nil {
+			return err
+		}
+		go func() {
+			if err := certWatcher.Start(ctx); err != nil {
+				serverLog.Error(err, "certificate watcher error")
+			}
+		}()
 
-	cfg := &tls.Config{
-		NextProtos:     []string{"h2"},
-		GetCertificate: certWatcher.GetCertificate,
+		cfg := &tls.Config{
+			NextProtos:     []string{"h2"},
+			GetCertificate: certWatcher.GetCertificate,
+		}
+
+		listener, err = tls.Listen("tcp", net.JoinHostPort(this.Host, strconv.Itoa(int(this.Port))), cfg)
+		if err != nil {
+			return err
+		}
 	}
 
-	listener, err := tls.Listen("tcp", net.JoinHostPort(this.Host, strconv.Itoa(int(this.Port))), cfg)
-	if err != nil {
-		return err
-	}
-
-	serverLog.Info("serving Auth server", "host", this.Host, "port", this.Port)
+	serverLog.Info("serving Auth server", "host", this.Host, "port", this.Port, "ssl", !this.NoSsl)
 
 	srv := &http.Server{
 		Handler: this.Router,

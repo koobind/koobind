@@ -39,8 +39,8 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 	tokenBasket := NewTokenBasket(kubeClient)
 
 	// There is two endpoint:
-	// - Webhook server, handling all handlerByPath (Mutating, validating an authitication). Called only by API server
-	// - Auth server, handling all requests from koocli. Exposed externally by a nodeport
+	// - Webhook server, handling all handlerByPath (Mutating, validating an authentication). Called only by API server
+	// - Auth server, handling all requests from koocli. Exposed externally by a nodeport or an ingress
 	// ValidateTokenHandler is set on both, as will be called from API server (POST) and koocli (GET)
 
 	manager.GetWebhookServer().Register("/auth/v1/validateToken", LogHttp(&v1.ValidateTokenHandler{
@@ -54,6 +54,7 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 		Host:    config.Conf.AuthServer.Host,
 		Port:    config.Conf.AuthServer.Port,
 		CertDir: config.Conf.AuthServer.CertDir,
+		NoSsl:   *config.Conf.AuthServer.NoSsl,
 	}
 	authServer.Init(tokenBasket, kubeClient, providerChain)
 

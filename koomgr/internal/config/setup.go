@@ -60,6 +60,7 @@ func Setup() {
 	var authHost string
 	var authPort int
 	var authCertDir string
+	var authNoSsl bool
 	var inactivityTimeout string
 	var sessionMaxTTL string
 	var clientTokenTTL string
@@ -77,6 +78,7 @@ func Setup() {
 	pflag.StringVar(&authHost, "authHost", "", "Auth server bind address (Default: All)")
 	pflag.IntVar(&authPort, "authPort", 8444, "Auth server bind port")
 	pflag.StringVar(&authCertDir, "authCertDir", "", "Path to the auth server certificate folder")
+	pflag.BoolVar(&authNoSsl, "authNoSsl", false, "Set the auth server in plain text. (http://). UNSECURE")
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
@@ -100,6 +102,7 @@ func Setup() {
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.Host, "authHost")
 	adjustConfigInt(pflag.CommandLine, &Conf.AuthServer.Port, "authPort")
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.CertDir, "authCertDir")
+	adjustConfigBool(pflag.CommandLine, &Conf.AuthServer.NoSsl, "authNoSsl")
 	adjustConfigDuration(pflag.CommandLine, &Conf.InactivityTimeout, "inactivityTimeout")
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")

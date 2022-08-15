@@ -24,7 +24,7 @@ docker: version ## Build and push koo-manager image
 
 .PHONY: doc
 doc: ## Generate doc index
-	doctoc README.md --github --title '## Index'
+	# doctoc README.md --github --title '## Index'
 
 .PHONY: precommit
 precommit: doc version ## To ensure uptodate generated stuff.

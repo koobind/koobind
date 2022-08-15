@@ -20,12 +20,18 @@ bases:
 - ./service_ssh.yaml
 - ../../webhook
 - ../../certmanager
+- ../../ingress
 #- ../../crd  will be generated separatly
 
 patchesStrategicMerge:
 - ../../patches/manager_webhook_patch.yaml
 - ../../patches/webhookcainjection_patch.yaml
 
+patches:
+  - target:
+      kind: Ingress
+      name: auth-ingress
+    path: ./ingress-patch.json
 
 generatorOptions:
   disableNameSuffixHash: true
