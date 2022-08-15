@@ -1,0 +1,417 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: koobind-manager
+  name: koo-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: koo-manager
+  namespace: koo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: koo-directory-editor
+  namespace: koo-system
+rules:
+- apiGroups:
+  - directory.koobind.io
+  resources:
+  - groupbindings
+  - users
+  - groups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - directory.koobind.io
+  resources:
+  - groupbindings/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: koo-directory-viewer
+  namespace: koo-system
+rules:
+- apiGroups:
+  - directory.koobind.io
+  resources:
+  - users
+  - groupbindings
+  - groups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - directory.koobind.io
+  resources:
+  - users/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: koo-token-editor
+  namespace: koo-system
+rules:
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: koo-token-viewer
+  namespace: koo-system
+rules:
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - tokens.koobind.io
+  resources:
+  - tokens/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: koo-directory-editor-default
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-directory-editor
+subjects:
+- kind: ServiceAccount
+  name: koo-manager
+  namespace: koo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: koo-token-editor-default
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-token-editor
+subjects:
+- kind: ServiceAccount
+  name: koo-manager
+  namespace: koo-system
+---
+apiVersion: v1
+data:
+  config.yml: |2
+
+    logLevel: 0
+    adminGroup: "kooadmin"
+    providers:
+      - name: crdsys
+        type: crd
+kind: ConfigMap
+metadata:
+  name: koo-mgrconfig
+  namespace: koo-system
+---
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJnVENDQVNhZ0F3SUJBZ0lRYWZKUFVPK0xXWW9rdUpzT0dUYlUyVEFLQmdncWhrak9QUVFEQWpBZ01SNHcKSEFZRFZRUURFeFZyYjI5aWFXNWtMWE5sYkdaemFXZHVaV1F0WTJFd0hoY05Nakl3T0RFME1Ea3pOVE16V2hjTgpNakl4TVRFeU1Ea3pOVE16V2pBZ01SNHdIQVlEVlFRREV4VnJiMjlpYVc1a0xYTmxiR1p6YVdkdVpXUXRZMkV3CldUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFUcGltbG9iWnVqTTgzQjhMRnljc3BEMEdzOHo0UEsKYWIvOGdieHhpMVdQbU9MeENXd01VME9VZDJWdnFIN0UxbUdQK1lFemExU2g4eHY3eWNoa285TXRvMEl3UURBTwpCZ05WSFE4QkFmOEVCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVSt0UFk3alBsCkNuZFgzWDZFOCsvd0lyOHAwNTh3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQUlFczBTQ1pXazRMQmgwQXJmL08KOGYrdktXcjdMQjZxaUpUNHNiQzhBckZUQWlFQWtkMWNTS3RyWE8wd2VJOGNBb1lNSW56U2FtN3B1c0ZYQ1FVNgpxdGVPaTFFPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJnVENDQVNhZ0F3SUJBZ0lRYWZKUFVPK0xXWW9rdUpzT0dUYlUyVEFLQmdncWhrak9QUVFEQWpBZ01SNHcKSEFZRFZRUURFeFZyYjI5aWFXNWtMWE5sYkdaemFXZHVaV1F0WTJFd0hoY05Nakl3T0RFME1Ea3pOVE16V2hjTgpNakl4TVRFeU1Ea3pOVE16V2pBZ01SNHdIQVlEVlFRREV4VnJiMjlpYVc1a0xYTmxiR1p6YVdkdVpXUXRZMkV3CldUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFUcGltbG9iWnVqTTgzQjhMRnljc3BEMEdzOHo0UEsKYWIvOGdieHhpMVdQbU9MeENXd01VME9VZDJWdnFIN0UxbUdQK1lFemExU2g4eHY3eWNoa285TXRvMEl3UURBTwpCZ05WSFE4QkFmOEVCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVSt0UFk3alBsCkNuZFgzWDZFOCsvd0lyOHAwNTh3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQUlFczBTQ1pXazRMQmgwQXJmL08KOGYrdktXcjdMQjZxaUpUNHNiQzhBckZUQWlFQWtkMWNTS3RyWE8wd2VJOGNBb1lNSW56U2FtN3B1c0ZYQ1FVNgpxdGVPaTFFPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSU1OZHh6ZUZmR1htYUp5cVZZL2dxOWhFeURvVjJleGMzaDA1TG9zaUorbm9vQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFNllwcGFHMmJvelBOd2ZDeGNuTEtROUJyUE0rRHltbS8vSUc4Y1l0Vmo1amk4UWxzREZORApsSGRsYjZoK3hOWmhqL21CTTJ0VW9mTWIrOG5JWktQVExRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+kind: Secret
+metadata:
+  annotations:
+    cert-manager.io/alt-names: ""
+    cert-manager.io/certificate-name: koobind-selfsigned-ca
+    cert-manager.io/common-name: koobind-selfsigned-ca
+    cert-manager.io/ip-sans: ""
+    cert-manager.io/issuer-group: cert-manager.io
+    cert-manager.io/issuer-kind: Issuer
+    cert-manager.io/issuer-name: selfsigned-init-issuer
+    cert-manager.io/uri-sans: ""
+  name: koo-koobind-selfsigned-ca
+  namespace: koo-system
+type: kubernetes.io/tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koo-external-service
+  namespace: koo-system
+spec:
+  ports:
+  - nodePort: 31444
+    port: 444
+    protocol: TCP
+    targetPort: 8444
+  selector:
+    control-plane: koobind-manager
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koo-webhook-service
+  namespace: koo-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 8443
+  selector:
+    control-plane: koobind-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: koobind-manager
+  name: koo-manager
+  namespace: koo-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: koobind-manager
+  template:
+    metadata:
+      labels:
+        control-plane: koobind-manager
+    spec:
+      containers:
+      - args:
+        - --namespace
+        - $(KOO_NAMESPACE)
+        - --config
+        - /etc/koo/cfg/config.yml
+        command:
+        - /manager
+        env:
+        - name: KOO_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: ghcr.io/koobind/koo-manager:0.3.X
+        name: manager
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+        - mountPath: /etc/koo/cfg
+          name: config
+      serviceAccountName: koo-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: webhook-server-cert
+      - configMap:
+          name: koo-mgrconfig
+        name: config
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: koo-serving-cert
+  namespace: koo-system
+spec:
+  dnsNames:
+  - koo-webhook-service.koo-system.svc
+  - koo-webhook-service.koo-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: koo-koobind-selfsigned
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  annotations: null
+  name: koo-koobind-selfsigned
+  namespace: koo-system
+spec:
+  ca:
+    secretName: koo-koobind-selfsigned-ca
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: koo-system/koo-serving-cert
+  name: koo-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /mutate-directory-koobind-io-v1alpha1-group
+  failurePolicy: Fail
+  name: mgroup.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groups
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /mutate-directory-koobind-io-v1alpha1-groupbinding
+  failurePolicy: Fail
+  name: mgroupbinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groupbindings
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /mutate-directory-koobind-io-v1alpha1-user
+  failurePolicy: Fail
+  name: muser.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - users
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: koo-system/koo-serving-cert
+  name: koo-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /validate-directory-koobind-io-v1alpha1-group
+  failurePolicy: Fail
+  name: vgroup.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groups
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /validate-directory-koobind-io-v1alpha1-groupbinding
+  failurePolicy: Fail
+  name: vgroupbinding.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - groupbindings
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: koo-webhook-service
+      namespace: koo-system
+      path: /validate-directory-koobind-io-v1alpha1-user
+  failurePolicy: Fail
+  name: vuser.kb.io
+  rules:
+  - apiGroups:
+    - directory.koobind.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - users
+  sideEffects: None

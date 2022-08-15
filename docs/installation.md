@@ -329,10 +329,9 @@ For more information, the kubernetes documentation on this topic is [here](https
 A small typo or incoherence in configuration may lead to API Server unable to restart. 
 If this is the case, you may have a look in the logs of the Kubelet (Remember, as a static pod, the API Server is managed by the Kubelet) in order to figure out what'is happen.
 
-If you made a modification in this the `hookconfig.yaml` file, or if you update the CA file, you may think you will need to restart the API Server to reload the configuration. 
-Unfortunately, this may not be sufficient. API Server may restart with the old configuration. 
-
-The only way to trigger an effective reload is to modify the `/etc/kubernetes/manifests/kube-apiserver.yaml` file. 
+If you made a modification in this the `hookconfig.yaml` file, or if you update the CA file, will need to restart the API Server to reload the configuration. 
+But, the API Server is a 'static pod', a pod managed by the kubelet. As such, it can't be restarted as a standard pod. 
+The simplest way to trigger its effective reload is to modify the `/etc/kubernetes/manifests/kube-apiserver.yaml` file. 
 And you will need a real modification. Touch may not be enough. A common trick here is to modify slightly `the authentication-token-webhook-cache-ttl` flag value.
 
 ## kubectl plugin installation

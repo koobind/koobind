@@ -9,7 +9,7 @@ spec:
     - port: 443
       targetPort: 8443
   selector:
-    control-plane: manager
+    control-plane: koobind-manager
 ---
 apiVersion: v1
 kind: Service
@@ -24,4 +24,4 @@ spec:
       protocol: TCP
       nodePort: 31444
   selector:
-    control-plane: manager
+    control-plane: koobind-manager
