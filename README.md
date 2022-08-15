@@ -1,13 +1,5 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-## Index
 
-- [KOOBIND](#koobind)
-  - [Warning](#warning)
-  - [Index](#index)
-  - [Overview](#overview)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+# WARNING: This doc is currently out of phase with the code in this v0.3.0 branch
 
 # KOOBIND
 

@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    cert-manager.io/issuer: "koo-koobind-selfsigned"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: the-host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: koo-auth-service
+                port:
+                  number: 444
+  tls:
+    - hosts:
+      - the-host
+      secretName: auth-server-cert
+

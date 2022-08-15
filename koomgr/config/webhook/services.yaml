@@ -14,14 +14,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: external-service
+  name: auth-service
   namespace: system
 spec:
-  type: NodePort
   ports:
     - port: 444
       targetPort: 8444
-      protocol: TCP
-      nodePort: 31444
   selector:
     control-plane: koobind-manager

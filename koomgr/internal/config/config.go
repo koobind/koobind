@@ -31,10 +31,15 @@ type Server struct {
 	CertDir string `yaml:"certDir"` // CertDir is the directory that contains the server key and certificate.
 }
 
+type ServerExt struct {
+	Server
+	NoSsl *bool `yaml:"noSsl"` // Configure the server in plain text. UNSAFE: Use with care, avoid in production`
+}
+
 type Config struct {
 	ConfigFolder      string          // This is not in the file, but set on reading. Used to adjust file path
 	WebhookServer     Server          `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
-	AuthServer        Server          `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
+	AuthServer        ServerExt       `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
 	LogLevel          int             `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
 	LogMode           string          `yaml:"logMode"`           // Log output format: 'dev' or 'json'
 	AdminGroup        string          `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
