@@ -14,7 +14,7 @@ namePrefix: koo-
 
 bases:
 #- ../../crd  will be generated separatly
-# - ../../rbac  rbac will be generated separately
+- ../../rbac
 - ../../manager
 - ../../webhook
 - ../../certmanager

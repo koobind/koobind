@@ -13,15 +13,22 @@ namePrefix: koo-
 #  someName: someValue
 
 bases:
-#- ../../crd  will be generated separatly
-# - ../../rbac  Will be generated separatly
-- ../../manager
+- ../../rbac
+- ./pspfree.yaml
+- ./manager.yaml
+- ./pvc.yaml
+- ./service_ssh.yaml
 - ../../webhook
 - ../../certmanager
+#- ../../crd  will be generated separatly
 
 patchesStrategicMerge:
-- ../patches/manager_webhook_patch.yaml
-- ../patched/webhookcainjection_patch.yaml
+- ../../patches/manager_webhook_patch.yaml
+- ../../patches/webhookcainjection_patch.yaml
+
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 # the following config is for teaching kustomize how to do var substitution
 vars:

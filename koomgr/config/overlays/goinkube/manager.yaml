@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager
+  namespace: system
+  labels:
+    control-plane: koobind-manager
+spec:
+  selector:
+    matchLabels:
+      control-plane: koobind-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: koobind-manager
+    spec:
+      securityContext:
+        runAsNonRoot: false
+      containers:
+      - name: manager
+        image: ghcr.io/sergealexandre/goinkube:1.19-0
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /work
+            name: work
+        env:
+          - name: KOO_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      serviceAccountName: koo-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: work
+          persistentVolumeClaim:
+            claimName: goinkube-work

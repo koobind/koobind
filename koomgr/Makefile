@@ -13,6 +13,10 @@ endif
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
+ifndef ignore-not-found
+  ignore-not-found = true
+endif
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -70,19 +74,6 @@ build: generate fmt vet ## Build manager binary locally
 crd: manifests kustomize ## Build CRD
 	$(KUSTOMIZE) build config/crd -o yaml/crd.yaml
 
-rbac: manifests kustomize ## Build RBAC
-	$(KUSTOMIZE) build config/rbac -o yaml/rbac.yaml
-
-useradmin: manifests kustomize ## Build RBAC
-	$(KUSTOMIZE) build config/useradmin -o yaml/useradmin.yaml
-
-
-# --------------------------------------- crd
-
-ifndef ignore-not-found
-  ignore-not-found = false
-endif
-
 .PHONY: crdinstall
 crdinstall: crd ## Install CRDs into the configured K8s cluster
 	kubectl apply -f yaml/crd.yaml
@@ -93,15 +84,25 @@ crduninstall: manifests kustomize ## Uninstall CRDs from the configured K8s clus
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/crd.yaml
 
 
-# --------------------------------------- basic (Standard)
+.PHONY: useradmin
+useradmin: manifests kustomize ## Create user 'admin' with full admin rights
+	$(KUSTOMIZE) build config/useradmin -o yaml/useradmin.yaml
+
+.PHONY: useradmininstall
+useradmininstall: useradmin  ## Install user 'admin' with full admin rights
+	kubectl apply -f yaml/useradmin.yaml
+
+.PHONY: precommit
+precommit: generate yaml-basic yaml-goinkube ## To ensure uptodate generated stuff.
+
+# ---------------------------------------------------------------- Deployment basic
 
 ##@ Deployment - basic
 
-# ---------------------------------------------------------------- Deployment in pod (std)
 # NB: These tasks does not handle authentication webhook installation.
 
 .PHONY: yaml-basic
-yaml-basic: crd rbac useradmin ## Generate CRD, RBAC and deployment yaml file with basic configuration.
+yaml-basic: crd useradmin ## Generate CRD, RBAC and deployment yaml file with basic configuration.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(DOCKER_IMG):$(DOCKER_TAG)
 	$(KUSTOMIZE) build --load_restrictor none config/overlays/basic -o yaml/basic/deployment.yaml
 
@@ -109,41 +110,37 @@ yaml-basic: crd rbac useradmin ## Generate CRD, RBAC and deployment yaml file wi
 .PHONY: install-basic
 install-basic: yaml-basic crdinstall ## Deploy manager to the configured K8s cluster with basic configuration
 	kubectl apply -f yaml/basic/deployment.yaml
-	kubectl apply -f yaml/rbac.yaml
-	kubectl apply -f yaml/useradmin.yaml
 
 # NB: This does not uninstall CRD, as may be locked by existing resources.
 uninstall-basic: ## UNdeploy manager to the K8s configured cluster with basic configuration
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/rbac.yaml
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/basic/deployment.yaml
 
-# ---------------------------------------------------------------- Deployment for dev (local)
+# ---------------------------------------------------------------- Deployment in goinkube (for dev)
+
+##@ Deployment - goinkube
+
 # NB: These tasks does not handle authentication webhook installation.
 
-config/overlays/dev/cert/tls.key:
-	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout config/overlays/dev/cert/tls.key -out config/overlays/dev/cert/tls.crt -subj "/C=FR/ST=Paris/L=Paris/O=BROADSoftware/OU=IT Department/CN=koomgrdev"
+.PHONY: yaml-goinkube
+yaml-goinkube: crd useradmin ## Generate CRD, RBAC and deployment yaml file with goinkube configuration.
+	$(KUSTOMIZE) build --load_restrictor none config/overlays/goinkube -o yaml/goinkube/deployment.yaml
 
-certificate: config/overlays/dev/cert/tls.key
 
-yamldev: certificate crd rbac
-	bash config/overlays/dev/generate_webhooks_patches.sh
-	kustomize build config/overlays/dev -o yaml/dev/deploy.yaml
+.PHONY: install-goinkube
+install-goinkube: yaml-goinkube crdinstall ## Deploy manager to the configured K8s cluster with goinkube configuration
+	kubectl apply -f yaml/goinkube/deployment.yaml
 
-deploydev: yamldev
-	kubectl apply -f yaml/crd.yaml
-	kubectl apply -f yaml/rbac.yaml
-	kubectl apply -f yaml/dev/deploy.yaml
+# NB: This does not uninstall CRD, as may be locked by existing resources.
+uninstall-goinkube: ## UNdeploy manager to the K8s configured cluster with goinkube configuration
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/goinkube/deployment.yaml
 
-undeploydev: yamldev
-	-kubectl delete -f yaml/dev/deploy.yaml
-	kubectl delete -f yaml/rbac.yaml
-	kubectl delete -f yaml/crd.yaml
 
 #------------------------------------------------------------------------------------
 
 
-##@ Build Dependencies
+##@ Build tooling
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin

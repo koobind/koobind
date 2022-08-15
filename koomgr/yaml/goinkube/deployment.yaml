@@ -110,6 +110,20 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  name: koo-controller:pspfree
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp:privileged
+subjects:
+- kind: ServiceAccount
+  name: koo-manager
+  namespace: koo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
   name: koo-directory-editor-default
   namespace: koo-system
 roleRef:
@@ -133,20 +147,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: koo-manager
-  namespace: koo-system
----
-apiVersion: v1
-data:
-  config.yml: |2
-
-    logLevel: 0
-    adminGroup: "kooadmin"
-    providers:
-      - name: crdsys
-        type: crd
-kind: ConfigMap
-metadata:
-  name: koo-mgrconfig
   namespace: koo-system
 ---
 apiVersion: v1
@@ -187,6 +187,23 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    metallb.universe.tf/allow-shared-ip: tcp1
+  name: koo-goinkube-ssh
+  namespace: koo-system
+spec:
+  loadBalancerIP: 192.168.56.91
+  ports:
+  - port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    control-plane: koobind-manager
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: koo-webhook-service
   namespace: koo-system
 spec:
@@ -195,6 +212,21 @@ spec:
     targetPort: 8443
   selector:
     control-plane: koobind-manager
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    control-plane: koobind-manager
+  name: koo-goinkube-work
+  namespace: koo-system
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50M
+  storageClassName: topolvm-tlvm1
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -214,37 +246,26 @@ spec:
         control-plane: koobind-manager
     spec:
       containers:
-      - args:
-        - --namespace
-        - $(KOO_NAMESPACE)
-        - --config
-        - /etc/koo/cfg/config.yml
-        command:
-        - /manager
-        env:
+      - env:
         - name: KOO_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: ghcr.io/koobind/koo-manager:0.3.X
+        image: ghcr.io/sergealexandre/goinkube:1.19-0
+        imagePullPolicy: Always
         name: manager
         ports:
         - containerPort: 9443
           name: webhook-server
           protocol: TCP
-        resources:
-          limits:
-            cpu: 100m
-            memory: 30Mi
-          requests:
-            cpu: 100m
-            memory: 20Mi
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
-        - mountPath: /etc/koo/cfg
-          name: config
+        - mountPath: /work
+          name: work
+      securityContext:
+        runAsNonRoot: false
       serviceAccountName: koo-manager
       terminationGracePeriodSeconds: 10
       volumes:
@@ -252,9 +273,9 @@ spec:
         secret:
           defaultMode: 420
           secretName: webhook-server-cert
-      - configMap:
-          name: koo-mgrconfig
-        name: config
+      - name: work
+        persistentVolumeClaim:
+          claimName: koo-goinkube-work
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

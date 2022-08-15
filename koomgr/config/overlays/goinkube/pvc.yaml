@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: goinkube-work
+  labels:
+    control-plane: koobind-manager
+spec:
+  storageClassName: topolvm-tlvm1
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50M
