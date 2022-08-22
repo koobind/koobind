@@ -17,11 +17,10 @@
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package authserver
+package token
 
 import (
 	"context"
-	"github.com/koobind/koobind/koomgr/internal/token"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"time"
@@ -31,7 +30,7 @@ var cleanerlog = ctrl.Log.WithName("Cleaner")
 
 type Cleaner struct {
 	Period      time.Duration
-	TokenBasket token.TokenBasket
+	TokenBasket TokenBasket
 }
 
 func (*Cleaner) NeedLeaderElection() bool {

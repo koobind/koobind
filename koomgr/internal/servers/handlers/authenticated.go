@@ -32,7 +32,7 @@ type AuthHandler struct {
 	Providers providers.ProviderChain
 }
 
-func (this *AuthHandler) ServeAuthHTTP(response http.ResponseWriter, request *http.Request, fn func(user common.User)) {
+func (this *AuthHandler) ServeAuthenticatedHTTP(response http.ResponseWriter, request *http.Request, fn func(user common.User)) {
 	authList, ok := request.Header["Authorization"]
 	if !ok || len(authList) < 1 || !(strings.HasPrefix(authList[0], "Basic ") || strings.HasPrefix(authList[0], "Bearer ")) {
 		response.Header().Set("WWW-Authenticate", "Basic realm=\"/koo\"")

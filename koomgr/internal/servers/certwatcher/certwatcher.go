@@ -26,13 +26,12 @@ package certwatcher
 import (
 	"context"
 	"crypto/tls"
+	"github.com/go-logr/logr"
 	"sync"
 
 	"gopkg.in/fsnotify.v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-var log = logf.Log.WithName("auth.certwatcher")
 
 // CertWatcher watches certificate and key files for changes.  When either file
 // changes, it reads and parses both and calls an optional callback with the new
@@ -40,18 +39,20 @@ var log = logf.Log.WithName("auth.certwatcher")
 type CertWatcher struct {
 	sync.Mutex
 
-	currentCert *tls.Certificate
-	watcher     *fsnotify.Watcher
-
+	logger   logr.Logger
 	certPath string
 	keyPath  string
+
+	currentCert *tls.Certificate
+	watcher     *fsnotify.Watcher
 }
 
 // New returns a new CertWatcher watching the given certificate and key.
-func New(certPath, keyPath string) (*CertWatcher, error) {
+func New(name, certPath, keyPath string) (*CertWatcher, error) {
 	var err error
 
 	cw := &CertWatcher{
+		logger:   logf.Log.WithName("certwatcher").WithValues("name", name, "certPath", certPath, "keyPath", keyPath),
 		certPath: certPath,
 		keyPath:  keyPath,
 	}
@@ -88,7 +89,7 @@ func (cw *CertWatcher) Start(ctx context.Context) error {
 
 	go cw.Watch()
 
-	log.Info("Starting certificate watcher")
+	cw.logger.Info("Starting cert. watcher")
 
 	// Block until the stop channel is closed.
 	<-ctx.Done()
@@ -114,7 +115,7 @@ func (cw *CertWatcher) Watch() {
 				return
 			}
 
-			log.Error(err, "certificate watch error")
+			cw.logger.Error(err, "certificate watch error")
 		}
 	}
 }
@@ -132,7 +133,7 @@ func (cw *CertWatcher) ReadCertificate() error {
 	cw.currentCert = &cert
 	cw.Unlock()
 
-	log.Info("Updated current TLS certificate")
+	cw.logger.Info("Updated current TLS certificate")
 
 	return nil
 }
@@ -143,17 +144,17 @@ func (cw *CertWatcher) handleEvent(event fsnotify.Event) {
 		return
 	}
 
-	log.V(1).Info("certificate event", "event", event)
+	cw.logger.V(1).Info("certificate event", "event", event)
 
 	// If the file was removed, re-add the watch.
 	if isRemove(event) {
 		if err := cw.watcher.Add(event.Name); err != nil {
-			log.Error(err, "error re-watching file")
+			cw.logger.Error(err, "error re-watching file")
 		}
 	}
 
 	if err := cw.ReadCertificate(); err != nil {
-		log.Error(err, "error re-reading certificate")
+		cw.logger.Error(err, "error re-reading certificate")
 	}
 }
 

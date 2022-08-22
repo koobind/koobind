@@ -17,7 +17,7 @@
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package authserver
+package servers
 
 import (
 	"fmt"

@@ -184,21 +184,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: koo-external-service
-  namespace: koo-system
-spec:
-  ports:
-  - nodePort: 31444
-    port: 444
-    protocol: TCP
-    targetPort: 8444
-  selector:
-    control-plane: koobind-manager
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
   annotations:
     metallb.universe.tf/allow-shared-ip: tcp1
   name: koo-goinkube-ssh
