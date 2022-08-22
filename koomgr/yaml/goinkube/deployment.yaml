@@ -259,8 +259,11 @@ spec:
           name: auth-server
           protocol: TCP
         volumeMounts:
-        - mountPath: /tmp/k8s-webhook-server/serving-certs
-          name: cert
+        - mountPath: /tmp/k8s-webhook-server/auth-certs
+          name: auth-cert
+          readOnly: true
+        - mountPath: /tmp/k8s-webhook-server/webhook-certs
+          name: webhook-cert
           readOnly: true
         - mountPath: /work
           name: work
@@ -269,7 +272,11 @@ spec:
       serviceAccountName: koo-manager
       terminationGracePeriodSeconds: 10
       volumes:
-      - name: cert
+      - name: auth-cert
+        secret:
+          defaultMode: 420
+          secretName: auth-server-cert
+      - name: webhook-cert
         secret:
           defaultMode: 420
           secretName: webhook-server-cert
@@ -307,7 +314,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: koo-koobind-selfsigned
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   name: koo-auth-ingress
   namespace: koo-system
 spec:

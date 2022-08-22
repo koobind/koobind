@@ -4,7 +4,7 @@ metadata:
   name: auth-ingress
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     cert-manager.io/issuer: "koo-koobind-selfsigned"
 spec:
   ingressClassName: nginx

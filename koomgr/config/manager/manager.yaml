@@ -25,6 +25,13 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /etc/koo/cfg
+        ports:
+          - containerPort: 8443
+            name: webhook-server
+            protocol: TCP
+          - containerPort: 8444
+            name: auth-server
+            protocol: TCP
         env:
         - name: KOO_NAMESPACE
           valueFrom:
