@@ -17,32 +17,30 @@
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package authserver
+package servers
 
 import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
-	"github.com/koobind/koobind/koomgr/internal/authserver/certwatcher"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
-	v1 "github.com/koobind/koobind/koomgr/internal/authserver/handlers/v1"
-	"github.com/koobind/koobind/koomgr/internal/config"
-	"github.com/koobind/koobind/koomgr/internal/providers"
-	"github.com/koobind/koobind/koomgr/internal/token"
+	"github.com/koobind/koobind/koomgr/internal/servers/certwatcher"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	ctrlrt "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 )
 
-var serverLog = logf.Log.WithName("Auth server")
-
 type Server struct {
+
+	// To build certmanager logger
+	Name string
+
+	Logger logr.Logger
+
 	// Host is the address that the server will listen on.
 	// Defaults to "" - all addresses.
 	Host string
@@ -114,62 +112,8 @@ func (*Server) NeedLeaderElection() bool {
 	return false
 }
 
-func (s *Server) Init(tokenBasket token.TokenBasket, kubeClient client.Client, providerChain providers.ProviderChain) {
-	s.setDefaults()
-
-	s.Router.Handle("/auth/v1/validateToken", &v1.ValidateTokenHandler{
-		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrlrt.Log.WithName("authV1validateToken"),
-			TokenBasket: tokenBasket,
-		},
-	}).Methods("GET", "POST") // POST is from Api server while GET is from our client
-
-	s.Router.Handle("/auth/v1/getToken", &v1.GetTokenHandler{
-		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrlrt.Log.WithName("v1getToken"),
-			TokenBasket: tokenBasket,
-		},
-		Providers: providerChain,
-	}).Methods("GET")
-
-	s.Router.Handle("/auth/v1/changePassword", &v1.ChangePasswordHandler{
-		AuthHandler: handlers.AuthHandler{
-			BaseHandler: handlers.BaseHandler{
-				Logger:      ctrlrt.Log.WithName("v1changePassword"),
-				TokenBasket: tokenBasket,
-			},
-			Providers: providerChain,
-		},
-	}).Methods("POST")
-
-	newAdminHandler := func(hf v1.HandlerFunc, loggerName string) *v1.AdminV1Handler {
-		return &v1.AdminV1Handler{
-			AuthHandler: handlers.AuthHandler{
-				BaseHandler: handlers.BaseHandler{
-					Logger:      ctrlrt.Log.WithName(loggerName),
-					TokenBasket: tokenBasket,
-				},
-				Providers: providerChain,
-			},
-			AdminGroup:  config.Conf.AdminGroup,
-			KubeClient:  kubeClient,
-			HandlerFunc: hf,
-		}
-	}
-
-	s.Router.Handle("/auth/v1/admin/tokens/{token}", newAdminHandler(v1.DeleteToken, "adminV1deleteToken")).Methods("DELETE")
-	s.Router.Handle("/auth/v1/admin/tokens", newAdminHandler(v1.ListToken, "adminV1listToken")).Methods("GET")
-	s.Router.Handle("/auth/v1/admin/users/{user}", newAdminHandler(v1.DescribeUser, "adminV1describeUser")).Methods("GET")
-	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.AddApplyPatchUser, "adminV1addApplyPatchUser")).Methods("POST", "PUT", "PATCH")
-	s.Router.Handle("/auth/v1/admin/{provider}/users/{user}", newAdminHandler(v1.DeleteUser, "adminV1deleteUser")).Methods("DELETE")
-	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.AddApplyPatchGroup, "adminV1addApplyPatchGroup")).Methods("POST", "PUT", "PATCH")
-	s.Router.Handle("/auth/v1/admin/{provider}/groups/{group}", newAdminHandler(v1.DeleteGroup, "adminV1deleteGroup")).Methods("DELETE")
-	s.Router.Handle("/auth/v1/admin/{provider}/groupbindings/{user}/{group}", newAdminHandler(v1.AddApplyPatchGroupBinding, "adminV1addApplyPatchGroupBinding")).Methods("POST", "PUT", "PATCH")
-	s.Router.Handle("/auth/v1/admin/{provider}/groupbindings/{user}/{group}", newAdminHandler(v1.DeleteGroupBinding, "adminV1deleteGroupBinding")).Methods("DELETE")
-}
-
 func (this *Server) Start(ctx context.Context) error {
-	serverLog.Info("Starting Auth Server")
+	this.Logger.Info("Starting Server")
 	certPath := filepath.Join(this.CertDir, this.CertName)
 	keyPath := filepath.Join(this.CertDir, this.KeyName)
 
@@ -181,13 +125,14 @@ func (this *Server) Start(ctx context.Context) error {
 			return err
 		}
 	} else {
-		certWatcher, err := certwatcher.New(certPath, keyPath)
+
+		certWatcher, err := certwatcher.New(this.Name, certPath, keyPath)
 		if err != nil {
 			return err
 		}
 		go func() {
 			if err := certWatcher.Start(ctx); err != nil {
-				serverLog.Error(err, "certificate watcher error")
+				this.Logger.Error(err, "certificate watcher error")
 			}
 		}()
 
@@ -202,7 +147,7 @@ func (this *Server) Start(ctx context.Context) error {
 		}
 	}
 
-	serverLog.Info("serving Auth server", "host", this.Host, "port", this.Port, "ssl", !this.NoSsl)
+	this.Logger.Info("Listening", "host", this.Host, "port", this.Port, "ssl", !this.NoSsl)
 
 	srv := &http.Server{
 		Handler: this.Router,
@@ -211,12 +156,12 @@ func (this *Server) Start(ctx context.Context) error {
 	idleConnsClosed := make(chan struct{})
 	go func() {
 		<-ctx.Done()
-		serverLog.Info("shutting down webhook server")
+		this.Logger.Info("shutting down server")
 
 		// TODO: use a context with reasonable timeout
 		if err := srv.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout
-			serverLog.Error(err, "error shutting down the HTTP server")
+			this.Logger.Error(err, "error shutting down the HTTP server")
 		}
 		close(idleConnsClosed)
 	}()
@@ -225,7 +170,7 @@ func (this *Server) Start(ctx context.Context) error {
 	if err != nil && err != http.ErrServerClosed {
 		return err
 	}
-	serverLog.Info("Auth Server shutdown")
+	this.Logger.Info("Auth Server shutdown")
 	<-idleConnsClosed
 	return nil
 }

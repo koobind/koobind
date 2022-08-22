@@ -23,8 +23,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	. "github.com/koobind/koobind/common"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
 	"github.com/koobind/koobind/koomgr/internal/providers"
+	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 	"strings"
 )

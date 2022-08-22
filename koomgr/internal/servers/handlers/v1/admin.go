@@ -22,7 +22,7 @@ package v1
 import (
 	"fmt"
 	"github.com/koobind/koobind/common"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
+	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -37,7 +37,7 @@ type AdminV1Handler struct {
 type HandlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
 
 func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	this.ServeAuthHTTP(response, request, func(usr common.User) {
+	this.ServeAuthenticatedHTTP(response, request, func(usr common.User) {
 		if this.AdminGroup != "" && stringInSlice(this.AdminGroup, usr.Groups) {
 			this.Logger.V(1).Info(fmt.Sprintf("user '%s' allowed to access admin interface", usr.Username))
 			this.HandlerFunc(this, usr, response, request)

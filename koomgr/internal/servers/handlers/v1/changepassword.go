@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/common"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
 	"github.com/koobind/koobind/koomgr/internal/providers"
+	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ type ChangePasswordHandler struct {
 // curl -k -i -u user1:user1 -X POST https://koomgrdev:9444/auth/v1/changePassword -d '{ "oldPassword": "user1", "newPassword": "user1b" }'
 
 func (this *ChangePasswordHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	this.ServeAuthHTTP(response, request, func(usr common.User) {
+	this.ServeAuthenticatedHTTP(response, request, func(usr common.User) {
 		found, userDescription := this.Providers.DescribeUser(usr.Username)
 		if !found {
 			this.Logger.Error(nil, "User authenticated but not found by Describe.", "user", usr.Username)

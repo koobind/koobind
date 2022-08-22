@@ -50,7 +50,7 @@ func loadConfig(fileName string, config *Config) error {
 }
 
 func Setup() {
-	// Allow overridng of some config variable. Mosty used in development stage
+	// Allow overriding of some config variable. Mostly used in development stage
 	var configFile string
 	var logLevel int
 	var logMode string

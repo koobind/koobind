@@ -17,14 +17,14 @@
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package authserver
+package servers
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers"
-	"github.com/koobind/koobind/koomgr/internal/authserver/handlers/v1"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
+	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
+	"github.com/koobind/koobind/koomgr/internal/servers/handlers/v1"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	"github.com/koobind/koobind/koomgr/internal/token/crd"
 	"github.com/koobind/koobind/koomgr/internal/token/memory"
@@ -50,20 +50,13 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 		},
 	}))
 
-	authServer := Server{
-		Host:    config.Conf.AuthServer.Host,
-		Port:    config.Conf.AuthServer.Port,
-		CertDir: config.Conf.AuthServer.CertDir,
-		NoSsl:   *config.Conf.AuthServer.NoSsl,
-	}
-	authServer.Init(tokenBasket, kubeClient, providerChain)
-
-	err := manager.Add(&authServer)
+	authServer := newAuthServer(tokenBasket, kubeClient, providerChain)
+	err := manager.Add(authServer)
 	if err != nil {
 		panic(err)
 	}
 
-	err = manager.Add(&Cleaner{
+	err = manager.Add(&token.Cleaner{
 		Period:      60 * time.Second,
 		TokenBasket: tokenBasket,
 	})

@@ -35,9 +35,9 @@ import (
 
 	directoryv1alpha1 "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
 	tokensv1alpha1 "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
-	"github.com/koobind/koobind/koomgr/internal/authserver"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers/chain"
+	"github.com/koobind/koobind/koomgr/internal/servers"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -108,7 +108,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	authserver.Init(mgr, mgr.GetClient(), providerChain)
+	servers.Init(mgr, mgr.GetClient(), providerChain)
 
 	err = mgr.GetFieldIndexer().IndexField(context.TODO(), &directoryv1alpha1.GroupBinding{}, "userkey", func(rawObj client.Object) []string {
 		ugb := rawObj.(*directoryv1alpha1.GroupBinding)
