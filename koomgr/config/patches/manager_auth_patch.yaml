@@ -9,11 +9,11 @@ spec:
       containers:
       - name: manager
         volumeMounts:
-        - mountPath: /tmp/k8s-webhook-server/webhook-certs
-          name: webhook-cert
+        - mountPath: /tmp/k8s-webhook-server/auth-certs
+          name: auth-cert
           readOnly: true
       volumes:
-      - name: webhook-cert
+      - name: auth-cert
         secret:
           defaultMode: 420
-          secretName: webhook-server-cert
+          secretName: auth-server-cert
