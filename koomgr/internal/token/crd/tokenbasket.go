@@ -22,8 +22,8 @@ package crd
 import (
 	"context"
 	"fmt"
-	"github.com/koobind/koobind/common"
-	"github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
+	"github.com/koobind/koobind/koomgr/apis/proto"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,11 +35,13 @@ import (
 	"time"
 )
 
+var _ token.TokenBasket = &tokenBasket{}
+
 var tokenLog = ctrl.Log.WithName("token-crd")
 
 type tokenBasket struct {
 	sync.RWMutex
-	defaultLifecycle *common.TokenLifecycle
+	defaultLifecycle *tokenapi.TokenLifecycle
 	kubeClient       client.Client
 	lastHitStep      time.Duration
 }
@@ -50,7 +52,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func newTokenBasket(kubeClient client.Client, defaultLifecycle *common.TokenLifecycle) token.TokenBasket {
+func newTokenBasket(kubeClient client.Client, defaultLifecycle *tokenapi.TokenLifecycle) token.TokenBasket {
 	// Convert lastHitStep from % to Duration
 	lhStep := (defaultLifecycle.InactivityTimeout.Duration / time.Duration(1000)) * time.Duration(config.Conf.LastHitStep)
 	tokenLog.Info(fmt.Sprintf("LastHitStep:%s", lhStep.String()))
@@ -62,51 +64,52 @@ func newTokenBasket(kubeClient client.Client, defaultLifecycle *common.TokenLife
 }
 
 func NewTokenBasket(kubeClient client.Client) token.TokenBasket {
-	return newTokenBasket(kubeClient, &common.TokenLifecycle{
+	return newTokenBasket(kubeClient, &tokenapi.TokenLifecycle{
 		InactivityTimeout: metav1.Duration{Duration: *config.Conf.InactivityTimeout},
 		MaxTTL:            metav1.Duration{Duration: *config.Conf.SessionMaxTTL},
 		ClientTTL:         metav1.Duration{Duration: *config.Conf.ClientTokenTTL},
 	})
 }
 
-func (this *tokenBasket) NewUserToken(user common.User) (common.UserToken, error) {
+func (this *tokenBasket) NewUserToken(user tokenapi.UserDesc) (proto.UserToken, error) {
 	b := make([]byte, 32)
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
+	tkn := string(b)
 	now := time.Now()
-	t := common.UserToken{
-		Token:     string(b),
-		User:      user,
-		Lifecycle: this.defaultLifecycle,
-		Creation:  now,
-		LastHit:   now,
-	}
-	crdToken := &v1alpha1.Token{
+	crdToken := &tokenapi.Token{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      t.Token,
+			Name:      tkn,
 			Namespace: config.Conf.TokenNamespace,
 		},
-		Spec: v1alpha1.TokenSpec{
+		Spec: tokenapi.TokenSpec{
 			User:      user,
 			Creation:  metav1.Time{Time: now},
 			Lifecycle: *this.defaultLifecycle,
 		},
-		Status: v1alpha1.TokenStatus{
+		Status: tokenapi.TokenStatus{
 			LastHit: metav1.Time{Time: now},
 		},
 	}
+	userToken := proto.UserToken{
+		Token:   tkn,
+		Spec:    tokenapi.TokenSpec{},
+		LastHit: now,
+	}
+	crdToken.Spec.DeepCopyInto(&userToken.Spec)
 	err := this.kubeClient.Create(context.TODO(), crdToken)
 	if err != nil {
-		tokenLog.Error(err, "token create failed", "user", user.Username)
-		return common.UserToken{}, err
+		tokenLog.Error(err, "token create failed", "user", user.Name)
+		return proto.UserToken{}, err
 	}
-	tokenLog.V(0).Info("Token created", "token", t.Token, "user", user.Username)
-	return t, nil
+	tokenLog.V(0).Info("Token created", "token", tkn, "user", user.Name)
+
+	return userToken, nil
 }
 
-func (this *tokenBasket) getToken(token string) (v1alpha1.Token, bool, error) {
-	crdToken := v1alpha1.Token{}
+func (this *tokenBasket) getToken(token string) (tokenapi.Token, bool, error) {
+	crdToken := tokenapi.Token{}
 	for retry := 0; retry < 4; retry++ {
 		err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
 			Namespace: config.Conf.TokenNamespace,
@@ -124,80 +127,84 @@ func (this *tokenBasket) getToken(token string) (v1alpha1.Token, bool, error) {
 	return crdToken, false, nil // Not found is not an error. May be token has been cleaned up.
 }
 
-func (this *tokenBasket) Get(token string) (common.User, bool, error) {
+func (this *tokenBasket) Get(token string) (*proto.UserToken, error) {
 	crdToken, found, err := this.getToken(token)
 	if !found {
-		return common.User{}, false, err
+		return nil, err
 	}
 	now := time.Now()
 	if stillValid(&crdToken, now) {
 		err := this.touch(&crdToken, now)
 		if err != nil {
-			tokenLog.Error(err, "token touch on Get() failed", "token", token, "user", crdToken.Spec.User.Username)
-			return common.User{}, false, err
+			tokenLog.Error(err, "token touch on Get() failed", "token", token, "user", crdToken.Spec.User.Name)
+			return nil, err
 		}
-		return crdToken.Spec.User, true, nil
+		userToken := &proto.UserToken{
+			Token:   token,
+			Spec:    tokenapi.TokenSpec{},
+			LastHit: crdToken.Status.LastHit.Time,
+		}
+		crdToken.Spec.DeepCopyInto(&userToken.Spec)
+
+		return userToken, nil
 	} else {
 		err := this.delete(&crdToken)
 		if err != nil {
-			return common.User{}, false, nil
+			return nil, err
 		}
-		tokenLog.Info("Token has been cleaned on Get()", "token", token, "user", crdToken.Spec.User.Username)
-		return common.User{}, false, nil
+		tokenLog.Info("Token has been cleaned on Get()", "token", token, "user", crdToken.Spec.User.Name)
+		return nil, nil
 	}
 }
 
-func stillValid(t *v1alpha1.Token, now time.Time) bool {
+func stillValid(t *tokenapi.Token, now time.Time) bool {
 	return t.Status.LastHit.Add(t.Spec.Lifecycle.InactivityTimeout.Duration).After(now) && t.Spec.Creation.Add(t.Spec.Lifecycle.MaxTTL.Duration).After(now)
 }
 
-func (this *tokenBasket) touch(t *v1alpha1.Token, now time.Time) error {
+func (this *tokenBasket) touch(t *tokenapi.Token, now time.Time) error {
 	if now.After(t.Status.LastHit.Add(this.lastHitStep)) {
-		tokenLog.V(1).Info("Will effectivly update LastHit", "token", t.Name, "user", t.Spec.User.Username)
+		tokenLog.V(1).Info("Will effectivly update LastHit", "token", t.Name, "user", t.Spec.User.Name)
 		t.Status.LastHit = metav1.Time{Time: now}
 		err := this.kubeClient.Update(context.TODO(), t)
 		if err != nil {
 			return err
 		}
 	} else {
-		tokenLog.V(1).Info("LastHit update skipped, as too early", "token", t.Name, "user", t.Spec.User.Username)
+		tokenLog.V(1).Info("LastHit update skipped, as too early", "token", t.Name, "user", t.Spec.User.Name)
 	}
 	return nil
 }
 
-func (this *tokenBasket) delete(t *v1alpha1.Token) error {
+func (this *tokenBasket) delete(t *tokenapi.Token) error {
 	return this.kubeClient.Delete(context.TODO(), t, client.GracePeriodSeconds(0))
 }
 
-func (this *tokenBasket) GetAll() ([]common.UserToken, error) {
-	list := v1alpha1.TokenList{}
+func (this *tokenBasket) GetAll() ([]proto.UserToken, error) {
+	list := tokenapi.TokenList{}
 	err := this.kubeClient.List(context.TODO(), &list, client.InNamespace(config.Conf.TokenNamespace))
 	if err != nil {
 		tokenLog.Error(err, "token List failed")
-		return []common.UserToken{}, err
+		return nil, err
 	}
-	slice := make([]common.UserToken, 0, len(list.Items))
+	slice := make([]proto.UserToken, 0, len(list.Items))
 	for i := 0; i < len(list.Items); i++ {
-		crdToken := list.Items[i]
-		slice = append(slice, common.UserToken{
-			Token:     crdToken.Name,
-			User:      crdToken.Spec.User,
-			Creation:  crdToken.Spec.Creation.Time,
-			LastHit:   crdToken.Status.LastHit.Time,
-			Lifecycle: &crdToken.Spec.Lifecycle,
-		})
-
+		userToken := proto.UserToken{
+			Token:   list.Items[i].Name,
+			Spec:    tokenapi.TokenSpec{},
+			LastHit: list.Items[i].Status.LastHit.Time,
+		}
+		list.Items[i].Spec.DeepCopyInto(&userToken.Spec)
+		slice = append(slice, userToken)
 	}
-	// Stort by creation
 	sort.Slice(slice, func(i, j int) bool {
-		return slice[i].Creation.Before(slice[j].Creation)
+		return slice[i].Spec.Creation.Before(&slice[j].Spec.Creation)
 	})
 	return slice, nil
 }
 
 func (this *tokenBasket) Clean() error {
 	now := time.Now()
-	list := v1alpha1.TokenList{}
+	list := tokenapi.TokenList{}
 	err := this.kubeClient.List(context.TODO(), &list, client.InNamespace(config.Conf.TokenNamespace))
 	if err != nil {
 		tokenLog.Error(err, "Token Cleaner. List failed")
@@ -206,10 +213,10 @@ func (this *tokenBasket) Clean() error {
 	for i := 0; i < len(list.Items); i++ {
 		crdToken := list.Items[i]
 		if !stillValid(&crdToken, now) {
-			tokenLog.Info(fmt.Sprintf("Token %s (user:%s) has been cleaned in background.", crdToken.Name, crdToken.Spec.User.Username))
+			tokenLog.Info(fmt.Sprintf("Token %s (user:%s) has been cleaned in background.", crdToken.Name, crdToken.Spec.User.Name))
 			err := this.delete(&crdToken)
 			if err != nil {
-				tokenLog.Error(err, "Error on delete", "token", crdToken.Name, "user", crdToken.Spec.User.Username)
+				tokenLog.Error(err, "Error on delete", "token", crdToken.Name, "user", crdToken.Spec.User.Name)
 				return err
 			}
 		}
@@ -218,7 +225,7 @@ func (this *tokenBasket) Clean() error {
 }
 
 func (this *tokenBasket) Delete(token string) (bool, error) {
-	crdToken := v1alpha1.Token{}
+	crdToken := tokenapi.Token{}
 	err := this.kubeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: config.Conf.TokenNamespace,
 		Name:      token,
@@ -233,7 +240,7 @@ func (this *tokenBasket) Delete(token string) (bool, error) {
 	}
 	err = this.delete(&crdToken)
 	if err != nil {
-		tokenLog.Error(err, "Error on delete", "token", crdToken.Name, "user", crdToken.Spec.User.Username)
+		tokenLog.Error(err, "Error on delete", "token", crdToken.Name, "user", crdToken.Spec.User.Name)
 		return false, err
 	}
 	return true, nil

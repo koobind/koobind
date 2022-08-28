@@ -21,7 +21,7 @@ package handlers
 
 import (
 	"encoding/base64"
-	"github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"net/http"
 	"strings"
@@ -32,13 +32,13 @@ type AuthHandler struct {
 	Providers providers.ProviderChain
 }
 
-func (this *AuthHandler) ServeAuthenticatedHTTP(response http.ResponseWriter, request *http.Request, fn func(user common.User)) {
+func (this *AuthHandler) ServeAuthenticatedHTTP(response http.ResponseWriter, request *http.Request, fn func(user tokenapi.UserDesc)) {
 	authList, ok := request.Header["Authorization"]
 	if !ok || len(authList) < 1 || !(strings.HasPrefix(authList[0], "Basic ") || strings.HasPrefix(authList[0], "Bearer ")) {
 		response.Header().Set("WWW-Authenticate", "Basic realm=\"/koo\"")
 		this.HttpError(response, "Need to authenticate", http.StatusUnauthorized)
 	} else {
-		var usr common.User
+		var usr tokenapi.UserDesc
 		var ok bool
 		if strings.HasPrefix(authList[0], "Basic ") {
 			b64 := authList[0][len("Basic "):]
@@ -49,7 +49,7 @@ func (this *AuthHandler) ServeAuthenticatedHTTP(response http.ResponseWriter, re
 				up := strings.Split(string(data), ":")
 				login := strings.TrimSpace(up[0])
 				password := strings.TrimSpace(up[1])
-				usr, ok, _, err = this.Providers.Login(login, password)
+				usr, ok, err = this.Providers.Login(login, password)
 				if err != nil {
 					this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 					return
@@ -59,10 +59,16 @@ func (this *AuthHandler) ServeAuthenticatedHTTP(response http.ResponseWriter, re
 			// It is Bearer
 			token := strings.TrimSpace(authList[0][len("Bearer "):])
 			var err error
-			usr, ok, err = this.TokenBasket.Get(token)
+			userToken, err := this.TokenBasket.Get(token)
 			if err != nil {
 				this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 				return
+			}
+			if userToken != nil {
+				usr = userToken.Spec.User
+				ok = true
+			} else {
+				ok = false
 			}
 		}
 		if ok {

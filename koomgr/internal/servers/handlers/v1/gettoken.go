@@ -22,7 +22,7 @@ package v1
 import (
 	"encoding/base64"
 	"fmt"
-	. "github.com/koobind/koobind/common"
+	"github.com/koobind/koobind/koomgr/apis/proto"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
@@ -49,7 +49,7 @@ func (this *GetTokenHandler) ServeHTTP(response http.ResponseWriter, request *ht
 			up := strings.Split(string(data), ":")
 			login := up[0]
 			password := up[1]
-			usr, ok, _, err := this.Providers.Login(login, password)
+			usr, ok, err := this.Providers.Login(login, password)
 			if err != nil {
 				this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 				return
@@ -59,11 +59,11 @@ func (this *GetTokenHandler) ServeHTTP(response http.ResponseWriter, request *ht
 				if err != nil {
 					this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 				} else {
-					data := GetTokenResponse{
+					data := proto.GetTokenResponse{
 						Token:     userToken.Token,
-						ClientTTL: userToken.Lifecycle.ClientTTL,
+						ClientTTL: userToken.Spec.Lifecycle.ClientTTL,
 					}
-					this.Logger.Info(fmt.Sprintf("Token '%s' granted to user:'%s'  uid:%s, groups=%v", data.Token, usr.Username, usr.Uid, usr.Groups))
+					this.Logger.Info(fmt.Sprintf("Token '%s' granted to user:'%s'  uid:%s, groups=%v", data.Token, usr.Name, usr.Uid, usr.Groups))
 					this.ServeJSON(response, data)
 				}
 			} else {

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,7 +42,7 @@ func getGroup(handler *AdminV1Handler, namespace string, groupName string) (crdG
 // curl -k -i -u admin:admin -X PATCH https://koomgrdev:9444/auth/v1/admin/_/groups/grp1 -d '{ "disabled": false}'
 // curl -k -i -u admin:admin -X PATCH https://koomgrdev:9444/auth/v1/admin/_/groups/grp2 -d '{ "description": "Group2", "disabled": true }'
 
-func AddApplyPatchGroup(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func AddApplyPatchGroup(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {
@@ -114,7 +114,7 @@ func AddApplyPatchGroup(handler *AdminV1Handler, usr common.User, response http.
 // curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/groups/grp1
 // curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/groups/grp2
 
-func DeleteGroup(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DeleteGroup(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {

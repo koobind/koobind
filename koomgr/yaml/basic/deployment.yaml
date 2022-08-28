@@ -184,21 +184,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: koo-external-service
-  namespace: koo-system
-spec:
-  ports:
-  - nodePort: 31444
-    port: 444
-    protocol: TCP
-    targetPort: 8444
-  selector:
-    control-plane: koobind-manager
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
   name: koo-webhook-service
   namespace: koo-system
 spec:
@@ -252,15 +237,15 @@ spec:
             cpu: 100m
             memory: 20Mi
         volumeMounts:
-        - mountPath: /tmp/k8s-webhook-server/serving-certs
-          name: cert
+        - mountPath: /tmp/k8s-webhook-server/webhook-certs
+          name: webhook-cert
           readOnly: true
         - mountPath: /etc/koo/cfg
           name: config
       serviceAccountName: koo-manager
       terminationGracePeriodSeconds: 10
       volumes:
-      - name: cert
+      - name: webhook-cert
         secret:
           defaultMode: 420
           secretName: webhook-server-cert
@@ -298,7 +283,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: koo-koobind-selfsigned
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   name: koo-auth-ingress
   namespace: koo-system
 spec:

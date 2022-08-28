@@ -20,13 +20,14 @@
 package token
 
 import (
-	"github.com/koobind/koobind/common"
+	"github.com/koobind/koobind/koomgr/apis/proto"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 )
 
 type TokenBasket interface {
-	NewUserToken(user common.User) (common.UserToken, error)
-	Get(token string) (common.User, bool, error)
-	GetAll() ([]common.UserToken, error)
+	NewUserToken(user tokenapi.UserDesc) (proto.UserToken, error)
+	Get(token string) (*proto.UserToken, error)
+	GetAll() ([]proto.UserToken, error)
 	Clean() error
 	Delete(token string) (bool, error)
 }
