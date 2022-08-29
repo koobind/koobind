@@ -2,12 +2,9 @@ module github.com/koobind/koobind/koocli
 
 go 1.19
 
-replace github.com/koobind/koobind/common v0.3.0 => ../common
-
 replace github.com/koobind/koobind/koomgr v0.3.0 => ../koomgr
 
 require (
-	github.com/koobind/koobind/common v0.3.0
 	github.com/koobind/koobind/koomgr v0.3.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0

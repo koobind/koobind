@@ -3,7 +3,7 @@
 all: koocli
 
 
-koocli: version
+koocli:
 	go build -o bin/koocli main.go
 
 

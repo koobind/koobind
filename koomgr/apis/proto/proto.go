@@ -40,15 +40,17 @@ type ValidateTokenRequest struct {
 	} `json:"spec"`
 }
 
+type ValidateTokenUser struct {
+	Username string   `json:"username"`
+	Uid      string   `json:"uid"`
+	Groups   []string `json:"groups"`
+}
+
 type ValidateTokenResponse struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Status     struct {
-		Authenticated bool `json:"authenticated"`
-		User          *struct {
-			Username string   `json:"username"`
-			Uid      string   `json:"uid"`
-			Groups   []string `json:"groups"`
-		} `json:"user,omitempty"`
+		Authenticated bool               `json:"authenticated"`
+		User          *ValidateTokenUser `json:"user,omitempty"`
 	} `json:"status"`
 }

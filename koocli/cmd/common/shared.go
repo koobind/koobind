@@ -1,20 +1,20 @@
 /*
-  Copyright (C) 2020 Serge ALEXANDRE
+Copyright (C) 2020 Serge ALEXANDRE
 
-  This file is part of koobind project
+# This file is part of koobind project
 
-  koobind is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+koobind is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  koobind is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+koobind is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with koobind.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 package common
 
@@ -23,8 +23,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	. "github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koocli/internal"
+	"github.com/koobind/koobind/koomgr/apis/proto"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
@@ -35,9 +35,9 @@ import (
 	"time"
 )
 
-
 // Global variables. Shared by all commands
 var HttpConnection *internal.HttpConnection
+
 // package logger
 var Log *logrus.Entry
 
@@ -47,8 +47,6 @@ var Config *internal.Config
 // Variable shared by at least two packages
 var JsonOutput bool
 var Provider string
-
-
 
 func InitHttpConnection() {
 	HttpConnection = internal.NewHttpConnection(Config.Server, Config.RootCaFile, Log)
@@ -64,10 +62,10 @@ func DoLogin(login, password string) (token string) {
 
 // Warning: As this function is used by the 'auth' command, which send json result to stdout, it may only send prompt to stderr
 func DoLoginSilently(login, password string) (token string) {
-	var getTokenResponse *GetTokenResponse
+	var getTokenResponse *proto.GetTokenResponse
 	maxTry := 3
 	if login != "" && password != "" {
-		maxTry = 1		// If all is provided on command line, do not prompt in case of failure
+		maxTry = 1 // If all is provided on command line, do not prompt in case of failure
 	}
 	for i := 0; i < maxTry; i++ {
 		login, password = inputCredentials(login, password)
@@ -77,12 +75,13 @@ func DoLoginSilently(login, password string) (token string) {
 				Token:      getTokenResponse.Token,
 				ClientTTL:  getTokenResponse.ClientTTL,
 				LastAccess: time.Now(),
-			} )
+			})
 			Log.Debugf("TokenResponse:%v\n", getTokenResponse)
 			return getTokenResponse.Token
 		}
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid login!\n")
-		login = ""; password = ""
+		login = ""
+		password = ""
 	}
 	if maxTry > 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "Too many failure !!!\n")
@@ -90,13 +89,13 @@ func DoLoginSilently(login, password string) (token string) {
 	return ""
 }
 
-func getTokenFor(login, password string) *GetTokenResponse {
+func getTokenFor(login, password string) *proto.GetTokenResponse {
 	response, err := HttpConnection.Do("GET", "/auth/v1/getToken", &internal.HttpAuth{Login: login, Password: password}, nil)
 	if err != nil {
 		panic(err)
 	}
 	if response.StatusCode == http.StatusOK {
-		var getTokenResponse GetTokenResponse
+		var getTokenResponse proto.GetTokenResponse
 		err = json.NewDecoder(response.Body).Decode(&getTokenResponse)
 		if err != nil {
 			panic(err)
@@ -143,9 +142,8 @@ func inputPassword(prompt string) string {
 	return strings.TrimSpace(string(bytePassword))
 }
 
-
-func ValidateToken(token string) *User {
-	validateTokenRequest := ValidateTokenRequest{
+func ValidateToken(token string) *proto.ValidateTokenUser {
+	validateTokenRequest := proto.ValidateTokenRequest{
 		ApiVersion: "",
 		Kind:       "",
 	}
@@ -160,7 +158,7 @@ func ValidateToken(token string) *User {
 		panic(err2)
 	}
 	if response.StatusCode == http.StatusOK {
-		var validateTokenResponse ValidateTokenResponse
+		var validateTokenResponse proto.ValidateTokenResponse
 		err = json.NewDecoder(response.Body).Decode(&validateTokenResponse)
 		if err != nil {
 			panic(err)
@@ -176,7 +174,6 @@ func ValidateToken(token string) *User {
 		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
 	}
 }
-
 
 // Retrieve the token locally, or, if expired, validate again against the server. Return "" if there is no valid token
 func RetrieveToken() string {
@@ -221,4 +218,3 @@ func PrintHttpResponseMessage(response *http.Response) {
 		}
 	}
 }
-

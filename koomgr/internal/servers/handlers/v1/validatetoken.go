@@ -48,9 +48,11 @@ func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, reques
 		}
 		if userToken != nil {
 			data.Status.Authenticated = true
-			data.Status.User.Username = userToken.Spec.User.Name
-			data.Status.User.Uid = userToken.Spec.User.Uid
-			data.Status.User.Groups = userToken.Spec.User.Groups
+			data.Status.User = &proto.ValidateTokenUser{
+				Username: userToken.Spec.User.Name,
+				Uid:      userToken.Spec.User.Uid,
+				Groups:   userToken.Spec.User.Groups,
+			}
 			this.Logger.Info(fmt.Sprintf("Token '%s' OK. user:'%s'  uid:%s, groups=%v", requestPayload.Spec.Token, data.Status.User.Username, data.Status.User.Uid, data.Status.User.Groups))
 		} else {
 			this.Logger.Info(fmt.Sprintf("Token '%s' rejected", requestPayload.Spec.Token))
