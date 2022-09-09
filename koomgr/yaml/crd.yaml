@@ -144,7 +144,7 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.user.username
+    - jsonPath: .spec.user.name
       name: User name
       type: string
     - jsonPath: .spec.user.uid
@@ -209,6 +209,44 @@ spec:
                     type: string
                   uid:
                     type: string
+                  userEntries:
+                    items:
+                      description: UserEntry is the user definition provided by a given provider
+                      properties:
+                        authority:
+                          type: boolean
+                        commonName:
+                          type: string
+                        email:
+                          type: string
+                        found:
+                          type: boolean
+                        groups:
+                          items:
+                            type: string
+                          type: array
+                        messages:
+                          items:
+                            type: string
+                          type: array
+                        passwordStatus:
+                          type: string
+                        provider:
+                          type: string
+                        uid:
+                          type: string
+                      required:
+                      - authority
+                      - commonName
+                      - email
+                      - found
+                      - groups
+                      - messages
+                      - passwordStatus
+                      - provider
+                      - uid
+                      type: object
+                    type: array
                 required:
                 - authority
                 - commonNames
@@ -216,50 +254,12 @@ spec:
                 - groups
                 - name
                 - uid
+                - userEntries
                 type: object
-              userEntries:
-                items:
-                  description: UserEntry is the user definition provided by a given provider
-                  properties:
-                    authority:
-                      type: boolean
-                    commonName:
-                      type: string
-                    email:
-                      type: string
-                    found:
-                      type: boolean
-                    groups:
-                      items:
-                        type: string
-                      type: array
-                    messages:
-                      items:
-                        type: string
-                      type: array
-                    passwordStatus:
-                      type: string
-                    provider:
-                      type: string
-                    uid:
-                      type: string
-                  required:
-                  - authority
-                  - commonName
-                  - email
-                  - found
-                  - groups
-                  - messages
-                  - passwordStatus
-                  - provider
-                  - uid
-                  type: object
-                type: array
             required:
             - creation
             - lifecycle
             - user
-            - userEntries
             type: object
           status:
             description: TokenStatus defines the observed state of Token

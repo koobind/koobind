@@ -187,6 +187,7 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 		Uid:            "",
 		Groups:         []string{},
 		Email:          "",
+		Messages:       make([]string, 0, 0),
 	}
 	var ldapUser ldap.Entry
 	err := this.do(func(conn *ldap.Conn) error {

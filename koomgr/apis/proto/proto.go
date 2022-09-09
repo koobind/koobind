@@ -11,9 +11,9 @@ type GetTokenResponse struct {
 	ClientTTL metav1.Duration `json:"clientTTL"`
 }
 
-type UserDescribeResponse struct {
-	User tokenapi.UserDesc `json:"user"`
-}
+//type UserDescribeResponse struct {
+//	User tokenapi.UserDesc `json:"user"`
+//}
 
 // This UserToken is analogous to tokenapi.Token, but for usage out of k8s/controllerRuntime (admin api, memory token storage, ...)
 type UserToken struct {

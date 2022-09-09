@@ -3,19 +3,16 @@ FROM golang:1.19.0 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
-COPY koomgr/go.mod koomgr/go.mod
-COPY koomgr/go.sum koomgr/go.sum
-COPY common/go.mod common/go.mod
-COPY common/go.sum common/go.sum
+COPY go.mod koomgr/go.mod
+COPY go.sum koomgr/go.sum
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN cd koomgr; go mod download
 
 # Copy the go source
-COPY koomgr/main.go koomgr/main.go
-COPY koomgr/apis/ koomgr/apis/
-COPY koomgr/internal/ koomgr/internal/
-COPY common common
+COPY main.go koomgr/main.go
+COPY apis koomgr/apis/
+COPY internal koomgr/internal/
 
 WORKDIR /workspace/koomgr
 

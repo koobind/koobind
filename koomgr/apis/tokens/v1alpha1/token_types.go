@@ -79,7 +79,7 @@ type TokenStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Namespaced,shortName=ktoken;kootoken
-// +kubebuilder:printcolumn:name="User name",type=string,JSONPath=`.spec.user.username`
+// +kubebuilder:printcolumn:name="User name",type=string,JSONPath=`.spec.user.name`
 // +kubebuilder:printcolumn:name="User ID",type=string,JSONPath=`.spec.user.uid`
 // +kubebuilder:printcolumn:name="User Groups",type=string,JSONPath=`.spec.user.groups`
 // +kubebuilder:printcolumn:name="Last hit",type=string,JSONPath=`.status.lastHit`

@@ -50,6 +50,7 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		Uid:            "",
 		Groups:         nil,
 		Email:          "",
+		Messages:       make([]string, 0, 0),
 	}
 	user, exists := this.userByLogin[login]
 	if exists {

@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
-	"github.com/koobind/koobind/koomgr/apis/proto"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
@@ -65,8 +65,8 @@ var DescribeUserCmd = &cobra.Command{
 				data, _ := ioutil.ReadAll(response.Body)
 				fmt.Print(string(data))
 			} else {
-				var userDescribeResponse proto.UserDescribeResponse
-				err = json.NewDecoder(response.Body).Decode(&userDescribeResponse)
+				var userDesc tokenapi.UserDesc
+				err = json.NewDecoder(response.Body).Decode(&userDesc)
 				if err != nil {
 					panic(err)
 				}
@@ -75,13 +75,13 @@ var DescribeUserCmd = &cobra.Command{
 				if explainAuth {
 					_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
 					//authorityFound := false
-					for _, userEntry := range userDescribeResponse.User.Entries {
+					for _, userEntry := range userDesc.Entries {
 						var found = ""
 						var authority = ""
 						if userEntry.Found {
 							found = "*"
 							if userEntry.Authority {
-								if userEntry.ProviderName == userDescribeResponse.User.Authority {
+								if userEntry.ProviderName == userDesc.Authority {
 									authority = "*"
 								} else {
 									authority = "+"
@@ -92,7 +92,7 @@ var DescribeUserCmd = &cobra.Command{
 					}
 				} else {
 					_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tAUTHORITY")
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", userDescribeResponse.User.Name, userDescribeResponse.User.Uid, strings.Join(userDescribeResponse.User.Groups, ","), userDescribeResponse.User.Authority)
+					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", userDesc.Name, userDesc.Uid, strings.Join(userDesc.Groups, ","), userDesc.Authority)
 				}
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()

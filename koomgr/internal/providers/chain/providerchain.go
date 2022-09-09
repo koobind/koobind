@@ -146,7 +146,9 @@ func (this *providerChain) Login(login, password string) (tokenapi.UserDesc, boo
 				user.Authority = prvd.GetName()
 			}
 			user.Groups = append(user.Groups, userEntry.Groups...)
-			user.Emails = append(user.Emails, userEntry.Email)
+			if userEntry.Email != "" {
+				user.Emails = append(user.Emails, userEntry.Email)
+			}
 			user.CommonNames = append(user.CommonNames, userEntry.CommonName)
 		}
 	}
@@ -187,7 +189,9 @@ func (this *providerChain) DescribeUser(login string) (bool, tokenapi.UserDesc) 
 				}
 				found = true
 				user.Groups = append(user.Groups, userEntry.Groups...)
-				user.Emails = append(user.Emails, userEntry.Email)
+				if userEntry.Email != "" {
+					user.Emails = append(user.Emails, userEntry.Email)
+				}
 				user.CommonNames = append(user.CommonNames, userEntry.CommonName)
 			}
 		}
