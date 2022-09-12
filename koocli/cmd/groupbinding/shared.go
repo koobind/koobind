@@ -1,20 +1,20 @@
 /*
-  Copyright (C) 2020 Serge ALEXANDRE
+Copyright (C) 2020 Serge ALEXANDRE
 
-  This file is part of koobind project
+# This file is part of koobind project
 
-  koobind is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+koobind is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  koobind is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+koobind is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with koobind.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 package groupbinding
 
@@ -31,11 +31,11 @@ import (
 )
 
 var (
-	crdGroupBindingSpec =  &v1alpha1.GroupBindingSpec{}
-	disabled     bool
-	enabled      bool
-	_true        = true
-	_false       = false
+	crdGroupBindingSpec = &v1alpha1.GroupBindingSpec{}
+	disabled            bool
+	enabled             bool
+	_true               = true
+	_false              = false
 )
 
 func initGroupParams(cmd *cobra.Command) {
@@ -44,7 +44,7 @@ func initGroupParams(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&enabled, "enabled", false, "")
 }
 
-func applyGroupCommand(cmd *cobra.Command, args []string, method string) {
+func applyGroupBindingCommand(cmd *cobra.Command, args []string, method string) {
 	if len(args) != 2 {
 		fmt.Printf("ERROR: A user name and a group name must be provided!\n")
 		os.Exit(2)
@@ -67,7 +67,7 @@ func applyGroupCommand(cmd *cobra.Command, args []string, method string) {
 		crdGroupBindingSpec.Disabled = &_true
 	}
 	body, err := json.Marshal(crdGroupBindingSpec)
-	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName) , &internal.HttpAuth{Token: token},  bytes.NewBuffer(body))
+	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName), &internal.HttpAuth{Token: token}, bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}

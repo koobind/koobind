@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package misc
+package user
 
 import (
 	"encoding/json"
@@ -35,15 +35,14 @@ import (
 var explainAuth bool
 
 func init() {
-	DescribeUserCmd.PersistentFlags().BoolVarP(&common.JsonOutput, "json", "", false, "Output in JSON")
-	DescribeUserCmd.PersistentFlags().BoolVar(&explainAuth, "explain", false, "Explain user authentication")
+	userDescribeCmd.PersistentFlags().BoolVarP(&common.JsonOutput, "json", "", false, "Output in JSON")
+	userDescribeCmd.PersistentFlags().BoolVar(&explainAuth, "explain", false, "Explain user authentication")
 }
 
-var DescribeUserCmd = &cobra.Command{
-	Use:     "user",
-	Aliases: []string{"users"},
-	Short:   "Describe a specified user (admin)",
-	Hidden:  false,
+var userDescribeCmd = &cobra.Command{
+	Use:    "describe",
+	Short:  "Describe a specified user (admin)",
+	Hidden: false,
 	//Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {

@@ -155,7 +155,8 @@ func ValidateToken(token string) *proto.ValidateTokenUser {
 	// Will use the service intended for the authentication webhook, but with a GET method
 	response, err2 := HttpConnection.Do("GET", "/auth/v1/validateToken", nil, bytes.NewBuffer(body))
 	if err2 != nil {
-		panic(err2)
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to authentication server: %v\n", err2)
+		os.Exit(2)
 	}
 	if response.StatusCode == http.StatusOK {
 		var validateTokenResponse proto.ValidateTokenResponse

@@ -1,27 +1,32 @@
 /*
-  Copyright (C) 2020 Serge ALEXANDRE
+Copyright (C) 2020 Serge ALEXANDRE
 
-  This file is part of koobind project
+# This file is part of koobind project
 
-  koobind is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+koobind is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  koobind is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+koobind is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with koobind.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 package root
 
 import (
 	"fmt"
 	. "github.com/koobind/koobind/koocli/cmd/common"
+	koocontext "github.com/koobind/koobind/koocli/cmd/context"
+	"github.com/koobind/koobind/koocli/cmd/group"
+	"github.com/koobind/koobind/koocli/cmd/groupbinding"
 	"github.com/koobind/koobind/koocli/cmd/misc"
+	"github.com/koobind/koobind/koocli/cmd/token"
+	koouser "github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,8 +40,6 @@ var RootCmd = &cobra.Command{
 	Use:   "kubectl-koo",
 	Short: "A kubectl plugin for Kubernetes authentification",
 }
-
-
 
 func lookupContextInKubeconfig(kubeconfig string) string {
 	if kubeconfig == "" {
@@ -66,12 +69,6 @@ func init() {
 
 	// We must declare child in parent.
 	// Performing RootCmd.AddCommand(...) in the child init() function will not works as there is chance the child package will not be loaded, as not imported by any package.
-	RootCmd.AddCommand(GetCmd)
-	RootCmd.AddCommand(DescribeCmd)
-	RootCmd.AddCommand(DeleteCmd)
-	RootCmd.AddCommand(CreateCmd)
-	RootCmd.AddCommand(ApplyCmd)
-	RootCmd.AddCommand(PatchCmd)
 	RootCmd.AddCommand(misc.AuthCmd)
 	RootCmd.AddCommand(misc.HashCmd)
 	RootCmd.AddCommand(misc.LoginCmd)
@@ -80,11 +77,17 @@ func init() {
 	RootCmd.AddCommand(misc.VersionCmd)
 	RootCmd.AddCommand(misc.PasswordCmd)
 
-	RootCmd.PersistentFlags().StringVar(&Context, "Context", "", "Context" )
-	RootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup Context" )
-	RootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection" )
-	RootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server" )
-	RootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level" )
+	RootCmd.AddCommand(token.TokenCmd)
+	RootCmd.AddCommand(koocontext.ContextCmd)
+	RootCmd.AddCommand(koouser.UserCmd)
+	RootCmd.AddCommand(group.GroupCmd)
+	RootCmd.AddCommand(groupbinding.GroupBindingCmd)
+
+	RootCmd.PersistentFlags().StringVar(&Context, "Context", "", "Context")
+	RootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup Context")
+	RootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection")
+	RootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server")
+	RootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level")
 	RootCmd.PersistentFlags().BoolVar(&logJson, "logJson", false, "logs in JSON")
 
 	RootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
@@ -108,7 +111,7 @@ func init() {
 				rootCaFile = path.Join(cwd, rootCaFile)
 			}
 		}
-		if cmd != misc.GetContextCmd {
+		if cmd != koocontext.ContextCmd {
 			Config = internal.LoadConfig(Context)
 			if Config == nil {
 				if server == "" {
@@ -158,4 +161,3 @@ func Execute() {
 		os.Exit(2)
 	}
 }
-
