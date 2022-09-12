@@ -23,12 +23,14 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"gopkg.in/ldap.v2"
 	"strconv"
 	"strings"
 )
+
+var _ providers.Provider = &ldapProvider{}
 
 type ldapProvider struct {
 	*LdapProviderConfig
@@ -176,15 +178,16 @@ func getAttr(e ldap.Entry, name string) string {
 	return ""
 }
 
-func (this *ldapProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
-	userStatus := common.UserStatus{
+func (this *ldapProvider) GetUserStatus(login string, password string, checkPassword bool) (tokenapi.UserEntry, error) {
+	userEntry := tokenapi.UserEntry{
 		ProviderName:   this.Name,
 		Authority:      *this.CredentialAuthority,
 		Found:          false,
-		PasswordStatus: common.Unchecked,
+		PasswordStatus: tokenapi.PasswordStatusUnchecked,
 		Uid:            "",
 		Groups:         []string{},
 		Email:          "",
+		Messages:       make([]string, 0, 0),
 	}
 	var ldapUser ldap.Entry
 	err := this.do(func(conn *ldap.Conn) error {
@@ -195,48 +198,48 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 			return fmt.Errorf("%s failed: %v", bindDesc, err)
 		}
 		this.logger.V(2).Info(fmt.Sprintf("%s => success", bindDesc))
-		if ldapUser, userStatus.Found, err = this.lookupUser(conn, login); err != nil {
+		if ldapUser, userEntry.Found, err = this.lookupUser(conn, login); err != nil {
 			return err
 		}
-		if userStatus.Found {
+		if userEntry.Found {
 			if checkPassword && *this.CredentialAuthority {
-				if userStatus.PasswordStatus, err = this.checkPassword(conn, ldapUser, password); err != nil {
+				if userEntry.PasswordStatus, err = this.checkPassword(conn, ldapUser, password); err != nil {
 					return err
 				}
 			} else {
-				userStatus.PasswordStatus = common.Unchecked
+				userEntry.PasswordStatus = tokenapi.PasswordStatusUnchecked
 			}
 			// No need to collect groups if auth failed
-			if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
+			if userEntry.PasswordStatus != tokenapi.PasswordStatusWrong && *this.GroupAuthority {
 				// We need to bind again, as password check was performed by groupbinding on user
 				bindDesc := fmt.Sprintf("conn.Bind(%s, %s)", this.BindDN, "xxxxxxxx")
 				if err := conn.Bind(this.BindDN, this.BindPW); err != nil {
 					return fmt.Errorf("%s failed: %v", bindDesc, err)
 				}
 				this.logger.V(2).Info(fmt.Sprintf("%s => success", bindDesc))
-				if userStatus.Groups, err = this.lookupGroups(conn, ldapUser); err != nil {
+				if userEntry.Groups, err = this.lookupGroups(conn, ldapUser); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
 	})
-	if err == nil && userStatus.Found {
+	if err == nil && userEntry.Found {
 		this.logger.V(2).Info(fmt.Sprint("Will fetch Attributes"))
-		userStatus.Uid = getAttr(ldapUser, this.UserSearch.NumericalIdAttr)
-		if userStatus.Uid != "" && this.UidOffet != 0 {
-			if uid, err := strconv.Atoi(userStatus.Uid); err != nil {
+		userEntry.Uid = getAttr(ldapUser, this.UserSearch.NumericalIdAttr)
+		if userEntry.Uid != "" && this.UidOffet != 0 {
+			if uid, err := strconv.Atoi(userEntry.Uid); err != nil {
 				// Shoud be a Warning
-				this.logger.Error(err, "Non numerical Uid value (%s) for user '%s'", userStatus.Uid, login)
+				this.logger.Error(err, "Non numerical Uid value (%s) for user '%s'", userEntry.Uid, login)
 			} else {
 				uid = uid + this.UidOffet
-				userStatus.Uid = strconv.Itoa(uid)
+				userEntry.Uid = strconv.Itoa(uid)
 			}
 		}
-		userStatus.Email = getAttr(ldapUser, this.UserSearch.EmailAttr)
-		userStatus.CommonName = getAttr(ldapUser, this.UserSearch.CnAttr)
+		userEntry.Email = getAttr(ldapUser, this.UserSearch.EmailAttr)
+		userEntry.CommonName = getAttr(ldapUser, this.UserSearch.CnAttr)
 	}
-	return userStatus, err
+	return userEntry, err
 }
 
 func (this *ldapProvider) lookupGroups(conn *ldap.Conn, user ldap.Entry) ([]string, error) {
@@ -286,9 +289,9 @@ func (this *ldapProvider) lookupGroups(conn *ldap.Conn, user ldap.Entry) ([]stri
 	return groups, nil
 }
 
-func (this *ldapProvider) checkPassword(conn *ldap.Conn, user ldap.Entry, password string) (common.PasswordStatus, error) {
+func (this *ldapProvider) checkPassword(conn *ldap.Conn, user ldap.Entry, password string) (tokenapi.PasswordStatus, error) {
 	if password == "" {
-		return common.Wrong, nil
+		return tokenapi.PasswordStatusWrong, nil
 	}
 	// Try to authenticate as the distinguished name.
 	bindDesc := fmt.Sprintf("conn.Bind(%s, %s)", user.DN, "xxxxxxxx")
@@ -298,17 +301,17 @@ func (this *ldapProvider) checkPassword(conn *ldap.Conn, user ldap.Entry, passwo
 			switch ldapErr.ResultCode {
 			case ldap.LDAPResultInvalidCredentials:
 				this.logger.V(2).Info(fmt.Sprintf("%s => invalid password", bindDesc))
-				return common.Wrong, nil
+				return tokenapi.PasswordStatusWrong, nil
 			case ldap.LDAPResultConstraintViolation:
 				// Should be a Warning
 				this.logger.Error(nil, fmt.Sprintf("%s => constraint violation: %s", bindDesc, ldapErr.Error()))
-				return common.Wrong, nil
+				return tokenapi.PasswordStatusWrong, nil
 			}
 		} // will also catch all ldap.Error without a case statement above
-		return common.Wrong, fmt.Errorf("%s => failed: %v", bindDesc, err)
+		return tokenapi.PasswordStatusWrong, fmt.Errorf("%s => failed: %v", bindDesc, err)
 	}
 	this.logger.V(2).Info(fmt.Sprintf("%s => success", bindDesc))
-	return common.Checked, nil
+	return tokenapi.PasswordStatusChecked, nil
 }
 
 func (this *ldapProvider) ChangePassword(user string, oldPassword string, newPassword string) error {

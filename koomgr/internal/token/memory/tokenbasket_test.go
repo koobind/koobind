@@ -20,7 +20,7 @@
 package memory
 
 import (
-	. "github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
@@ -44,13 +44,13 @@ func ParseDurationOrPanic(d string) metav1.Duration {
 	return duration
 }
 
-var lifeCycle2s TokenLifecycle = TokenLifecycle{
+var lifeCycle2s = tokenapi.TokenLifecycle{
 	InactivityTimeout: ParseDurationOrPanic("2s"),
 	MaxTTL:            ParseDurationOrPanic("24h"),
 	ClientTTL:         ParseDurationOrPanic("10s"),
 }
 
-var lifeCycle3s TokenLifecycle = TokenLifecycle{
+var lifeCycle3s = tokenapi.TokenLifecycle{
 	InactivityTimeout: ParseDurationOrPanic("3s"),
 	MaxTTL:            ParseDurationOrPanic("24h"),
 	ClientTTL:         ParseDurationOrPanic("10s"),
@@ -68,57 +68,57 @@ var lifeCycle3s TokenLifecycle = TokenLifecycle{
 
 func TestNew(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle3s)
-	var user = User{Username: "Alfred"}
+	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
 	userToken, err := basket.NewUserToken(user)
 	assert.Nil(t, err)
-	user2, ok, err := basket.Get(userToken.Token)
+	userToken2, err := basket.Get(userToken.Token)
 	assert.Nil(t, err)
-	assert.True(t, ok, "ok should be true")
-	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
+	assert.NotNil(t, userToken2, "userToken should be found")
+	assert.Equal(t, "Alfred", userToken2.Spec.User.Name, "User should be Alfred")
 }
 
 func TestTimeout1(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
-	var user = User{Username: "Alfred"}
+	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
 	userToken, err := basket.NewUserToken(user)
 	assert.Nil(t, err)
 	time.Sleep(time.Second * 3)
-	_, ok, err := basket.Get(userToken.Token)
+	userToken2, err := basket.Get(userToken.Token)
 	assert.Nil(t, err)
-	assert.False(t, ok, "ok should be false")
+	assert.Nil(t, userToken2, "userToken should be nil (Not found)")
 }
 
 func TestTimeout2(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
-	var user = User{Username: "Alfred"}
+	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
 	userToken, err := basket.NewUserToken(user)
 	assert.Nil(t, err)
 	token := userToken.Token
 
 	time.Sleep(time.Second)
 
-	user2, ok, err := basket.Get(token)
+	userToken2, err := basket.Get(token)
 	assert.Nil(t, err)
-	assert.True(t, ok, "ok should be true")
-	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
+	assert.NotNil(t, userToken2, "userToken2 should be found")
+	assert.Equal(t, "Alfred", userToken2.Spec.User.Name, "User should be Alfred")
 
 	time.Sleep(time.Second)
 
-	user2, ok, err = basket.Get(token)
+	userToken2, err = basket.Get(token)
 	assert.Nil(t, err)
-	assert.True(t, ok, "ok should be true")
-	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
+	assert.NotNil(t, userToken2, "userToken2 should be found")
+	assert.Equal(t, "Alfred", userToken2.Spec.User.Name, "User should be Alfred")
 
 	time.Sleep(time.Second)
 
-	user2, ok, err = basket.Get(token)
+	userToken2, err = basket.Get(token)
 	assert.Nil(t, err)
-	assert.True(t, ok, "ok should be true")
-	assert.Equal(t, "Alfred", user2.Username, "User should be Alfred")
+	assert.NotNil(t, userToken2, "userToken2 should be found")
+	assert.Equal(t, "Alfred", userToken2.Spec.User.Name, "User should be Alfred")
 
 	time.Sleep(time.Second * 3)
 
-	user2, ok, err = basket.Get(token)
+	userToken2, err = basket.Get(token)
 	assert.Nil(t, err)
-	assert.False(t, ok, "ok should be false")
+	assert.Nil(t, userToken2, "userToken2 shound not be found")
 }

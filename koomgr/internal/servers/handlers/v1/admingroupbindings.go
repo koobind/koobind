@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,7 +31,7 @@ func getBinding(handler *AdminV1Handler, namespace string, bindingName string) (
 // curl -k -i -u admin:admin -X POST https://koomgrdev:9444/auth/v1/admin/_/users/user1 -d '{ "commonName": "User 1", "passwordHash": "$2a$10$zRW1QM2ZLLGwl3S9ebys3.gUOgsHyaOCdihJ590q.B58IUQsxgE9y"}'
 // curl -k -i -u admin:admin -X POST https://koomgrdev:9444/auth/v1/admin/_/groupbindings/user1/grp1 -d '{}'
 
-func AddApplyPatchGroupBinding(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func AddApplyPatchGroupBinding(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {
@@ -121,7 +121,7 @@ func AddApplyPatchGroupBinding(handler *AdminV1Handler, usr common.User, respons
 
 // curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/groupbindings/user1/grp1
 
-func DeleteGroupBinding(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DeleteGroupBinding(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {

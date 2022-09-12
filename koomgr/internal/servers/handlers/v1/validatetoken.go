@@ -22,7 +22,7 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/koobind/koobind/common"
+	"github.com/koobind/koobind/koomgr/apis/proto"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 )
@@ -32,24 +32,28 @@ type ValidateTokenHandler struct {
 }
 
 func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	var requestPayload ValidateTokenRequest
+	var requestPayload proto.ValidateTokenRequest
 	err := json.NewDecoder(request.Body).Decode(&requestPayload)
 	if err != nil {
 		this.HttpError(response, err.Error(), http.StatusBadRequest)
 	} else {
-		data := ValidateTokenResponse{
+		data := proto.ValidateTokenResponse{
 			ApiVersion: requestPayload.ApiVersion,
 			Kind:       requestPayload.Kind,
 		}
-		usr, ok, err := this.TokenBasket.Get(requestPayload.Spec.Token)
+		userToken, err := this.TokenBasket.Get(requestPayload.Spec.Token)
 		if err != nil {
 			this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 			return
 		}
-		if ok {
-			this.Logger.Info(fmt.Sprintf("Token '%s' OK. user:'%s'  uid:%s, groups=%v", requestPayload.Spec.Token, usr.Username, usr.Uid, usr.Groups))
+		if userToken != nil {
 			data.Status.Authenticated = true
-			data.Status.User = &usr
+			data.Status.User = &proto.ValidateTokenUser{
+				Username: userToken.Spec.User.Name,
+				Uid:      userToken.Spec.User.Uid,
+				Groups:   userToken.Spec.User.Groups,
+			}
+			this.Logger.Info(fmt.Sprintf("Token '%s' OK. user:'%s'  uid:%s, groups=%v", requestPayload.Spec.Token, data.Status.User.Username, data.Status.User.Uid, data.Status.User.Groups))
 		} else {
 			this.Logger.Info(fmt.Sprintf("Token '%s' rejected", requestPayload.Spec.Token))
 			data.Status.Authenticated = false

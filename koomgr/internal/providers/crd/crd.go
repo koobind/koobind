@@ -23,14 +23,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/koobind/koobind/common"
-	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	directoryapi "github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
 )
+
+var _ providers.Provider = &CrdProvider{}
 
 type CrdProvider struct {
 	*CrdProviderConfig
@@ -41,111 +43,111 @@ func (this *CrdProvider) IsCritical() bool {
 	return *this.Critical
 }
 
-func (this *CrdProvider) GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error) {
-	userStatus := common.UserStatus{
+func (this *CrdProvider) GetUserStatus(login string, password string, checkPassword bool) (tokenapi.UserEntry, error) {
+	userEntry := tokenapi.UserEntry{
 		ProviderName:   this.Name,
 		Authority:      *this.CredentialAuthority,
 		Found:          false,
-		PasswordStatus: common.Unchecked,
+		PasswordStatus: tokenapi.PasswordStatusUnchecked,
 		Uid:            "",
 		Groups:         []string{},
 		Email:          "",
 		Messages:       make([]string, 0, 0),
 	}
-	usr := v1alpha1.User{}
+	usr := directoryapi.User{}
 	err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: this.Namespace,
 		Name:      login,
 	}, &usr)
 	if client.IgnoreNotFound(err) != nil {
-		return userStatus, err
+		return userEntry, err
 	}
 	if err != nil {
 		this.logger.V(1).Info("User NOT found", "user", login)
 		// Check if there is some orphean GroupBindings
-		list := v1alpha1.GroupBindingList{}
+		list := directoryapi.GroupBindingList{}
 		err = config.KubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
 		if err != nil {
-			return userStatus, err
+			return userEntry, err
 		}
 		for i := 0; i < len(list.Items); i++ {
-			userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("Orphean GroupBinding '%s' to '%s'", list.Items[i].Name, list.Items[i].Spec.Group))
+			userEntry.Messages = append(userEntry.Messages, fmt.Sprintf("Orphean GroupBinding '%s' to '%s'", list.Items[i].Name, list.Items[i].Spec.Group))
 		}
-		return userStatus, nil // User not found. Not an error
+		return userEntry, nil // User not found. Not an error
 	}
 	if usr.Spec.Disabled != nil && *usr.Spec.Disabled {
 		this.logger.V(1).Info("User found but disabled", "user", login)
-		userStatus.Messages = append(userStatus.Messages, "User disabled")
-		return userStatus, nil // User Disabled. Not an error
+		userEntry.Messages = append(userEntry.Messages, "User disabled")
+		return userEntry, nil // User Disabled. Not an error
 	}
-	userStatus.Found = true
+	userEntry.Found = true
 	if usr.Spec.Uid != nil {
-		userStatus.Uid = strconv.Itoa(*usr.Spec.Uid + this.UidOffet)
+		userEntry.Uid = strconv.Itoa(*usr.Spec.Uid + this.UidOffet)
 	}
-	userStatus.CommonName = usr.Spec.CommonName
-	userStatus.Email = usr.Spec.Email
+	userEntry.CommonName = usr.Spec.CommonName
+	userEntry.Email = usr.Spec.Email
 	if *this.CredentialAuthority && checkPassword && usr.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(usr.Spec.PasswordHash), []byte(password))
 		if err == nil {
 			this.logger.V(1).Info("User found and password OK", "user", login)
-			userStatus.PasswordStatus = common.Checked
+			userEntry.PasswordStatus = tokenapi.PasswordStatusChecked
 		} else {
 			this.logger.V(1).Info("User found but password failed", "user", login, "password", false)
-			userStatus.PasswordStatus = common.Wrong
+			userEntry.PasswordStatus = tokenapi.PasswordStatusWrong
 		}
 	} else {
 		if !*this.CredentialAuthority {
 			this.logger.V(1).Info("User found, but not CredentialAuthority!", "user", login)
 		} else if usr.Spec.PasswordHash == "" {
-			userStatus.Messages = append(userStatus.Messages, "No password")
+			userEntry.Messages = append(userEntry.Messages, "No password")
 			this.logger.V(1).Info("User found, but no password defined!", "user", login)
-			userStatus.Authority = false
+			userEntry.Authority = false
 		} else {
 			this.logger.V(1).Info("User found, but password check was not required!", "user", login)
 		}
-		userStatus.PasswordStatus = common.Unchecked
+		userEntry.PasswordStatus = tokenapi.PasswordStatusUnchecked
 	}
 	// Will not collect groups if auth failed.
-	if userStatus.PasswordStatus != common.Wrong && *this.GroupAuthority {
-		list := v1alpha1.GroupBindingList{}
+	if userEntry.PasswordStatus != tokenapi.PasswordStatusWrong && *this.GroupAuthority {
+		list := directoryapi.GroupBindingList{}
 		err = config.KubeClient.List(context.TODO(), &list, client.MatchingFields{"userkey": login}, client.InNamespace(this.Namespace))
 		if err != nil {
-			return userStatus, err
+			return userEntry, err
 		}
-		userStatus.Groups = make([]string, 0, len(list.Items))
+		userEntry.Groups = make([]string, 0, len(list.Items))
 		for i := 0; i < len(list.Items); i++ {
 			binding := list.Items[i]
 			this.logger.V(1).Info("lookup", "binding", binding.Name)
 			if binding.Spec.Disabled != nil && *binding.Spec.Disabled {
-				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("GroupBinding '%s' disabled", binding.Name))
+				userEntry.Messages = append(userEntry.Messages, fmt.Sprintf("GroupBinding '%s' disabled", binding.Name))
 				continue
 			}
-			grp := v1alpha1.Group{}
+			grp := directoryapi.Group{}
 			err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
 				Namespace: this.Namespace,
 				Name:      binding.Spec.Group,
 			}, &grp)
 			if client.IgnoreNotFound(err) != nil {
-				return userStatus, err
+				return userEntry, err
 			}
 			if err != nil {
 				// Not found. Broken link
 				this.logger.V(-1).Info("Broken GroupBinding link (No matching group)", "groupbinding", binding.Name, "group", binding.Spec.Group)
-				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("No matching group '%s' for GroupBinding '%s'", binding.Spec.Group, binding.Name))
+				userEntry.Messages = append(userEntry.Messages, fmt.Sprintf("No matching group '%s' for GroupBinding '%s'", binding.Spec.Group, binding.Name))
 				continue
 			}
 			if grp.Spec.Disabled != nil && *grp.Spec.Disabled {
-				userStatus.Messages = append(userStatus.Messages, fmt.Sprintf("Group '%s' disabled", grp.Name))
+				userEntry.Messages = append(userEntry.Messages, fmt.Sprintf("Group '%s' disabled", grp.Name))
 				continue
 			}
-			userStatus.Groups = append(userStatus.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))
+			userEntry.Groups = append(userEntry.Groups, fmt.Sprintf(this.GroupPattern, grp.Name))
 		}
 	}
-	return userStatus, nil
+	return userEntry, nil
 }
 
 func (this *CrdProvider) ChangePassword(user string, oldPassword string, newPassword string) error {
-	crdUser := &v1alpha1.User{}
+	crdUser := &directoryapi.User{}
 	err := config.KubeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: this.Namespace,
 		Name:      user,

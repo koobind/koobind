@@ -23,9 +23,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	"net/http"
+	"strings"
 )
 
 type BaseHandler struct {
@@ -38,7 +38,7 @@ type BaseHandler struct {
 func (this *BaseHandler) ServeJSON(response http.ResponseWriter, data interface{}) {
 	response.Header().Set("Content-Type", "application/json")
 	if this.Logger.V(1).Enabled() {
-		this.Logger.V(1).Info(fmt.Sprintf("------ httpClose:Emit JSON:%s", common.JSON2String(data)))
+		this.Logger.V(1).Info(fmt.Sprintf("------ httpClose:Emit JSON:%s", json2String(data)))
 	}
 	response.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(response).Encode(data)
@@ -66,4 +66,10 @@ func (this *BaseHandler) HttpClose(response http.ResponseWriter, message string,
 	} else {
 		response.WriteHeader(httpCode)
 	}
+}
+
+func json2String(data interface{}) string {
+	builder := &strings.Builder{}
+	_ = json.NewEncoder(builder).Encode(data)
+	return builder.String()
 }

@@ -21,7 +21,7 @@ package chain
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/providers/crd"
@@ -32,9 +32,11 @@ import (
 	"sort"
 )
 
+var _ providers.ProviderChain = &providerChain{}
+
 type providerChain struct {
 	providers      []providers.Provider
-	prividerByName map[string]providers.Provider
+	providerByName map[string]providers.Provider
 }
 
 var pcLog = ctrl.Log.WithName("providerChain")
@@ -54,7 +56,7 @@ var ProviderConfigBuilderFromType = map[string]func() providerConfig{
 func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 	this := providerChain{
 		providers:      []providers.Provider{},
-		prividerByName: make(map[string]providers.Provider),
+		providerByName: make(map[string]providers.Provider),
 	}
 	for i := 0; i < len(conf.Providers); i++ {
 		//var m map[interface{}]interface{}
@@ -84,7 +86,7 @@ func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 			return nil, err
 		}
 		name := providerConfig.GetName()
-		if _, ok := this.prividerByName[name]; ok {
+		if _, ok := this.providerByName[name]; ok {
 			return nil, fmt.Errorf("two providers are defined with the same name: '%s'", name)
 		}
 		if providerConfig.IsEnabled() {
@@ -94,13 +96,13 @@ func BuildProviderChain(conf *config.Config) (providers.ProviderChain, error) {
 			}
 			pcLog.Info("Setup provider", "provider", prvd.GetName())
 			this.providers = append(this.providers, prvd)
-			this.prividerByName[name] = prvd
+			this.providerByName[name] = prvd
 		}
 	}
 	return &this, nil
 }
 
-func (this providerChain) String() string {
+func (this *providerChain) String() string {
 	s := ""
 	sep := ""
 	for _, p := range this.providers {
@@ -110,85 +112,95 @@ func (this providerChain) String() string {
 	return s
 }
 
-func (this *providerChain) Login(login, password string) (common.User, bool, string, error) {
-	passwordStatus := common.Unchecked
-	user := common.User{
-		Username: login,
-		Uid:      "",
-		Groups:   []string{},
+func (this *providerChain) Login(login, password string) (tokenapi.UserDesc, bool, error) {
+	passwordStatus := tokenapi.PasswordStatusUnchecked
+	user := tokenapi.UserDesc{
+		Name:        login,
+		Groups:      []string{},
+		Emails:      []string{},
+		CommonNames: []string{},
+		Entries:     []tokenapi.UserEntry{},
 	}
-	authenticator := ""
 	for _, prvd := range this.providers {
-		userStatus, err := prvd.GetUserStatus(login, password, passwordStatus == common.Unchecked)
+		userEntry, err := prvd.GetUserStatus(login, password, passwordStatus == tokenapi.PasswordStatusUnchecked)
+		user.Entries = append(user.Entries, userEntry)
 		if err != nil {
 			if prvd.IsCritical() {
 				pcLog.Error(err, "FAIL; Provider is critical", "provider", prvd.GetName())
-				return common.User{}, false, prvd.GetName(), err
+				return tokenapi.UserDesc{Authority: prvd.GetName()}, false, err
 			} else {
 				pcLog.Error(err, "Will continue (Provider is not critical)", "provider", prvd.GetName())
 				continue
 			}
 		}
-		pcLog.Info("", "provider", prvd.GetName(), "found", userStatus.Found, "passwordStatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups)
-		if userStatus.Found {
-			if userStatus.PasswordStatus == common.Wrong {
-				// No need to go further. Return an empty user to avoid providing partial info
-				return common.User{}, false, prvd.GetName(), nil
+		pcLog.Info("", "provider", prvd.GetName(), "found", userEntry.Found, "passwordStatus", userEntry.PasswordStatus, "uid", userEntry.Uid, "group", userEntry.Groups)
+		if userEntry.Found {
+			if userEntry.PasswordStatus == tokenapi.PasswordStatusWrong {
+				// No need to go further. Return an almost empty user to avoid providing partial info
+				return tokenapi.UserDesc{Authority: prvd.GetName()}, false, nil
 			}
-			if userStatus.PasswordStatus == common.Checked {
-				passwordStatus = common.Checked
+			if userEntry.PasswordStatus == tokenapi.PasswordStatusChecked {
+				passwordStatus = tokenapi.PasswordStatusChecked
 				// The provider who validate the password is the authority for Uid
-				user.Uid = userStatus.Uid
-				authenticator = prvd.GetName()
+				user.Uid = userEntry.Uid
+				user.Authority = prvd.GetName()
 			}
-			user.Groups = append(user.Groups, userStatus.Groups...)
+			user.Groups = append(user.Groups, userEntry.Groups...)
+			if userEntry.Email != "" {
+				user.Emails = append(user.Emails, userEntry.Email)
+			}
+			user.CommonNames = append(user.CommonNames, userEntry.CommonName)
 		}
 	}
-	if passwordStatus == common.Checked {
-		user.Groups = unique(user.Groups)
-		sort.Strings(user.Groups)
-		return user, true, authenticator, nil
-	} else {
-		return common.User{}, false, authenticator, nil
+	if passwordStatus != tokenapi.PasswordStatusChecked {
+		return tokenapi.UserDesc{}, false, nil
 	}
+	user.Groups = dedupAndSort(user.Groups)
+	user.Emails = dedupAndSort(user.Emails)
+	user.CommonNames = dedupAndSort(user.CommonNames)
+	return user, true, nil
 }
 
-func (this *providerChain) DescribeUser(login string) (bool, common.UserDescribeResponse) {
-	result := common.UserDescribeResponse{
-		UserStatuses: []common.UserStatus{},
-		Authority:    "",
-		User: common.User{
-			Username: login,
-			Uid:      "",
-			Groups:   []string{},
-		},
+func (this *providerChain) DescribeUser(login string) (bool, tokenapi.UserDesc) {
+	user := tokenapi.UserDesc{
+		Name:        login,
+		Groups:      []string{},
+		Emails:      []string{},
+		CommonNames: []string{},
+		Entries:     []tokenapi.UserEntry{},
 	}
 	found := false
 	for _, prvd := range this.providers {
-		userStatus, err := prvd.GetUserStatus(login, "", false)
+		userEntry, err := prvd.GetUserStatus(login, "", false)
 		if err != nil {
-			userStatus = common.UserStatus{
+			// Build a substituted userEntry
+			userEntry = tokenapi.UserEntry{
 				ProviderName:   prvd.GetName(),
-				PasswordStatus: common.Unchecked,
+				PasswordStatus: tokenapi.PasswordStatusUnchecked,
 				Messages:       []string{fmt.Sprintf("Provider failure. Check server logs")},
 			}
 			pcLog.Error(err, "", "provider", prvd.GetName())
 		} else {
-			pcLog.V(1).Info("", "user", login, "provider", prvd.GetName(), "found", userStatus.Found, "passwordSatus", userStatus.PasswordStatus, "uid", userStatus.Uid, "group", userStatus.Groups, "messages", userStatus.Messages)
-			if userStatus.Found {
-				if result.Authority == "" && userStatus.Authority {
-					result.Authority = userStatus.ProviderName
-					result.User.Uid = userStatus.Uid
+			pcLog.V(1).Info("", "user", login, "provider", prvd.GetName(), "found", userEntry.Found, "passwordSatus", userEntry.PasswordStatus, "uid", userEntry.Uid, "group", userEntry.Groups, "messages", userEntry.Messages)
+			if userEntry.Found {
+				if user.Authority == "" && userEntry.Authority {
+					user.Authority = userEntry.ProviderName
+					user.Uid = userEntry.Uid
 				}
 				found = true
-				result.User.Groups = append(result.User.Groups, userStatus.Groups...)
+				user.Groups = append(user.Groups, userEntry.Groups...)
+				if userEntry.Email != "" {
+					user.Emails = append(user.Emails, userEntry.Email)
+				}
+				user.CommonNames = append(user.CommonNames, userEntry.CommonName)
 			}
 		}
-		result.UserStatuses = append(result.UserStatuses, userStatus)
+		user.Entries = append(user.Entries, userEntry)
 	}
-	result.User.Groups = unique(result.User.Groups)
-	sort.Strings(result.User.Groups)
-	return found, result
+	user.Groups = dedupAndSort(user.Groups)
+	user.Emails = dedupAndSort(user.Emails)
+	user.CommonNames = dedupAndSort(user.CommonNames)
+	return found, user
 }
 
 func (this *providerChain) GetNamespace(providerName string) (namespace string, err error) {
@@ -210,7 +222,7 @@ func (this *providerChain) GetNamespace(providerName string) (namespace string, 
 			return ns, nil
 		}
 	} else {
-		prvd, ok := this.prividerByName[providerName]
+		prvd, ok := this.providerByName[providerName]
 		if ok {
 			crdProvider, ok := (prvd).(*crd.CrdProvider)
 			if !ok {
@@ -224,14 +236,14 @@ func (this *providerChain) GetNamespace(providerName string) (namespace string, 
 }
 
 func (this *providerChain) GetProvider(providerName string) (providers.Provider, error) {
-	p, ok := this.prividerByName[providerName]
+	p, ok := this.providerByName[providerName]
 	if !ok {
 		return nil, fmt.Errorf("Provider '%s' does not exists in this configuration.", providerName)
 	}
 	return p, nil
 }
 
-func unique(stringSlice []string) []string {
+func dedupAndSort(stringSlice []string) []string {
 	keys := make(map[string]bool)
 	list := []string{}
 	for _, entry := range stringSlice {
@@ -240,5 +252,6 @@ func unique(stringSlice []string) []string {
 			list = append(list, entry)
 		}
 	}
+	sort.Strings(list)
 	return list
 }

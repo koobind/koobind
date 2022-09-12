@@ -18,7 +18,7 @@ spec:
 apiVersion: directory.koobind.io/v1alpha1
 kind: GroupBinding
 metadata:
-  name: oriley-cluseradmin
+  name: oriley-clusteradmin
   namespace: koo-system
 spec:
   user: oriley

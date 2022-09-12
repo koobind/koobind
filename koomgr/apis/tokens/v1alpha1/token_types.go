@@ -20,24 +20,56 @@
 package v1alpha1
 
 import (
-	"github.com/koobind/koobind/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+type PasswordStatus string
 
-// Name will be the token itself
+const PasswordStatusUnchecked PasswordStatus = "unchecked"
+const PasswordStatusChecked PasswordStatus = "checked"
+const PasswordStatusWrong PasswordStatus = "wrong"
+
+// UserEntry is the user definition provided by a given provider
+type UserEntry struct {
+	ProviderName   string         `json:"provider"`  // Used for 'describe' command
+	Authority      bool           `json:"authority"` // Is this provider Authority for authentication (password) for this user (A password is defined)
+	Found          bool           `json:"found"`
+	PasswordStatus PasswordStatus `json:"passwordStatus"` // For describe, always 'unchecked'
+	Uid            string         `json:"uid"`            // Issued from the authoritative server (The first one which checked the password).
+	Groups         []string       `json:"groups"`
+	Email          string         `json:"email"`
+	CommonName     string         `json:"commonName"`
+	Messages       []string       `json:"messages"` // To report error or explanation i.e broken link in crd provider, or disabled link
+}
+
+// User is the consolidated description of a user
+type UserDesc struct {
+	Name        string      `json:"name"`
+	Uid         string      `json:"uid"`
+	Groups      []string    `json:"groups"`
+	Emails      []string    `json:"emails"`
+	CommonNames []string    `json:"commonNames"`
+	Authority   string      `json:"authority"` // The provider who validated the user password
+	Entries     []UserEntry `json:"userEntries"`
+}
+
+type TokenLifecycle struct {
+	InactivityTimeout metav1.Duration `json:"inactivityTimeout"`
+	MaxTTL            metav1.Duration `json:"maxTTL"`
+	ClientTTL         metav1.Duration `json:"clientTTL"`
+}
+
+// K8s Name will be the token itself
 type TokenSpec struct {
 
 	// +required
-	User common.User `json:"user"`
+	User UserDesc `json:"user"`
 
 	// +required
 	Creation metav1.Time `json:"creation"`
 
 	// +required
-	Lifecycle common.TokenLifecycle `json:"lifecycle"`
+	Lifecycle TokenLifecycle `json:"lifecycle"`
 }
 
 // TokenStatus defines the observed state of Token
@@ -47,7 +79,7 @@ type TokenStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Namespaced,shortName=ktoken;kootoken
-// +kubebuilder:printcolumn:name="User name",type=string,JSONPath=`.spec.user.username`
+// +kubebuilder:printcolumn:name="User name",type=string,JSONPath=`.spec.user.name`
 // +kubebuilder:printcolumn:name="User ID",type=string,JSONPath=`.spec.user.uid`
 // +kubebuilder:printcolumn:name="User Groups",type=string,JSONPath=`.spec.user.groups`
 // +kubebuilder:printcolumn:name="Last hit",type=string,JSONPath=`.status.lastHit`

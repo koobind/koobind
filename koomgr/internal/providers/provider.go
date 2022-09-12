@@ -21,17 +21,19 @@ package providers
 
 import (
 	"errors"
-	"github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 )
 
 type Provider interface {
+	// GetUserStatus
 	// If checkPassword == true && password == "", then UserStatus will be Wrong if this Provider is CredentialAuthority. Unchecked if not.
 	// For non ldap provider, if this provider is CredentialAuthority, but password is not defined for a user, then password will be unchecked.
 	// For LDAP provider defined as CredentialAuthority, password is assumed to be always defined.
-	GetUserStatus(login string, password string, checkPassword bool) (common.UserStatus, error)
+	GetUserStatus(login string, password string, checkPassword bool) (tokenapi.UserEntry, error)
 	GetName() string
 	GetType() string
 	ChangePassword(user string, oldPassword string, newPassword string) error
+	// IsCritical
 	// If critical, a failure will induce 'Invalid login'. Otherwhise, other providers will be used
 	IsCritical() bool
 }
@@ -40,9 +42,10 @@ var ErrorInvalidOldPassword = errors.New("Invalid old password.")
 var ErrorChangePasswordNotSupported = errors.New("This provider does not support password change.")
 
 type ProviderChain interface {
-	Login(login, password string) (user common.User, loginOk bool, authenticator string, err error) // authenticator is the name of the provider who authenticate the user
-	DescribeUser(login string) (found bool, result common.UserDescribeResponse)
+	Login(login, password string) (user tokenapi.UserDesc, loginOk bool, err error) // authenticator is the name of the provider who authenticate the user
+	DescribeUser(login string) (found bool, result tokenapi.UserDesc)
 	String() string
+	// GetNamespace
 	// Relevant only for providers of type 'crd'
 	// By convention, if providerName == '_' and there is only one of type 'crd', its namespace is provided. If there is several this is an error
 	GetNamespace(providerName string) (namespace string, err error)

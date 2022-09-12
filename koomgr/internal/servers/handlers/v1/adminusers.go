@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/koobind/koobind/common"
 	"github.com/koobind/koobind/koomgr/apis/directory/v1alpha1"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,7 +21,7 @@ import (
 // curl -k  -u admin:admin -X GET https://koomgrdev:9444/auth/v1/admin/users/jsmith | jq
 // curl -k -i -u admin:admin -X GET https://koomgrdev:9444/auth/v1/admin/users/jsmith
 
-func DescribeUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DescribeUser(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	user := mux.Vars(request)["user"]
 	found, userDescribeResponse := handler.Providers.DescribeUser(user)
 	if !found {
@@ -58,7 +58,7 @@ func getUser(handler *AdminV1Handler, namespace string, userName string) (crdUse
 // curl -k -i -u admin:admin -X PATCH https://koomgrdev:9444/auth/v1/admin/_/users/jsmith3 -d '{ "email": "xx@xx" }'
 // curl -k -i -u admin:admin -X PATCH https://koomgrdev:9444/auth/v1/admin/_/users/jsmith4 -d '{ "email": "xx@xx", "commonName": "John smith4", "passwordHash": "$2a$10$SxKQu8Ny54c/MuujiltVD.9J9P8kvSM01UK.sTh/bhAxYhoLGwjLi", "uid": 10009, "comment": "A test User", "disabled": false }'
 
-func AddApplyPatchUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func AddApplyPatchUser(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {
@@ -143,7 +143,7 @@ func AddApplyPatchUser(handler *AdminV1Handler, usr common.User, response http.R
 // curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/users/jsmith3
 // curl -k -i -u admin:admin -X DELETE https://koomgrdev:9444/auth/v1/admin/_/users/jsmith4
 
-func DeleteUser(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request) {
+func DeleteUser(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request) {
 	provider := mux.Vars(request)["provider"]
 	namespace, err := handler.Providers.GetNamespace(provider)
 	if err != nil {

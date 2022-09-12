@@ -21,7 +21,7 @@ package v1
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/common"
+	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,15 +34,15 @@ type AdminV1Handler struct {
 	HandlerFunc HandlerFunc
 }
 
-type HandlerFunc func(handler *AdminV1Handler, usr common.User, response http.ResponseWriter, request *http.Request)
+type HandlerFunc func(handler *AdminV1Handler, usr tokenapi.UserDesc, response http.ResponseWriter, request *http.Request)
 
 func (this *AdminV1Handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	this.ServeAuthenticatedHTTP(response, request, func(usr common.User) {
+	this.ServeAuthenticatedHTTP(response, request, func(usr tokenapi.UserDesc) {
 		if this.AdminGroup != "" && stringInSlice(this.AdminGroup, usr.Groups) {
-			this.Logger.V(1).Info(fmt.Sprintf("user '%s' allowed to access admin interface", usr.Username))
+			this.Logger.V(1).Info(fmt.Sprintf("user '%s' allowed to access admin interface", usr.Name))
 			this.HandlerFunc(this, usr, response, request)
 		} else {
-			this.Logger.V(1).Info(fmt.Sprintf("user '%s': access to admin interface denied (Not in appropriate group)", usr.Username))
+			this.Logger.V(1).Info(fmt.Sprintf("user '%s': access to admin interface denied (Not in appropriate group)", usr.Name))
 			this.HttpError(response, "Unallowed", http.StatusForbidden)
 		}
 	})
@@ -55,9 +55,4 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
-}
-
-type TokensDataModel struct {
-	Title  string             `json:"title"`
-	Tokens []common.UserToken `json:"tokens"`
 }

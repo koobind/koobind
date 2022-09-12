@@ -19,7 +19,7 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.user.username
+    - jsonPath: .spec.user.name
       name: User name
       type: string
     - jsonPath: .spec.user.uid
@@ -49,7 +49,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: Name will be the token itself
+            description: K8s Name will be the token itself
             properties:
               creation:
                 format: date-time
@@ -68,19 +68,73 @@ spec:
                 - maxTTL
                 type: object
               user:
+                description: User is the consolidated description of a user
                 properties:
+                  authority:
+                    type: string
+                  commonNames:
+                    items:
+                      type: string
+                    type: array
+                  emails:
+                    items:
+                      type: string
+                    type: array
                   groups:
                     items:
                       type: string
                     type: array
+                  name:
+                    type: string
                   uid:
                     type: string
-                  username:
-                    type: string
+                  userEntries:
+                    items:
+                      description: UserEntry is the user definition provided by a
+                        given provider
+                      properties:
+                        authority:
+                          type: boolean
+                        commonName:
+                          type: string
+                        email:
+                          type: string
+                        found:
+                          type: boolean
+                        groups:
+                          items:
+                            type: string
+                          type: array
+                        messages:
+                          items:
+                            type: string
+                          type: array
+                        passwordStatus:
+                          type: string
+                        provider:
+                          type: string
+                        uid:
+                          type: string
+                      required:
+                      - authority
+                      - commonName
+                      - email
+                      - found
+                      - groups
+                      - messages
+                      - passwordStatus
+                      - provider
+                      - uid
+                      type: object
+                    type: array
                 required:
+                - authority
+                - commonNames
+                - emails
                 - groups
+                - name
                 - uid
-                - username
+                - userEntries
                 type: object
             required:
             - creation

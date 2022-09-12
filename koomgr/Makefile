@@ -1,6 +1,14 @@
 
 include ../Makefile.conf
 
+# You can switch between simple (faster) docker build or multiplatform one.
+# For multiplatform build on a fresh system, do 'make docker-set-multiplatform-builder'
+#DOCKER_BUILD := docker buildx build --builder multiplatform --cache-to type=local,dest=$(BUILDX_CACHE),mode=max --cache-from type=local,src=$(BUILDX_CACHE) --platform linux/amd64,linux/arm64
+DOCKER_BUILD := docker build
+
+# Comment this to just build locally
+DOCKER_PUSH := --push
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -136,6 +144,14 @@ uninstall-goinkube: ## UNdeploy manager to the K8s configured cluster with goink
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/goinkube/deployment.yaml
 
+
+#------------------------------------------------------------------------------------
+
+##@ Deployment - Docker image
+
+.PHONY: docker
+docker: ## Build and push koo-manager image
+	$(DOCKER_BUILD) $(DOCKER_PUSH) -t $(DOCKER_IMG):$(DOCKER_TAG) -f Dockerfile .
 
 #------------------------------------------------------------------------------------
 
