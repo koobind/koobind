@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package misc
+package token
 
 import (
 	"fmt"
@@ -27,8 +27,8 @@ import (
 	"text/tabwriter"
 )
 
-var GetContextCmd = &cobra.Command{
-	Use:     "context",
+var contextListCmd = &cobra.Command{
+	Use:     "list",
 	Short:   "Display local Context configuration",
 	Aliases: []string{"contexts"},
 	Run: func(cmd *cobra.Command, args []string) {

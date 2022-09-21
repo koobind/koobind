@@ -16,38 +16,48 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
-package token
+package groupbinding
 
 import (
 	"fmt"
-	"github.com/koobind/koobind/koocli/cmd/common"
+	. "github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 )
 
-var DeleteTokenCmd = &cobra.Command{
-	Use:   "token <token>",
-	Short: "Delete a token (Unlog the user)",
-	Args:  cobra.MinimumNArgs(1),
+func init() {
+	groupBindingDeleteCmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
+}
+
+// kubectl koo delete group grp1
+
+var groupBindingDeleteCmd = &cobra.Command{
+	Use:     "delete",
+	Aliases: []string{},
+	Short:   "Delete groupBinding (Admin)",
+	Hidden:  false,
 	Run: func(cmd *cobra.Command, args []string) {
-		common.InitHttpConnection()
-		targetToken := args[0]
-		token := common.RetrieveToken()
-		if token == "" {
-			token = common.DoLogin("", "")
+		if len(args) != 2 {
+			fmt.Printf("ERROR: A user name and a group name must be provided!\n")
+			os.Exit(2)
 		}
-		response, err := common.HttpConnection.Do("DELETE", "/auth/v1/admin/tokens/"+targetToken, &internal.HttpAuth{Token: token}, nil)
+		InitHttpConnection()
+		userName := args[0]
+		groupName := args[1]
+		token := RetrieveToken()
+		if token == "" {
+			token = DoLogin("", "")
+		}
+		response, err := HttpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName), &internal.HttpAuth{Token: token}, nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			fmt.Printf("Token %s is successfully deleted\n", targetToken)
-		} else if response.StatusCode == http.StatusNotFound {
-			fmt.Printf("ERROR: Token %s does not exists\n", targetToken)
+			fmt.Printf("GroupBinding deleted successfully.\n")
 		} else {
-			common.PrintHttpResponseMessage(response)
+			PrintHttpResponseMessage(response)
 		}
 		if response.StatusCode != http.StatusOK {
 			os.Exit(internal.ReturnCodeFromStatusCode(response.StatusCode))

@@ -19,58 +19,40 @@ along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 package token
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
-	"github.com/koobind/koobind/koomgr/apis/proto"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
-	"text/tabwriter"
 )
 
 func init() {
-	GetTokensCmd.PersistentFlags().BoolVarP(&common.JsonOutput, "json", "", false, "Output in JSON")
+	tokenDeleteCmd.SetUsageTemplate(tokenDeleteCmd.UsageTemplate())
 }
 
-var GetTokensCmd = &cobra.Command{
-	Use:     "token",
-	Aliases: []string{"tokens"},
-	Short:   "List currently active token (Admin)",
-	Hidden:  false,
+var tokenDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a token (Unlog the user)",
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
+		if len(args) != 1 {
+			fmt.Printf("ERROR: A token must be provided!\n")
+			os.Exit(2)
+		}
+		targetToken := args[0]
 		token := common.RetrieveToken()
 		if token == "" {
 			token = common.DoLogin("", "")
 		}
-		response, err := common.HttpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: token}, nil)
+		response, err := common.HttpConnection.Do("DELETE", "/auth/v1/admin/tokens/"+targetToken, &internal.HttpAuth{Token: token}, nil)
 		if err != nil {
 			panic(err)
 		}
 		if response.StatusCode == http.StatusOK {
-			if common.JsonOutput {
-				data, _ := ioutil.ReadAll(response.Body)
-				fmt.Print(string(data))
-			} else {
-				var tokenListResponse proto.TokenListResponse
-				err = json.NewDecoder(response.Body).Decode(&tokenListResponse)
-				if err != nil {
-					panic(err)
-				}
-				//fmt.Print(tokenListResponse)
-				tw := new(tabwriter.Writer)
-				tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
-				_, _ = fmt.Fprintf(tw, "TOKEN\tUSER\tUID\tGROUPS\tCREATED ON\tLAST HIT")
-				for _, ut := range tokenListResponse.Tokens {
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s", ut.Token, ut.Spec.User.Name, ut.Spec.User.Uid, strings.Join(ut.Spec.User.Groups, ","), ut.Spec.Creation.Format("01-02 15:04:05"), ut.LastHit.Format("15:04:05"))
-				}
-				_, _ = fmt.Fprintf(tw, "\n")
-				_ = tw.Flush()
-			}
+			fmt.Printf("Token %s is successfully deleted\n", targetToken)
+		} else if response.StatusCode == http.StatusNotFound {
+			fmt.Printf("ERROR: Token %s does not exists\n", targetToken)
 		} else {
 			common.PrintHttpResponseMessage(response)
 		}

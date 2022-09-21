@@ -1,20 +1,20 @@
 /*
-  Copyright (C) 2020 Serge ALEXANDRE
+Copyright (C) 2020 Serge ALEXANDRE
 
-  This file is part of koobind project
+# This file is part of koobind project
 
-  koobind is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+koobind is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  koobind is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+koobind is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with koobind.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 package internal
 
@@ -33,25 +33,23 @@ import (
 // Concurrent safe, as http.Client is and baseUrl is not mutated.
 type HttpConnection struct {
 	httpClient *http.Client
-	baseUrl string
-	log *logrus.Entry
+	BaseUrl    string
+	log        *logrus.Entry
 }
-
 
 type HttpAuth struct {
-	Login string
+	Login    string
 	Password string
-	Token string
+	Token    string
 }
 
-
 func NewHttpConnection(baseUrl string, rootCaFile string, log *logrus.Entry) *HttpConnection {
-	baseUrl = strings.TrimRight(baseUrl, "/")		// No trailing '/'
+	baseUrl = strings.TrimRight(baseUrl, "/") // No trailing '/'
 	if rootCaFile == "" {
 		return &HttpConnection{
 			httpClient: http.DefaultClient,
-			baseUrl: baseUrl,
-			log: log,
+			BaseUrl:    baseUrl,
+			log:        log,
 		}
 	} else {
 		rootPEM, err := ioutil.ReadFile(rootCaFile)
@@ -67,16 +65,16 @@ func NewHttpConnection(baseUrl string, rootCaFile string, log *logrus.Entry) *Ht
 		}
 		tlsConf := &tls.Config{RootCAs: roots}
 		tr := &http.Transport{TLSClientConfig: tlsConf}
-		return &HttpConnection {
+		return &HttpConnection{
 			httpClient: &http.Client{Transport: tr},
-			baseUrl: baseUrl,
-			log: log,
+			BaseUrl:    baseUrl,
+			log:        log,
 		}
 	}
 }
 
 func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, body io.Reader) (*http.Response, error) {
-	targetUrl := this.baseUrl + urlPath
+	targetUrl := this.BaseUrl + urlPath
 	this.log.Debugf("%s  %s\n", method, targetUrl)
 	request, err := http.NewRequest(method, targetUrl, body)
 	if err != nil {
@@ -87,13 +85,11 @@ func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, bo
 			request.SetBasicAuth(auth.Login, auth.Password)
 		}
 		if auth.Token != "" {
-			request.Header.Set("Authorization", "Bearer "+ auth.Token)
+			request.Header.Set("Authorization", "Bearer "+auth.Token)
 		}
 	}
 	return this.httpClient.Do(request)
 }
-
-
 
 //
 //
@@ -114,8 +110,6 @@ func (this *HttpConnection) Do(method string, urlPath string, auth *HttpAuth, bo
 //	return this.httpClient.Do(request)
 //}
 
-
-
 func ReturnCodeFromStatusCode(sc int) int {
 	if sc > 400 && sc < 425 {
 		return sc - 400
@@ -123,4 +117,3 @@ func ReturnCodeFromStatusCode(sc int) int {
 		return 125
 	}
 }
-
