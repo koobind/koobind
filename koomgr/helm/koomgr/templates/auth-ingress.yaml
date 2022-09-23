@@ -1,0 +1,34 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    {{ if .Values.auth.certificateClusterIssuer}}
+    cert-manager.io/cluster-issuer: {{ .Values.auth.certificateClusterIssuer }}
+    {{ else }}
+    cert-manager.io/issuer: {{ include "koomgr.selfsigned" . }}
+    {{ end }}
+  name: {{ include "koomgr.fullname" . }}-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.auth.host }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ include "koomgr.service" . }}
+                port:
+                  number: {{ .Values.auth.servicePort }}
+            path: /
+            pathType: Prefix
+{{/*  Unused, as ssl passthrough*/}}
+{{/*  tls:*/}}
+{{/*    - hosts:*/}}
+{{/*        - {{ .Values.auth.host }}*/}}
+{{/*      secretName: auth-server-cert*/}}

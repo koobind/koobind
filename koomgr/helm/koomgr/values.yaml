@@ -1,0 +1,68 @@
+# Default values for koomgr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/koobind/koo-manager
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 30Mi
+  requests:
+    cpu: 100m
+    memory: 20Mi
+
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+providers:
+  - name: crdsys
+    type: crd
+
+webhooks:
+  servicePort: 443
+  targetPort: 8443
+  # This will be used to validate communication between the webhooks and the controller.
+  # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
+  # NB: kubmio require a certificate manager to be deployed in your cluster.
+  certificateClusterIssuer:
+
+auth:
+  servicePort: 444
+  targetPort: 8444
+  host:
+  # This will be used to validate communication between the webhooks and the controller.
+  # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
+  # NB: kubmio require a certificate manager to be deployed in your cluster.
+  certificateClusterIssuer:
+
+
+

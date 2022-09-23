@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "koomgr.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+data:
+  config.yml: |2
+    logLevel: 0
+    adminGroup: "kooadmin"
+    authServer:
+      port: {{ .Values.auth.targetPort }}
+      certDir: "/tmp/cert/auth-server"
+    webhookServer:
+      port: {{ .Values.webhooks.targetPort }}
+      certDir: "/tmp/cert/webhook-server"
+    providers:
+      {{- toYaml .Values.providers | nindent 6 }}

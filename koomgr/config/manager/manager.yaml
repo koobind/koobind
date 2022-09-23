@@ -22,6 +22,7 @@ spec:
         - /manager
         args: ["--namespace", "$(KOO_NAMESPACE)", "--config", "/etc/koo/cfg/config.yml"]
         image: controller:latest
+        imagePullPolicy: Always
         volumeMounts:
           - name: config
             mountPath: /etc/koo/cfg

@@ -1,0 +1,12 @@
+{{- if or (not .Values.auth.certificateClusterIssuer) (not .Values.webhooks.certificateClusterIssuer) }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "koomgr.selfsigned" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}
