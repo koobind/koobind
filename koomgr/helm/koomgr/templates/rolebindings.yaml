@@ -1,0 +1,32 @@
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "koomgr.serviceAccountName" . }}-directory-editor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: directory-editor
+subjects:
+  - kind: ServiceAccount
+    name:  {{ include "koomgr.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "koomgr.serviceAccountName" . }}-token-editor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: token-editor
+subjects:
+  - kind: ServiceAccount
+    name:  {{ include "koomgr.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}

@@ -32,8 +32,8 @@ type Server struct {
 }
 
 type ServerExt struct {
-	Server
-	NoSsl *bool `yaml:"noSsl"` // Configure the server in plain text. UNSAFE: Use with care, avoid in production`
+	Server `yaml:",inline"`
+	NoSsl  *bool `yaml:"noSsl"` // Configure the server in plain text. UNSAFE: Use with care, avoid in production`
 }
 
 type Config struct {

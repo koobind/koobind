@@ -48,12 +48,25 @@ all: manager yamlpod yamldev
 displayimg:
 	@echo $(IMG)
 
+
+##@ Deployment -helm
+
+.PHONY: helm-crd
+helm-crd: controller-gen ## Generate manifests e.g. CRD, RBAC etc.
+	$(CONTROLLER_GEN) crd paths="./..."  output:crd:artifacts:config=helm/koomgr/crds
+
 ##@ Build
 
 # Run tests
 .PHONY: test
 test: generate fmt vet manifests
 	go test ./... -coverprofile cover.out
+
+
+.PHONY: manifests
+manifests: controller-gen ## Generate manifests e.g. CRD, RBAC etc.
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
 
 .PHONY: manifests
 manifests: controller-gen ## Generate manifests e.g. CRD, RBAC etc.

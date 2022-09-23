@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "koomgr.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "koomgr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "koomgr.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "koomgr.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /manager
+          args: ["--namespace", "$(KOO_NAMESPACE)", "--config", "/etc/koo/cfg/config.yml"]
+          env:
+            - name: KOO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+          - containerPort: 8443
+            name: webhook-server
+            protocol: TCP
+          - containerPort: 8444
+            name: auth-server
+            protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /tmp/cert/auth-server
+              name: auth-cert
+              readOnly: true
+            - mountPath: /tmp/cert/webhook-server
+              name: webhook-cert
+              readOnly: true
+            - mountPath: /etc/koo/cfg
+              name: config
+      volumes:
+        - name: auth-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-auth
+        - name: webhook-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-webhook
+        - configMap:
+            name: {{ include "koomgr.fullname" . }}-config
+          name: config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
