@@ -5,8 +5,8 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    {{ if .Values.auth.certificateClusterIssuer}}
-    cert-manager.io/cluster-issuer: {{ .Values.auth.certificateClusterIssuer }}
+    {{ if .Values.services.auth.certificateClusterIssuer}}
+    cert-manager.io/cluster-issuer: {{ .Values.services.auth.certificateClusterIssuer }}
     {{ else }}
     cert-manager.io/issuer: {{ include "koomgr.selfsigned" . }}
     {{ end }}
@@ -17,18 +17,18 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: {{ .Values.auth.host }}
+    - host: {{ .Values.services.auth.host }}
       http:
         paths:
           - backend:
               service:
                 name: {{ include "koomgr.service" . }}
                 port:
-                  number: {{ .Values.auth.servicePort }}
+                  number: {{ .Values.services.auth.servicePort }}
             path: /
             pathType: Prefix
 {{/*  Unused, as ssl passthrough*/}}
 {{/*  tls:*/}}
 {{/*    - hosts:*/}}
-{{/*        - {{ .Values.auth.host }}*/}}
+{{/*        - {{ .Values.service.auth.host }}*/}}
 {{/*      secretName: auth-server-cert*/}}

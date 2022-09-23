@@ -1,8 +1,8 @@
-# permissions for end users to edit directory stuf.
+# permissions for end users to view directory stuff.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: directory-editor
+  name: {{ include "koomgr.roleprefix" . }}-directory-viewer
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "koomgr.labels" . | nindent 4 }}
@@ -10,21 +10,16 @@ rules:
 - apiGroups:
   - directory.koobind.io
   resources:
-  - groupbindings
   - users
+  - groupbindings
   - groups
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - directory.koobind.io
   resources:
-  - groupbindings/status
+  - users/status
   verbs:
   - get
-

@@ -1,4 +1,4 @@
-{{- if or (not .Values.auth.certificateClusterIssuer) (not .Values.webhooks.certificateClusterIssuer) }}
+{{- if or (not .Values.services.auth.certificateClusterIssuer) (not .Values.services.webhooks.certificateClusterIssuer) }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer

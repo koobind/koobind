@@ -8,13 +8,16 @@ metadata:
     {{- include "koomgr.labels" . | nindent 4 }}
 data:
   config.yml: |2
-    logLevel: 0
-    adminGroup: "kooadmin"
+    adminGroup: {{ .Values.config.adminGroup }}
+    logLevel: {{ .Values.config.logLevel }}
+    logMode: {{ .Values.config.logMode }}
+    inactivityTimeout: {{ .Values.config.inactivityTimeout }}
+    sessionMaxTTL: {{ .Values.config.sessionMaxTTL }}
     authServer:
-      port: {{ .Values.auth.targetPort }}
+      port: {{ .Values.services.auth.targetPort }}
       certDir: "/tmp/cert/auth-server"
     webhookServer:
-      port: {{ .Values.webhooks.targetPort }}
+      port: {{ .Values.services.webhooks.targetPort }}
       certDir: "/tmp/cert/webhook-server"
     providers:
-      {{- toYaml .Values.providers | nindent 6 }}
+      {{- toYaml .Values.config.providers | nindent 6 }}

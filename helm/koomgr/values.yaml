@@ -43,26 +43,32 @@ tolerations: []
 
 affinity: {}
 
-providers:
-  - name: crdsys
-    type: crd
+services:
+  webhooks:
+    servicePort: 443
+    targetPort: 8443
+    # This will be used to validate communication between the webhooks and the controller.
+    # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
+    # NB: kubmio require a certificate manager to be deployed in your cluster.
+    certificateClusterIssuer:
 
-webhooks:
-  servicePort: 443
-  targetPort: 8443
-  # This will be used to validate communication between the webhooks and the controller.
-  # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
-  # NB: kubmio require a certificate manager to be deployed in your cluster.
-  certificateClusterIssuer:
+  auth:
+    servicePort: 444
+    targetPort: 8444
+    host:
+    # This will be used to validate communication between the webhooks and the controller.
+    # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
+    # NB: kubmio require a certificate manager to be deployed in your cluster.
+    certificateClusterIssuer:
 
-auth:
-  servicePort: 444
-  targetPort: 8444
-  host:
-  # This will be used to validate communication between the webhooks and the controller.
-  # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
-  # NB: kubmio require a certificate manager to be deployed in your cluster.
-  certificateClusterIssuer:
+# Koobing configuration
 
-
-
+config:
+  adminGroup: kooadmin
+  logLevel: 0
+  logMode: json  # dev or json
+  inactivityTimeout: "30m"
+  sessionMaxTTL: "24h"
+  providers:
+    - name: crdsys
+      type: crd

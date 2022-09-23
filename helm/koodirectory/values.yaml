@@ -1,0 +1,47 @@
+
+# This is a sample users definition and authorization.
+# WARNING: List redefinition in another values file will overwrite existing list.
+# So, one may copy the values here to extends
+# In other words, the upper valuew file will host the full users and groups list.
+users:
+  - name: admin
+    commonName: Administrator
+    email:
+    passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
+  - name: guest
+    disabled: true
+#  - name: jules
+#    commonName: Jules Testeur
+#    email: jt@test.com
+#    passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
+#    uid: 1000
+#    comment: "A tester"
+#    disabled: True
+
+groups:
+
+  # A group can be defined in one entry with all parameters
+  - name: kooadmin
+    description: Koobind users administrator
+    roles:
+      - name: koobind-directory-editor
+      - name: koobind-token-editor
+    users:
+      - name: admin
+
+  # Or, definition can be split in several parts, this allowing group<->role definition in one part and groups/users
+  # association in another part of the same file.
+  - name: clusteradmin
+    description: Kubernetes cluster full admin
+    clusterRoles:
+      - name: cluster-admin
+
+  - name: clusteradmin
+    users:
+      - name: admin
+
+  - name: guests
+    users:
+      - name: guest
+    disabled: true
+

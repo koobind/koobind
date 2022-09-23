@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: token-editor
+  name: {{ include "koomgr.roleprefix" . }}-token-editor
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "koomgr.labels" . | nindent 4 }}

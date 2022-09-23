@@ -1,0 +1,74 @@
+{{ range .Values.groups}}
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: Group
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "koodirectory.labels" $ | nindent 4 }}
+spec:
+{{- with .description }}
+  description: {{ . }}
+{{- end}}
+{{- with .disabled}}
+  disabled: {{ . }}
+{{- end }}
+
+{{ $groupName := .name }}
+
+{{ range .users }}
+---
+apiVersion: directory.koobind.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: {{ $groupName}}-{{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "koodirectory.labels" $ | nindent 4 }}
+spec:
+  user: {{ .name }}
+  group: {{ $groupName }}
+  disabled: {{ .disabled | default false }}
+{{ end }}
+
+{{ range .roles }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $groupName}}-{{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "koodirectory.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .kind | default "Role" }}
+  name: {{ .name }}
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: {{ $groupName }}
+{{ end }}
+
+{{ range .clusterRoles }}
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $groupName}}-{{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "koodirectory.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .kind | default "ClusterRole" }}
+  name: {{ .name }}
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: {{ $groupName }}
+{{ end }}
+
+
+{{ end }}

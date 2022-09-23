@@ -1,25 +1,23 @@
-# permissions for end users to view directory stuff.
+# permissions for end users to view tokens.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: directory-viewer
+  name: {{ include "koomgr.roleprefix" . }}-token-viewer
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "koomgr.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - directory.koobind.io
+  - tokens.koobind.io
   resources:
-  - users
-  - groupbindings
-  - groups
+  - tokens
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - directory.koobind.io
+  - tokens.koobind.io
   resources:
-  - users/status
+  - tokens/status
   verbs:
   - get
