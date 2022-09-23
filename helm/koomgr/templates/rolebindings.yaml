@@ -9,7 +9,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: directory-editor
+  name: {{ include "koomgr.roleprefix" . }}-directory-editor
 subjects:
   - kind: ServiceAccount
     name:  {{ include "koomgr.serviceAccountName" . }}
@@ -25,7 +25,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: token-editor
+  name: {{ include "koomgr.roleprefix" . }}-token-editor
 subjects:
   - kind: ServiceAccount
     name:  {{ include "koomgr.serviceAccountName" . }}

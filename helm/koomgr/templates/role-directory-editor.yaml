@@ -1,23 +1,30 @@
-# permissions for end users to view tokens.
+# permissions for end users to edit directory stuf.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: token-viewer
+  name: {{ include "koomgr.roleprefix" . }}-directory-editor
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "koomgr.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - tokens.koobind.io
+  - directory.koobind.io
   resources:
-  - tokens
+  - groupbindings
+  - users
+  - groups
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
-  - tokens.koobind.io
+  - directory.koobind.io
   resources:
-  - tokens/status
+  - groupbindings/status
   verbs:
   - get
+

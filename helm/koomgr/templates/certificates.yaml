@@ -12,9 +12,9 @@ spec:
     - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.cluster.local
   secretName: {{ include "koomgr.certprefix" . }}-webhook
   issuerRef:
-  {{ if .Values.webhooks.certificateClusterIssuer}}
+  {{ if .Values.services.webhooks.certificateClusterIssuer}}
     kind: ClusterIssuer
-    name: {{ .Values.webhooks.certificateClusterIssuer }}
+    name: {{ .Values.services.webhooks.certificateClusterIssuer }}
   {{ else }}
     kind: Issuer
     name: {{ include "koomgr.selfsigned" . }}
@@ -27,12 +27,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   dnsNames:
-    - {{ .Values.auth.host }}
+    - {{ .Values.services.auth.host }}
   secretName: {{ include "koomgr.certprefix" . }}-auth
   issuerRef:
-  {{ if .Values.auth.certificateClusterIssuer}}
+  {{ if .Values.services.auth.certificateClusterIssuer}}
     kind: ClusterIssuer
-    name: {{ .Values.auth.certificateClusterIssuer }}
+    name: {{ .Values.services.auth.certificateClusterIssuer }}
   {{ else }}
     kind: Issuer
     name: {{ include "koomgr.selfsigned" . }}

@@ -10,12 +10,12 @@ spec:
   type: ClusterIP
   ports:
     - name: auth-server
-      port: {{ .Values.auth.servicePort }}
-      targetPort: {{ .Values.auth.targetPort }}
+      port: {{ .Values.services.auth.servicePort }}
+      targetPort: {{ .Values.services.auth.targetPort }}
       protocol: TCP
     - name: webhook-server
-      port: {{ .Values.webhooks.servicePort }}
-      targetPort: {{ .Values.webhooks.targetPort }}
+      port: {{ .Values.services.webhooks.servicePort }}
+      targetPort: {{ .Values.services.webhooks.targetPort }}
       protocol: TCP
   selector:
     {{- include "koomgr.selectorLabels" . | nindent 4 }}

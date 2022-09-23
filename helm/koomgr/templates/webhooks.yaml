@@ -14,6 +14,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /mutate-directory-koobind-io-v1alpha1-group
     failurePolicy: Fail
     name: mgroup.kb.io
@@ -34,6 +35,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /mutate-directory-koobind-io-v1alpha1-groupbinding
     failurePolicy: Fail
     name: mgroupbinding.kb.io
@@ -54,6 +56,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /mutate-directory-koobind-io-v1alpha1-user
     failurePolicy: Fail
     name: muser.kb.io
@@ -84,6 +87,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /validate-directory-koobind-io-v1alpha1-group
     failurePolicy: Fail
     name: vgroup.kb.io
@@ -104,6 +108,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /validate-directory-koobind-io-v1alpha1-groupbinding
     failurePolicy: Fail
     name: vgroupbinding.kb.io
@@ -124,6 +129,7 @@ webhooks:
       service:
         name: {{ include "koomgr.service" . }}
         namespace: {{ .Release.Namespace }}
+        port: {{ .Values.services.webhooks.servicePort }}
         path: /validate-directory-koobind-io-v1alpha1-user
     failurePolicy: Fail
     name: vuser.kb.io

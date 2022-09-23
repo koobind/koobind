@@ -39,7 +39,7 @@ type GroupStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,shortName=koogroup;kgroup
+// +kubebuilder:resource:scope=Namespaced,shortName=koogroup;kgroup;koogroups;kgroups
 // +kubebuilder:printcolumn:name="Description",type=string,JSONPath=`.spec.description`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`
 // Group is the Schema for the groups API
