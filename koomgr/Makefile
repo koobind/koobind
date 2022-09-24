@@ -1,6 +1,11 @@
 
 include ../Makefile.conf
 
+HELM_TARGET_NAMESPACE := koobind
+HELM_KOOMGR_OPTIONS := --values ./values.kspray5.yaml
+HELM_KOOMGR_OPTIONS := $(HELM_KOOMGR_OPTIONS) --values ./values.kspray5-gik.yaml
+HELM_DIRECTORY_OPTIONS :=
+
 # You can switch between simple (faster) docker build or multiplatform one.
 # For multiplatform build on a fresh system, do 'make docker-set-multiplatform-builder'
 #DOCKER_BUILD := docker buildx build --builder multiplatform --cache-to type=local,dest=$(BUILDX_CACHE),mode=max --cache-from type=local,src=$(BUILDX_CACHE) --platform linux/amd64,linux/arm64
@@ -42,35 +47,10 @@ endif
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-.PHONY: all ## Build binary an yaml file
-all: manager yamlpod yamldev
-
-displayimg:
-	@echo $(IMG)
-
-
-##@ Deployment -helm
-
-.PHONY: helm-crd
-helm-crd: controller-gen ## Generate manifests e.g. CRD, RBAC etc.
-	$(CONTROLLER_GEN) crd paths="./..."  output:crd:artifacts:config=helm/koomgr/crds
-
-##@ Build
-
 # Run tests
 .PHONY: test
 test: generate fmt vet manifests
 	go test ./... -coverprofile cover.out
-
-
-.PHONY: manifests
-manifests: controller-gen ## Generate manifests e.g. CRD, RBAC etc.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-
-
-.PHONY: manifests
-manifests: controller-gen ## Generate manifests e.g. CRD, RBAC etc.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
 fmt:
@@ -79,6 +59,12 @@ fmt:
 # Run go vet against code
 vet:
 	go vet ./...
+
+
+.PHONY: crd
+crd: controller-gen ## Generate CRD inside helm chart
+	$(CONTROLLER_GEN) crd paths="./..."  output:crd:artifacts:config=../helm/koomgr/crds
+
 
 .PHONY: generate
 generate: controller-gen ## Generate code. e.g zz_generated_deepcopy.go
@@ -89,78 +75,41 @@ build: generate fmt vet ## Build manager binary locally
 	go build -o bin/manager main.go
 
 
-##@ Deployment -common
-
-.PHONY: crd
-crd: manifests kustomize ## Build CRD
-	$(KUSTOMIZE) build config/crd -o yaml/crd.yaml
-
-.PHONY: crdinstall
-crdinstall: crd ## Install CRDs into the configured K8s cluster
-	kubectl apply -f yaml/crd.yaml
-
 .PHONY: crduninstall
-crduninstall: manifests kustomize ## Uninstall CRDs from the configured K8s cluster
+crduninstall: crd ## Uninstall CRDs from the configured K8s cluster
 	# Set ignore-not-found=true to ignore resource not found errors during deletion.
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/crd.yaml
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f ../helm/koomgr/crds
 
-
-.PHONY: useradmin
-useradmin: manifests kustomize ## Create user 'admin' with full admin rights
-	$(KUSTOMIZE) build config/useradmin -o yaml/useradmin.yaml
-
-.PHONY: useradmininstall
-useradmininstall: useradmin  ## Install user 'admin' with full admin rights
-	kubectl apply -f yaml/useradmin.yaml
 
 .PHONY: precommit
-precommit: generate yaml-basic yaml-goinkube ## To ensure uptodate generated stuff.
+precommit: generate crd ## To ensure uptodate generated stuff.
 
-# ---------------------------------------------------------------- Deployment basic
+#------------------------------------------------------------------------------------
 
-##@ Deployment - basic
+##@ Deployment
 
-# NB: These tasks does not handle authentication webhook installation.
+deploy: deploy-mgr deploy-dir ## Deploy all in configured cluster (deploy-dir may fail for first deployment)
 
-.PHONY: yaml-basic
-yaml-basic: crd useradmin ## Generate CRD, RBAC and deployment yaml file with basic configuration.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(DOCKER_IMG):$(DOCKER_TAG)
-	$(KUSTOMIZE) build --load_restrictor none config/overlays/basic -o yaml/basic/deployment.yaml
+.PHONY: deploy-mgr
+deploy-mgr: crd ## Deploy koobind in configured cluster:
+	cd ../helm/koomgr && helm -n $(HELM_TARGET_NAMESPACE) upgrade -i --create-namespace $(HELM_KOOMGR_OPTIONS) koobind .
 
-
-.PHONY: install-basic
-install-basic: yaml-basic crdinstall ## Deploy manager to the configured K8s cluster with basic configuration
-	kubectl apply -f yaml/basic/deployment.yaml
-
-# NB: This does not uninstall CRD, as may be locked by existing resources.
-uninstall-basic: ## UNdeploy manager to the K8s configured cluster with basic configuration
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/basic/deployment.yaml
-
-# ---------------------------------------------------------------- Deployment in goinkube (for dev)
-
-##@ Deployment - goinkube
-
-# NB: These tasks does not handle authentication webhook installation.
-
-.PHONY: yaml-goinkube
-yaml-goinkube: crd useradmin ## Generate CRD, RBAC and deployment yaml file with goinkube configuration.
-	$(KUSTOMIZE) build --load_restrictor none config/overlays/goinkube -o yaml/goinkube/deployment.yaml
+.PHONY: deploy-dir
+deploy-dir: ## Deploy a basic users set
+	cd ../helm/koodirectory && helm -n $(HELM_TARGET_NAMESPACE) upgrade -i --create-namespace $(HELM_DIRECTORY_OPTIONS) koodir .
 
 
-.PHONY: install-goinkube
-install-goinkube: yaml-goinkube crdinstall ## Deploy manager to the configured K8s cluster with goinkube configuration
-	kubectl apply -f yaml/goinkube/deployment.yaml
-
-# NB: This does not uninstall CRD, as may be locked by existing resources.
-uninstall-goinkube: ## UNdeploy manager to the K8s configured cluster with goinkube configuration
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/useradmin.yaml
-	kubectl delete --ignore-not-found=$(ignore-not-found) -f yaml/goinkube/deployment.yaml
+.PHONY: undeploy
+undeploy:  ## UNdeploy in configured cluster
+	-cd ../helm/koodirectory && helm -n $(HELM_TARGET_NAMESPACE) uninstall koodir
+	-cd ../helm/koomgr && helm -n $(HELM_TARGET_NAMESPACE) uninstall koobind
+	make crduninstall
+	kubectl delete ns $(HELM_TARGET_NAMESPACE)
 
 
 #------------------------------------------------------------------------------------
 
-##@ Deployment - Docker image
+##@ Docker image
 
 .PHONY: docker
 docker: ## Build and push koo-manager image
@@ -177,18 +126,9 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
-KUSTOMIZE ?= $(LOCALBIN)/kustomize
+
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-
-## Tool Versions
-KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
-
-KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
-.PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
-$(KUSTOMIZE): $(LOCALBIN)
-	test -s $(LOCALBIN)/kustomize || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.

@@ -9,7 +9,8 @@ users:
     email:
     passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
   - name: guest
-    disabled: true
+    disabled: false
+    passwordHash: $2a$10$pmBHSa4db5U44ssmVj97gOV1AlPhxd3dmg4r1/Jv/HYWb50vP9keG # guest
 #  - name: jules
 #    commonName: Jules Testeur
 #    email: jt@test.com
@@ -29,19 +30,15 @@ groups:
     users:
       - name: admin
 
-  # Or, definition can be split in several parts, this allowing group<->role definition in one part and groups/users
-  # association in another part of the same file.
   - name: clusteradmin
     description: Kubernetes cluster full admin
     clusterRoles:
       - name: cluster-admin
-
-  - name: clusteradmin
     users:
       - name: admin
 
   - name: guests
     users:
       - name: guest
-    disabled: true
+    disabled: false
 

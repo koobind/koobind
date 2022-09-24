@@ -1,9 +1,0 @@
----
-apiVersion: directory.koobind.io/v1alpha1
-kind: User
-metadata:
-  name: admin
-  namespace: koo-system
-spec:
-  commonName: Koo ADMIN
-  passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
