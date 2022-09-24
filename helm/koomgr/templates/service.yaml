@@ -8,6 +8,8 @@ metadata:
     {{- include "koomgr.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
+  selector:
+    {{- include "koomgr.selectorLabels" . | nindent 4 }}
   ports:
     - name: auth-server
       port: {{ .Values.services.auth.servicePort }}
@@ -17,5 +19,3 @@ spec:
       port: {{ .Values.services.webhooks.servicePort }}
       targetPort: {{ .Values.services.webhooks.targetPort }}
       protocol: TCP
-  selector:
-    {{- include "koomgr.selectorLabels" . | nindent 4 }}

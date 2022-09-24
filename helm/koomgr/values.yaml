@@ -72,3 +72,29 @@ config:
   providers:
     - name: crdsys
       type: crd
+
+goinkube:
+  enabled: false
+  storage:
+    size: 50m
+    # if set, then pvc is created. If not, will use emptyDir
+    storageClass:
+  pspfree: true
+  # One of metallb or nodePort must be enabled to provide access
+  metallb:
+    enabled: false
+    # Leave empty for metallb to allocate one
+    ipAddress:
+    # Optionnal
+    ipSharedKey:
+    addressPool:
+  nodePort:
+    enabled: false
+    # Leave empty for the control plane to allocate one
+    port:
+
+#image:
+#  repository: ghcr.io/sergealexandre/goinkube
+#  pullPolicy: Always
+#  tag: "1.19-0"
+#resources: {}
