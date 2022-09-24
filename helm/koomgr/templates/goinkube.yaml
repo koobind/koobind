@@ -1,0 +1,199 @@
+
+{{ if .Values.goinkube.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "koomgr.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "koomgr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "koomgr.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "koomgr.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: false
+          env:
+            - name: KOO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: {{ .Values.services.webhooks.targetPort }}
+              name: webhook-server
+              protocol: TCP
+            - containerPort: {{ .Values.services.auth.targetPort }}
+              name: auth-server
+              protocol: TCP
+            - containerPort: 22
+              name: ssh-server
+              protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+          {{ with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{ end }}
+          volumeMounts:
+            - mountPath: /tmp/cert/auth-server
+              name: auth-cert
+              readOnly: true
+            - mountPath: /tmp/cert/webhook-server
+              name: webhook-cert
+              readOnly: true
+            - mountPath: /etc/koo/cfg
+              name: config
+            - mountPath: /work
+              name: work
+      volumes:
+        - name: auth-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-auth
+        - name: webhook-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-webhook
+        - configMap:
+            name: {{ include "koomgr.fullname" . }}-config
+          name: config
+        - name: work
+          {{ if .Values.goinkube.storage.storageClass }}
+          persistentVolumeClaim:
+            claimName: {{ include "koomgr.fullname" . }}-work
+          {{ else }}
+          emptyDir:
+            sizeLimit: {{ .Values.goinkube.storage.size }}
+          {{ end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+
+{{ if .Values.goinkube.nodePort.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "koomgr.service" . }}-gik-np
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "koomgr.selectorLabels" . | nindent 4 }}
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 22
+      targetPort: 22
+      {{ with .Values.goinkube.nodePort.port }}
+      nodePort: {{ . }}
+      {{ end }}
+{{ end }}
+
+
+{{ if .Values.goinkube.metallb.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "koomgr.service" . }}-gik-mlb
+  namespace: {{ .Release.Namespace }}
+  {{ if or .Values.goinkube.metallb.ipSharedKey .Values.goinkube.metallb.addressPool .Values.goinkube.metallb.ipAddress }}
+  annotations:
+  {{ end }}
+  {{ with .Values.goinkube.metallb.ipSharedKey }}
+    metallb.universe.tf/allow-shared-ip: {{ . }}
+  {{ end }}
+  {{ with .Values.goinkube.metallb.addressPool}}
+    metallb.universe.tf/address-pool: {{ . }}
+  {{ end }}
+  {{ with .Values.goinkube.metallb.ipAddress}}
+    metallb.universe.tf/loadBalancerIPs: {{ . }}
+  {{ end }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "koomgr.selectorLabels" . | nindent 4 }}
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 22
+      targetPort: 22
+{{ end }}
+
+{{ if .Values.goinkube.pspfree }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: controller:pspfree
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "koomgr.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{ end }}
+
+{{ if .Values.goinkube.storage.storageClass }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "koomgr.fullname" . }}-work
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "koomgr.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.goinkube.storage.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.goinkube.storage.size }}
+{{ end }}
+
+{{ end }}

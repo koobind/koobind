@@ -1,3 +1,5 @@
+{{ if not .Values.goinkube.enabled }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,14 +28,14 @@ spec:
       serviceAccountName: {{ include "koomgr.serviceAccountName" . }}
       containers:
         - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             capabilities:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /manager
           args: ["--namespace", "$(KOO_NAMESPACE)", "--config", "/etc/koo/cfg/config.yml"]
@@ -43,10 +45,10 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           ports:
-          - containerPort: 8443
+          - containerPort: {{ .Values.services.webhooks.targetPort }}
             name: webhook-server
             protocol: TCP
-          - containerPort: 8444
+          - containerPort: {{ .Values.services.auth.targetPort }}
             name: auth-server
             protocol: TCP
 {{/*          livenessProbe:*/}}
@@ -57,8 +59,10 @@ spec:
 {{/*            httpGet:*/}}
 {{/*              path: /*/}}
 {{/*              port: http*/}}
+          {{ with .Values.resources }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{ end }}
           volumeMounts:
             - mountPath: /tmp/cert/auth-server
               name: auth-cert
@@ -92,3 +96,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{ end }}
