@@ -1,6 +1,0 @@
-
-logLevel: 0
-adminGroup: "kooadmin"
-providers:
-  - name: crdsys
-    type: crd
