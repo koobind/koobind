@@ -19,3 +19,11 @@ spec:
       port: {{ .Values.services.webhooks.servicePort }}
       targetPort: {{ .Values.services.webhooks.targetPort }}
       protocol: TCP
+    {{ if .Values.services.dex.enabled }}
+    - name: dex-server
+      port: {{ .Values.services.dex.servicePort }}
+      targetPort: {{ .Values.services.dex.targetPort }}
+      protocol: TCP
+    {{ end}}
+
+
