@@ -54,3 +54,22 @@ type ValidateTokenResponse struct {
 		User          *ValidateTokenUser `json:"user,omitempty"`
 	} `json:"status"`
 }
+
+// ------------------------------------- DEX protocol
+
+var DexLoginUrlPath = "/dex/v1/login"
+
+type DexLoginRequest struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+type DexLoginResponse struct {
+	Name          string   `json:"name"`
+	CommonName    string   `json:"commonName"`
+	Uid           string   `json:"uid"`
+	Email         string   `json:"email"`
+	EmailVerified bool     `json:"emailVerified"` // Not used for now
+	Groups        []string `json:"groups"`
+	Token         string   `json:"token"`
+}

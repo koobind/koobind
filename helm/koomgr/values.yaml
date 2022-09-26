@@ -53,12 +53,18 @@ services:
     certificateClusterIssuer:
 
   auth:
+    enabled: true
     servicePort: 444
     targetPort: 8444
     host:
-    # This will be used to validate communication between the webhooks and the controller.
     # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
-    # NB: kubmio require a certificate manager to be deployed in your cluster.
+    certificateClusterIssuer:
+
+  dex:
+    enabled: false
+    servicePort: 445
+    targetPort: 8445
+    # By default, will use a self signed certificate issuer. But, you can provide your own ClusterIssuer
     certificateClusterIssuer:
 
 # Koobing configuration

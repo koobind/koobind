@@ -48,9 +48,16 @@ spec:
           - containerPort: {{ .Values.services.webhooks.targetPort }}
             name: webhook-server
             protocol: TCP
+          {{ if .Values.services.auth.enabled }}
           - containerPort: {{ .Values.services.auth.targetPort }}
             name: auth-server
             protocol: TCP
+          {{ end }}
+          {{ if .Values.services.dex.enabled }}
+          - containerPort: {{ .Values.services.dex.targetPort }}
+            name: dex-server
+            protocol: TCP
+          {{ end }}
 {{/*          livenessProbe:*/}}
 {{/*            httpGet:*/}}
 {{/*              path: /*/}}
@@ -64,26 +71,41 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{ end }}
           volumeMounts:
-            - mountPath: /tmp/cert/auth-server
-              name: auth-cert
-              readOnly: true
+            - mountPath: /etc/koo/cfg
+              name: config
             - mountPath: /tmp/cert/webhook-server
               name: webhook-cert
               readOnly: true
-            - mountPath: /etc/koo/cfg
-              name: config
+            {{ if .Values.services.auth.enabled }}
+            - mountPath: /tmp/cert/auth-server
+              name: auth-cert
+              readOnly: true
+            {{ end }}
+            {{ if .Values.services.dex.enabled }}
+            - mountPath: /tmp/cert/dex-server
+              name: dex-cert
+              readOnly: true
+            {{ end }}
       volumes:
-        - name: auth-cert
-          secret:
-            defaultMode: 420
-            secretName: {{ include "koomgr.certprefix" . }}-auth
+        - name: config
+          configMap:
+            name: {{ include "koomgr.fullname" . }}-config
         - name: webhook-cert
           secret:
             defaultMode: 420
             secretName: {{ include "koomgr.certprefix" . }}-webhook
-        - configMap:
-            name: {{ include "koomgr.fullname" . }}-config
-          name: config
+        {{ if .Values.services.auth.enabled }}
+        - name: auth-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-auth
+        {{ end }}
+        {{ if .Values.services.dex.enabled }}
+        - name: dex-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ include "koomgr.certprefix" . }}-dex
+        {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -50,13 +50,22 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 		},
 	}))
 
-	authServer := newAuthServer(tokenBasket, kubeClient, providerChain)
-	err := manager.Add(authServer)
-	if err != nil {
-		panic(err)
+	if *config.Conf.AuthServer.Enabled {
+		authServer := newAuthServer(tokenBasket, kubeClient, providerChain)
+		err := manager.Add(authServer)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if *config.Conf.DexServer.Enabled {
+		dexServer := newDexServer(tokenBasket, kubeClient, providerChain)
+		err := manager.Add(dexServer)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	err = manager.Add(&token.Cleaner{
+	err := manager.Add(&token.Cleaner{
 		Period:      60 * time.Second,
 		TokenBasket: tokenBasket,
 	})

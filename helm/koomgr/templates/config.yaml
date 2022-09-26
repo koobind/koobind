@@ -13,11 +13,16 @@ data:
     logMode: {{ .Values.config.logMode }}
     inactivityTimeout: {{ .Values.config.inactivityTimeout }}
     sessionMaxTTL: {{ .Values.config.sessionMaxTTL }}
-    authServer:
-      port: {{ .Values.services.auth.targetPort }}
-      certDir: "/tmp/cert/auth-server"
     webhookServer:
       port: {{ .Values.services.webhooks.targetPort }}
       certDir: "/tmp/cert/webhook-server"
+    authServer:
+      enabled: {{ .Values.services.auth.enabled }}
+      port: {{ .Values.services.auth.targetPort }}
+      certDir: "/tmp/cert/auth-server"
+    dexServer:
+      enabled: {{ .Values.services.dex.enabled }}
+      port: {{ .Values.services.dex.targetPort }}
+      certDir: "/tmp/cert/dex-server"
     providers:
       {{- toYaml .Values.config.providers | nindent 6 }}

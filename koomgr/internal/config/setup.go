@@ -54,13 +54,23 @@ func Setup() {
 	var configFile string
 	var logLevel int
 	var logMode string
+
 	var webhookHost string
 	var webhookPort int
 	var webhookCertDir string
+
+	var authEnabled bool
 	var authHost string
 	var authPort int
 	var authCertDir string
 	var authNoSsl bool
+
+	var dexEnabled bool
+	var dexHost string
+	var dexPort int
+	var dexCertDir string
+	var dexNoSsl bool
+
 	var inactivityTimeout string
 	var sessionMaxTTL string
 	var clientTokenTTL string
@@ -72,13 +82,23 @@ func Setup() {
 	pflag.StringVar(&configFile, "config", "config.yml", "Configuration file")
 	pflag.IntVar(&logLevel, "logLevel", 0, "Log level (0:INFO; 1:DEBUG, 2:MoreDebug...)")
 	pflag.StringVar(&logMode, "logMode", "json", "Log mode: 'dev' or 'json'")
+
 	pflag.StringVar(&webhookHost, "webhookHost", "", "Webhook server bind address (Default: All)")
 	pflag.IntVar(&webhookPort, "webhookPort", 8443, "Webhook server bind port")
 	pflag.StringVar(&webhookCertDir, "webhookCertDir", "/tmp/cert/webhook-server", "Path to the webhook server certificate folder")
+
+	pflag.BoolVar(&authEnabled, "authEnabled", true, "Activate auth server")
 	pflag.StringVar(&authHost, "authHost", "", "Auth server bind address (Default: All)")
 	pflag.IntVar(&authPort, "authPort", 8444, "Auth server bind port")
 	pflag.StringVar(&authCertDir, "authCertDir", "/tmp/certs/auth-server", "Path to the auth server certificate folder")
 	pflag.BoolVar(&authNoSsl, "authNoSsl", false, "Set the auth server in plain text. (http://). UNSECURE")
+
+	pflag.BoolVar(&dexEnabled, "dexEnabled", false, "Activate dex server")
+	pflag.StringVar(&dexHost, "dexHost", "", "Dex server bind address (Default: All)")
+	pflag.IntVar(&dexPort, "dexPort", 8445, "Dex server bind port (-1 to no server)")
+	pflag.StringVar(&dexCertDir, "dexCertDir", "/tmp/certs/dex-server", "Path to the dex server certificate folder")
+	pflag.BoolVar(&dexNoSsl, "dexNoSsl", false, "Set the dex server in plain text. (http://). UNSECURE")
+
 	pflag.StringVar(&inactivityTimeout, "inactivityTimeout", "30m", "Session inactivity time out")
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
@@ -96,13 +116,23 @@ func Setup() {
 	}
 	adjustConfigInt(pflag.CommandLine, &Conf.LogLevel, "logLevel")
 	adjustConfigString(pflag.CommandLine, &Conf.LogMode, "logMode")
+
 	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.Host, "webhookHost")
 	adjustConfigInt(pflag.CommandLine, &Conf.WebhookServer.Port, "webhookPort")
 	adjustConfigString(pflag.CommandLine, &Conf.WebhookServer.CertDir, "webhookCertDir")
+
+	adjustConfigBool(pflag.CommandLine, &Conf.AuthServer.Enabled, "authEnabled")
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.Host, "authHost")
 	adjustConfigInt(pflag.CommandLine, &Conf.AuthServer.Port, "authPort")
 	adjustConfigString(pflag.CommandLine, &Conf.AuthServer.CertDir, "authCertDir")
 	adjustConfigBool(pflag.CommandLine, &Conf.AuthServer.NoSsl, "authNoSsl")
+
+	adjustConfigBool(pflag.CommandLine, &Conf.DexServer.Enabled, "dexEnabled")
+	adjustConfigString(pflag.CommandLine, &Conf.DexServer.Host, "dexHost")
+	adjustConfigInt(pflag.CommandLine, &Conf.DexServer.Port, "dexPort")
+	adjustConfigString(pflag.CommandLine, &Conf.DexServer.CertDir, "dexCertDir")
+	adjustConfigBool(pflag.CommandLine, &Conf.DexServer.NoSsl, "dexNoSsl")
+
 	adjustConfigDuration(pflag.CommandLine, &Conf.InactivityTimeout, "inactivityTimeout")
 	adjustConfigDuration(pflag.CommandLine, &Conf.SessionMaxTTL, "sessionMaxTTL")
 	adjustConfigDuration(pflag.CommandLine, &Conf.ClientTokenTTL, "clientTokenTTL")
