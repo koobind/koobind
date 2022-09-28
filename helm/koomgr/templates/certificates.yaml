@@ -30,6 +30,8 @@ metadata:
 spec:
   dnsNames:
     - {{ .Values.services.auth.host }}
+    - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.svc
+    - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.svc.cluster.local
   secretName: {{ include "koomgr.certprefix" . }}-auth
   issuerRef:
   {{ if .Values.services.auth.certificateClusterIssuer}}
@@ -51,7 +53,7 @@ metadata:
 spec:
   dnsNames:
     - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.svc
-    - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.cluster.local
+    - {{ include "koomgr.service" . }}.{{ .Release.Namespace }}.svc.cluster.local
   secretName: {{ include "koomgr.certprefix" . }}-dex
   issuerRef:
   {{ if .Values.services.dex.certificateClusterIssuer}}

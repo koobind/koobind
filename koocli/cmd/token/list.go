@@ -44,11 +44,11 @@ var tokenListCmd = &cobra.Command{
 	Hidden: false,
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
-		token := common.RetrieveToken()
-		if token == "" {
-			token = common.DoLogin("", "")
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag == nil {
+			tokenBag = common.DoLogin("", "")
 		}
-		response, err := common.HttpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: token}, nil)
+		response, err := common.HttpConnection.Do("GET", "/auth/v1/admin/tokens", &internal.HttpAuth{Token: tokenBag.Token}, nil)
 		if err != nil {
 			panic(err)
 		}

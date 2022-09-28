@@ -1,20 +1,20 @@
 /*
-  Copyright (C) 2020 Serge ALEXANDRE
+Copyright (C) 2020 Serge ALEXANDRE
 
-  This file is part of koobind project
+# This file is part of koobind project
 
-  koobind is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+koobind is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  koobind is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+koobind is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with koobind.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 package internal
 
@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"os/user"
 	"path"
@@ -31,20 +30,22 @@ import (
 )
 
 type Config struct {
-	Server string		`json:"server"`
-	RootCaFile string 	`json:"rootCaFile"`
+	Server     string `json:"server"`
+	RootCaFile string `json:"rootCaFile"`
 }
 
 type CurrentContext struct {
-	Context string	`json:"context"`
+	Context string `json:"context"`
 }
 
 type TokenBag struct {
-	Token      string    `json:"token"`
-	ClientTTL  metav1.Duration  `json:"clientTTL"`
-	LastAccess time.Time `json:"lastAccess"`
+	Token      string        `json:"token"`
+	ClientTTL  time.Duration `json:"clientTTL"`
+	LastAccess time.Time     `json:"lastAccess"`
+	Username   string        `json:"username"`
+	Uid        string        `json:"uid"`
+	Groups     []string      `json:"groups"`
 }
-
 
 func getConfigPath(context string) string {
 	usr, err := user.Current()
@@ -60,14 +61,6 @@ func getTokenBagPath(context string) string {
 		panic(err)
 	}
 	return path.Join(usr.HomeDir, fmt.Sprintf(".kube/cache/koo/%s/tokenbag.json", context))
-}
-
-func getCurrentContextPath() string {
-	usr, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
-	return path.Join(usr.HomeDir, ".kube/cache/koo/context.json")
 }
 
 func ListContext() []string {
@@ -88,7 +81,7 @@ func ListContext() []string {
 func LoadConfig(context string) *Config {
 	configPath := getConfigPath(context)
 	var config Config
-	if loadStuff(configPath, func (decoder *json.Decoder) error {
+	if loadStuff(configPath, func(decoder *json.Decoder) error {
 		return decoder.Decode(&config)
 	}) {
 		getLog().Debugf("LoadConfig(%s) -> server:%s  rootCaFile:%s", configPath, config.Server, config.RootCaFile)
@@ -99,11 +92,10 @@ func LoadConfig(context string) *Config {
 	}
 }
 
-
 func LoadTokenBag(context string) *TokenBag {
 	tokenBagPath := getTokenBagPath(context)
 	var tokenBag TokenBag
-	if loadStuff(tokenBagPath, func (decoder *json.Decoder) error {
+	if loadStuff(tokenBagPath, func(decoder *json.Decoder) error {
 		return decoder.Decode(&tokenBag)
 	}) {
 		getLog().Debugf("LoadTokenBag(%s) -> token:%s  ttl:%s  created:%s", tokenBagPath, tokenBag.Token, tokenBag.ClientTTL, tokenBag.LastAccess)
@@ -128,22 +120,10 @@ func DeleteTokenBag(context string) {
 	return
 }
 
-
-//func SaveCurrentContext(context string) {
-//	currentContextPath := getCurrentContextPath()
-//	getLog().Debugf("SaveCurrentContext(%s, %s)", currentContextPath, context)
-//	currentContext := CurrentContext{
-//		Context: context,
-//	}
-//	saveStuff(currentContextPath, func (encoder *json.Encoder) error  {
-//		return encoder.Encode(currentContext)
-//	})
-//}
-
 func SaveConfig(context string, config *Config) {
 	configPath := getConfigPath(context)
 	getLog().Debugf("SaveConfig(%s, server:%s   rootCaFile:%s)", configPath, config.Server, config.RootCaFile)
-	saveStuff(configPath, func (encoder *json.Encoder) error  {
+	saveStuff(configPath, func(encoder *json.Encoder) error {
 		return encoder.Encode(config)
 	})
 }
@@ -151,14 +131,14 @@ func SaveConfig(context string, config *Config) {
 func SaveTokenBag(context string, tokenBag *TokenBag) {
 	tokenBagPath := getTokenBagPath(context)
 	getLog().Debugf("SaveTokenBag(%s token:%s  ttl:%s  created:%s)", tokenBagPath, tokenBag.Token, tokenBag.ClientTTL, tokenBag.LastAccess)
-	saveStuff(tokenBagPath, func (encoder *json.Encoder) error  {
+	saveStuff(tokenBagPath, func(encoder *json.Encoder) error {
 		return encoder.Encode(tokenBag)
 	})
 }
 
 // ----------------------------------------------------------------------------------
 
-func loadStuff(path string, decode func (decoder *json.Decoder) error ) bool {
+func loadStuff(path string, decode func(decoder *json.Decoder) error) bool {
 	if file, err := os.Open(path); err == nil {
 		err = decode(json.NewDecoder(file))
 		if err != nil {
@@ -171,9 +151,7 @@ func loadStuff(path string, decode func (decoder *json.Decoder) error ) bool {
 	}
 }
 
-
-
-func saveStuff(path string, encode func (encoder *json.Encoder) error ) {
+func saveStuff(path string, encode func(encoder *json.Encoder) error) {
 	ensureDir(filepath.Dir(path))
 	var err error
 	var file *os.File
@@ -186,7 +164,6 @@ func saveStuff(path string, encode func (encoder *json.Encoder) error ) {
 		panic(err)
 	}
 
-
 }
 
 func ensureDir(dirName string) {
@@ -197,5 +174,3 @@ func ensureDir(dirName string) {
 		}
 	}
 }
-
-

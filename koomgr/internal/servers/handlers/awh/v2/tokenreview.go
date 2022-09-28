@@ -17,27 +17,28 @@
   along with koobind.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package v1
+package v2
 
+//
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/koobind/koobind/koomgr/apis/proto"
+	proto "github.com/koobind/koobind/koomgr/apis/proto/awh/v2"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
 	"net/http"
 )
 
-type ValidateTokenHandler struct {
+type TokenReviewHandler struct {
 	handlers.BaseHandler
 }
 
-func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	var requestPayload proto.ValidateTokenRequest
+func (this *TokenReviewHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	var requestPayload proto.TokenReviewRequest
 	err := json.NewDecoder(request.Body).Decode(&requestPayload)
 	if err != nil {
 		this.HttpError(response, err.Error(), http.StatusBadRequest)
 	} else {
-		data := proto.ValidateTokenResponse{
+		data := proto.TokenReviewResponse{
 			ApiVersion: requestPayload.ApiVersion,
 			Kind:       requestPayload.Kind,
 		}
@@ -48,7 +49,7 @@ func (this *ValidateTokenHandler) ServeHTTP(response http.ResponseWriter, reques
 		}
 		if userToken != nil {
 			data.Status.Authenticated = true
-			data.Status.User = &proto.ValidateTokenUser{
+			data.Status.User = &proto.TokenReviewUser{
 				Username: userToken.Spec.User.Name,
 				Uid:      userToken.Spec.User.Uid,
 				Groups:   userToken.Spec.User.Groups,

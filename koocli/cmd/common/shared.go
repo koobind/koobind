@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koobind/koobind/koocli/internal"
-	"github.com/koobind/koobind/koomgr/apis/proto"
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
@@ -52,32 +52,35 @@ func InitHttpConnection() {
 	HttpConnection = internal.NewHttpConnection(Config.Server, Config.RootCaFile, Log)
 }
 
-func DoLogin(login, password string) (token string) {
-	token = DoLoginSilently(login, password)
-	if token != "" {
+func DoLogin(login, password string) *internal.TokenBag {
+	tokenBag := DoLoginSilently(login, password)
+	if tokenBag != nil {
 		_, _ = fmt.Fprintf(os.Stdout, "logged successfully..\n")
 	}
-	return
+	return tokenBag
 }
 
 // Warning: As this function is used by the 'auth' command, which send json result to stdout, it may only send prompt to stderr
-func DoLoginSilently(login, password string) (token string) {
-	var getTokenResponse *proto.GetTokenResponse
+func DoLoginSilently(login, password string) *internal.TokenBag {
 	maxTry := 3
 	if login != "" && password != "" {
 		maxTry = 1 // If all is provided on command line, do not prompt in case of failure
 	}
 	for i := 0; i < maxTry; i++ {
 		login, password = inputCredentials(login, password)
-		getTokenResponse = getTokenFor(login, password)
-		if getTokenResponse != nil {
-			internal.SaveTokenBag(Context, &internal.TokenBag{
-				Token:      getTokenResponse.Token,
-				ClientTTL:  getTokenResponse.ClientTTL,
+		loginResponse := loginAndGetToken(login, password)
+		if loginResponse != nil {
+			tokenBag := &internal.TokenBag{
+				Token:      loginResponse.Token,
+				ClientTTL:  loginResponse.ClientTTL,
 				LastAccess: time.Now(),
-			})
-			Log.Debugf("TokenResponse:%v\n", getTokenResponse)
-			return getTokenResponse.Token
+				Username:   loginResponse.Username,
+				Uid:        loginResponse.Uid,
+				Groups:     loginResponse.Groups,
+			}
+			internal.SaveTokenBag(Context, tokenBag)
+			Log.Debugf("TokenResponse:%v\n", loginResponse)
+			return tokenBag
 		}
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid login!\n")
 		login = ""
@@ -86,21 +89,30 @@ func DoLoginSilently(login, password string) (token string) {
 	if maxTry > 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "Too many failure !!!\n")
 	}
-	return ""
+	return nil
 }
 
-func getTokenFor(login, password string) *proto.GetTokenResponse {
-	response, err := HttpConnection.Do("GET", "/auth/v1/getToken", &internal.HttpAuth{Login: login, Password: password}, nil)
+func loginAndGetToken(login, password string) *proto_v2.LoginResponse {
+	loginRequestPayload := proto_v2.LoginRequest{
+		Login:         login,
+		Password:      password,
+		GenerateToken: true,
+	}
+	body, err := json.Marshal(loginRequestPayload)
+	if err != nil {
+		panic(err)
+	}
+	response, err := HttpConnection.Do("POST", proto_v2.LoginUrlPath, nil, bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}
 	if response.StatusCode == http.StatusOK {
-		var getTokenResponse proto.GetTokenResponse
-		err = json.NewDecoder(response.Body).Decode(&getTokenResponse)
+		var loginResponse proto_v2.LoginResponse
+		err = json.NewDecoder(response.Body).Decode(&loginResponse)
 		if err != nil {
 			panic(err)
 		}
-		return &getTokenResponse
+		return &loginResponse
 	} else if response.StatusCode == http.StatusUnauthorized {
 		return nil
 	} else {
@@ -142,60 +154,53 @@ func inputPassword(prompt string) string {
 	return strings.TrimSpace(string(bytePassword))
 }
 
-func ValidateToken(token string) *proto.ValidateTokenUser {
-	validateTokenRequest := proto.ValidateTokenRequest{
-		ApiVersion: "",
-		Kind:       "",
+func ValidateToken(token string) bool {
+	validateTokenRequest := proto_v2.ValidateTokenRequest{
+		Token: token,
 	}
-	validateTokenRequest.Spec.Token = token
 	body, err := json.Marshal(validateTokenRequest)
 	if err != nil {
 		panic(err)
 	}
-	// Will use the service intended for the authentication webhook, but with a GET method
-	response, err2 := HttpConnection.Do("GET", "/auth/v1/validateToken", nil, bytes.NewBuffer(body))
+	response, err2 := HttpConnection.Do("POST", proto_v2.ValidateTokenUrlPath, nil, bytes.NewBuffer(body))
 	if err2 != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to authentication server: %v\n", err2)
 		os.Exit(2)
 	}
 	if response.StatusCode == http.StatusOK {
-		var validateTokenResponse proto.ValidateTokenResponse
+		var validateTokenResponse proto_v2.ValidateTokenResponse
 		err = json.NewDecoder(response.Body).Decode(&validateTokenResponse)
 		if err != nil {
 			panic(err)
 		}
-		if validateTokenResponse.Status.Authenticated {
-			return validateTokenResponse.Status.User
-		} else {
-			return nil
-		}
+		return validateTokenResponse.Valid
 	} else {
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode)
-		return nil
+		return false
 		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
 	}
 }
 
 // Retrieve the token locally, or, if expired, validate again against the server. Return "" if there is no valid token
-func RetrieveToken() string {
+func RetrieveTokenBag() *internal.TokenBag {
 	tokenBag := internal.LoadTokenBag(Context)
 	if tokenBag != nil {
 		now := time.Now()
-		if now.Before(tokenBag.LastAccess.Add(tokenBag.ClientTTL.Duration)) {
+		if now.Before(tokenBag.LastAccess.Add(tokenBag.ClientTTL)) {
 			// tokenBag still valid
-			return tokenBag.Token
+			return tokenBag
 		} else {
-			if user := ValidateToken(tokenBag.Token); user != nil {
+			if ValidateToken(tokenBag.Token) {
 				tokenBag.LastAccess = time.Now()
 				internal.SaveTokenBag(Context, tokenBag)
-				return tokenBag.Token
+				return tokenBag
 			} else {
 				internal.DeleteTokenBag(Context)
-				return ""
+				return nil
 			}
 		}
 	} else {
-		return ""
+		return nil
 	}
 }
 

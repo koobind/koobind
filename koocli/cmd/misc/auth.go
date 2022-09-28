@@ -31,18 +31,18 @@ var AuthCmd = &cobra.Command{
 	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
-		token := common.RetrieveToken()
-		if token == "" {
-			token = common.DoLoginSilently("", "")
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag == nil {
+			tokenBag = common.DoLoginSilently("", "")
 		}
 		ec := ExecCredential{
 			ApiVersion: "client.authentication.k8s.io/v1beta1",
 			Kind:       "ExecCredential",
 		}
-		if token == "" {
-			// No token
+		if tokenBag == nil {
+			// No tokenBag
 		} else {
-			ec.Status.Token = token
+			ec.Status.Token = tokenBag.Token
 		}
 		err := json.NewEncoder(os.Stdout).Encode(ec)
 		if err != nil {

@@ -21,10 +21,11 @@ package servers
 
 import (
 	"fmt"
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/awh/v2"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
-	"github.com/koobind/koobind/koomgr/internal/servers/handlers/v1"
+	handler_v2 "github.com/koobind/koobind/koomgr/internal/servers/handlers/awh/v2"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	"github.com/koobind/koobind/koomgr/internal/token/crd"
 	"github.com/koobind/koobind/koomgr/internal/token/memory"
@@ -38,14 +39,10 @@ func Init(manager manager.Manager, kubeClient client.Client, providerChain provi
 
 	tokenBasket := NewTokenBasket(kubeClient)
 
-	// There is two endpoint:
-	// - Webhook server, handling all handlerByPath (Mutating, validating an authentication). Called only by API server
-	// - Auth server, handling all requests from koocli. Exposed externally by a nodeport or an ingress
-	// ValidateTokenHandler is set on both, as will be called from API server (POST) and koocli (GET)
-
-	manager.GetWebhookServer().Register("/auth/v1/validateToken", LogHttp(&v1.ValidateTokenHandler{
+	// Add authentication webhook Hndler in the webhook server handled by the manager
+	manager.GetWebhookServer().Register(proto_v2.TokenReviewUrlPath, LogHttp(&handler_v2.TokenReviewHandler{
 		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrl.Log.WithName("webHookV1validateToken"),
+			Logger:      ctrl.Log.WithName("awh-v2-tokenReview"),
 			TokenBasket: tokenBasket,
 		},
 	}))

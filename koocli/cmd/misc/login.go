@@ -39,8 +39,8 @@ var LoginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
 		internal.DeleteTokenBag(common.Context) // Logout first. Don't stay logged with old token if we are unable to login
-		t := common.DoLogin(login, login_password)
-		if t == "" {
+		tokenBag := common.DoLogin(login, login_password)
+		if tokenBag == nil {
 			os.Exit(3)
 		}
 	},
