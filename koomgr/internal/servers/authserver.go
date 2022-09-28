@@ -1,9 +1,11 @@
 package servers
 
 import (
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
+	handler_v2 "github.com/koobind/koobind/koomgr/internal/servers/handlers/auth/v2"
 	v1 "github.com/koobind/koobind/koomgr/internal/servers/handlers/v1"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	ctrlrt "sigs.k8s.io/controller-runtime"
@@ -21,25 +23,26 @@ func newAuthServer(tokenBasket token.TokenBasket, kubeClient client.Client, prov
 		NoSsl:   *config.Conf.AuthServer.NoSsl,
 	}
 	s.setDefaults()
-	s.Router.Handle("/auth/v1/validateToken", &v1.ValidateTokenHandler{
-		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrlrt.Log.WithName("authV1validateToken"),
-			TokenBasket: tokenBasket,
-		},
-	}).Methods("GET", "POST") // POST is from Api server while GET is from our client
 
-	s.Router.Handle("/auth/v1/getToken", &v1.GetTokenHandler{
+	s.Router.Handle(proto_v2.LoginUrlPath, &handler_v2.AuthLoginHandler{
 		BaseHandler: handlers.BaseHandler{
-			Logger:      ctrlrt.Log.WithName("v1getToken"),
+			Logger:      ctrlrt.Log.WithName("auth-v2-Login"),
 			TokenBasket: tokenBasket,
 		},
 		Providers: providerChain,
-	}).Methods("GET")
+	}).Methods("POST") // POST as may be not idempotent (Token generation)
 
-	s.Router.Handle("/auth/v1/changePassword", &v1.ChangePasswordHandler{
+	s.Router.Handle(proto_v2.ValidateTokenUrlPath, &handler_v2.ValidateTokenHandler{
+		BaseHandler: handlers.BaseHandler{
+			Logger:      ctrlrt.Log.WithName("auth-v2-validateToken"),
+			TokenBasket: tokenBasket,
+		},
+	}).Methods("POST") // POST as may be not idempotent (Token prolongation)
+
+	s.Router.Handle(proto_v2.ChangePasswordUrlPath, &handler_v2.ChangePasswordHandler{
 		AuthHandler: handlers.AuthHandler{
 			BaseHandler: handlers.BaseHandler{
-				Logger:      ctrlrt.Log.WithName("v1changePassword"),
+				Logger:      ctrlrt.Log.WithName("auth-v2-changePassword"),
 				TokenBasket: tokenBasket,
 			},
 			Providers: providerChain,

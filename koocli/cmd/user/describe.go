@@ -51,11 +51,11 @@ var userDescribeCmd = &cobra.Command{
 		}
 		common.InitHttpConnection()
 		userName := args[0]
-		token := common.RetrieveToken()
-		if token == "" {
-			token = common.DoLogin("", "")
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag == nil {
+			tokenBag = common.DoLogin("", "")
 		}
-		response, err := common.HttpConnection.Do("GET", "/auth/v1/admin/users/"+userName, &internal.HttpAuth{Token: token}, nil)
+		response, err := common.HttpConnection.Do("GET", "/auth/v1/admin/users/"+userName, &internal.HttpAuth{Token: tokenBag.Token}, nil)
 		if err != nil {
 			panic(err)
 		}

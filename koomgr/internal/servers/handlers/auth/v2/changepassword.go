@@ -1,9 +1,9 @@
-package v1
+package v2
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/koobind/koobind/koomgr/apis/proto"
+	proto "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	tokenapi "github.com/koobind/koobind/koomgr/apis/tokens/v1alpha1"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"

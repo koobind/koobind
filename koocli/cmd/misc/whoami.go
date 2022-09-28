@@ -21,8 +21,6 @@ package misc
 import (
 	"fmt"
 	"github.com/koobind/koobind/koocli/cmd/common"
-	"github.com/koobind/koobind/koocli/internal"
-	"github.com/koobind/koobind/koomgr/apis/proto"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -40,16 +38,16 @@ var WhoamiCmd = &cobra.Command{
 	Short: "Display current logged user, if any",
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
-		tokenBag := internal.LoadTokenBag(common.Context)
-		if user := getUser(tokenBag); user != nil {
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag != nil {
 			tw := new(tabwriter.Writer)
 			tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 			if displayToken {
 				_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tTOKEN")
-				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", user.Username, user.Uid, strings.Join(user.Groups, ","), tokenBag.Token)
+				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", tokenBag.Username, tokenBag.Uid, strings.Join(tokenBag.Groups, ","), tokenBag.Token)
 			} else {
 				_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS")
-				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s", user.Username, user.Uid, strings.Join(user.Groups, ","))
+				_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s", tokenBag.Username, tokenBag.Uid, strings.Join(tokenBag.Groups, ","))
 			}
 			_, _ = fmt.Fprintf(tw, "\n")
 			_ = tw.Flush()
@@ -58,15 +56,4 @@ var WhoamiCmd = &cobra.Command{
 			os.Exit(3)
 		}
 	},
-}
-
-// getUser() trigger a server exchange (validateToken) in all cases, as we have no local storage of user info.
-func getUser(tokenBag *internal.TokenBag) *proto.ValidateTokenUser {
-	if tokenBag != nil {
-		user := common.ValidateToken(tokenBag.Token)
-		if user != nil {
-			return user
-		}
-	}
-	return nil
 }

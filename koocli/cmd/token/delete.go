@@ -37,15 +37,15 @@ var tokenDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
 		if len(args) != 1 {
-			fmt.Printf("ERROR: A token must be provided!\n")
+			fmt.Printf("ERROR: A tokenBag must be provided!\n")
 			os.Exit(2)
 		}
 		targetToken := args[0]
-		token := common.RetrieveToken()
-		if token == "" {
-			token = common.DoLogin("", "")
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag == nil {
+			tokenBag = common.DoLogin("", "")
 		}
-		response, err := common.HttpConnection.Do("DELETE", "/auth/v1/admin/tokens/"+targetToken, &internal.HttpAuth{Token: token}, nil)
+		response, err := common.HttpConnection.Do("DELETE", "/auth/v1/admin/tokens/"+targetToken, &internal.HttpAuth{Token: tokenBag.Token}, nil)
 		if err != nil {
 			panic(err)
 		}

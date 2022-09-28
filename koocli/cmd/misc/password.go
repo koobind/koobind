@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"github.com/koobind/koobind/koocli/cmd/common"
 	"github.com/koobind/koobind/koocli/internal"
-	"github.com/koobind/koobind/koomgr/apis/proto"
+	proto "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
@@ -43,8 +43,8 @@ var PasswordCmd = &cobra.Command{
 	Short: "Change current user password",
 	Run: func(cmd *cobra.Command, args []string) {
 		common.InitHttpConnection()
-		token := common.RetrieveToken()
-		if token == "" {
+		tokenBag := common.RetrieveTokenBag()
+		if tokenBag == nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Not logged in currently\n")
 			return
 		}
@@ -63,7 +63,7 @@ var PasswordCmd = &cobra.Command{
 			NewPassword: newPassword,
 		}
 		body, err := json.Marshal(changePasswordRequest)
-		response, err := common.HttpConnection.Do("POST", "/auth/v1/changePassword", &internal.HttpAuth{Token: token}, bytes.NewBuffer(body))
+		response, err := common.HttpConnection.Do("POST", proto.ChangePasswordUrlPath, &internal.HttpAuth{Token: tokenBag.Token}, bytes.NewBuffer(body))
 		if err != nil {
 			panic(err)
 		}

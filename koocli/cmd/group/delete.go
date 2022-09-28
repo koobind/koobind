@@ -45,11 +45,11 @@ var groupDeleteCmd = &cobra.Command{
 		}
 		InitHttpConnection()
 		groupName := args[0]
-		token := RetrieveToken()
-		if token == "" {
-			token = DoLogin("", "")
+		tokenBag := RetrieveTokenBag()
+		if tokenBag == nil {
+			tokenBag = DoLogin("", "")
 		}
-		response, err := HttpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/groups/%s", Provider, groupName), &internal.HttpAuth{Token: token}, nil)
+		response, err := HttpConnection.Do("DELETE", fmt.Sprintf("/auth/v1/admin/%s/groups/%s", Provider, groupName), &internal.HttpAuth{Token: tokenBag.Token}, nil)
 		if err != nil {
 			panic(err)
 		}

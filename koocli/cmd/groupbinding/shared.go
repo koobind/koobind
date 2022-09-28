@@ -56,9 +56,9 @@ func applyGroupBindingCommand(cmd *cobra.Command, args []string, method string) 
 	InitHttpConnection()
 	userName := args[0]
 	groupName := args[1]
-	token := RetrieveToken()
-	if token == "" {
-		token = DoLogin("", "")
+	tokenBag := RetrieveTokenBag()
+	if tokenBag == nil {
+		tokenBag = DoLogin("", "")
 	}
 	if enabled {
 		crdGroupBindingSpec.Disabled = &_false
@@ -67,7 +67,7 @@ func applyGroupBindingCommand(cmd *cobra.Command, args []string, method string) 
 		crdGroupBindingSpec.Disabled = &_true
 	}
 	body, err := json.Marshal(crdGroupBindingSpec)
-	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName), &internal.HttpAuth{Token: token}, bytes.NewBuffer(body))
+	response, err := HttpConnection.Do(method, fmt.Sprintf("/auth/v1/admin/%s/groupbindings/%s/%s", Provider, userName, groupName), &internal.HttpAuth{Token: tokenBag.Token}, bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}
