@@ -21,6 +21,7 @@ package config
 
 import (
 	"fmt"
+	v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/koobind/koobind/koomgr/internal/utils"
 	"time"
 )
@@ -38,22 +39,24 @@ type ServerExt struct {
 }
 
 type Config struct {
-	ConfigFolder      string          // This is not in the file, but set on reading. Used to adjust file path
-	WebhookServer     Server          `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
-	AuthServer        ServerExt       `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
-	DexServer         ServerExt       `yaml:"dexServer"`         // Optional: Server to plug a DEX with a koobind connector (Port == -1 to invalidate it)
-	LogLevel          int             `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
-	LogMode           string          `yaml:"logMode"`           // Log output format: 'dev' or 'json'
-	AdminGroup        string          `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
-	InactivityTimeout *time.Duration  `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
-	SessionMaxTTL     *time.Duration  `yaml:"sessionMaxTTL"`     // After this period, the session expire, in all case.
-	ClientTokenTTL    *time.Duration  `yaml:"clientTokenTTL"`    // This is intended for the client (koocli), for token caching
-	TokenStorage      string          `yaml:"tokenStorage"`      // 'memory' or 'crd'
-	Namespace         string          `yaml:"namespace"`         // Default value for tokenNamespace and CRD providers
-	TokenNamespace    string          `yaml:"tokenNamespace"`    // When tokenStorage==crd, the namespace to store them. Default to defaultNamespace
-	LastHitStep       int             `yaml:"lastHitStep"`       // When tokenStorage==crd, the max difference between reality and what is stored in API Server. In per mille of InactivityTimeout. Aim is to avoid API servr overloading
-	Providers         []interface{}   `yaml:"providers"`         // The ordered list of ID providers
-	CrdNamespaces     utils.StringSet // Not in the file, but used by validating webhook
+	ConfigFolder      string                   // This is not in the file, but set on reading. Used to adjust file path
+	WebhookServer     Server                   `yaml:"webhookServer"`     // The server for the mutating/validating and authentication webhook. Called only by API Server
+	AuthServer        ServerExt                `yaml:"authServer"`        // The server for authentication. To be exposed externally. Called by koocli
+	DexServer         ServerExt                `yaml:"dexServer"`         // Optional: Server to plug a DEX with a koobind connector (Port == -1 to invalidate it)
+	LogLevel          int                      `yaml:"logLevel"`          // Log level. 0: Info, 1: Debug, 2: Trace, ... Default is 0.
+	LogMode           string                   `yaml:"logMode"`           // Log output format: 'dev' or 'json'
+	AdminGroup        string                   `yaml:"adminGroup"`        // Only user belonging to this group will be able to access admin interface
+	InactivityTimeout *time.Duration           `yaml:"inactivityTimeout"` // After this period without token validation, the session expire
+	SessionMaxTTL     *time.Duration           `yaml:"sessionMaxTTL"`     // After this period, the session expire, in all case.
+	ClientTokenTTL    *time.Duration           `yaml:"clientTokenTTL"`    // This is intended for the client (koocli), for token caching
+	TokenStorage      string                   `yaml:"tokenStorage"`      // 'memory' or 'crd'
+	Namespace         string                   `yaml:"namespace"`         // Default value for tokenNamespace and CRD providers
+	TokenNamespace    string                   `yaml:"tokenNamespace"`    // When tokenStorage==crd, the namespace to store them. Default to defaultNamespace
+	LastHitStep       int                      `yaml:"lastHitStep"`       // When tokenStorage==crd, the max difference between reality and what is stored in API Server. In per mille of InactivityTimeout. Aim is to avoid API servr overloading
+	Providers         []interface{}            `yaml:"providers"`         // The ordered list of ID providers
+	AuthClients       []v2.AuthClient          `yaml:"authClients"`       // List of allowed client for auth protocol
+	CrdNamespaces     utils.StringSet          // Not in the file, but used by validating webhook
+	AuthClientById    map[string]v2.AuthClient // Not in the file
 }
 
 type BaseProviderConfig struct {

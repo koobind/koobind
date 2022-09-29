@@ -24,5 +24,7 @@ data:
       enabled: {{ .Values.services.dex.enabled }}
       port: {{ .Values.services.dex.targetPort }}
       certDir: "/tmp/cert/dex-server"
+    authClients:
+      {{- toYaml .Values.config.authClients | nindent 6 }}
     providers:
       {{- toYaml .Values.config.providers | nindent 6 }}

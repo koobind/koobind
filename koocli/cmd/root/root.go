@@ -28,12 +28,14 @@ import (
 	"github.com/koobind/koobind/koocli/cmd/token"
 	koouser "github.com/koobind/koobind/koocli/cmd/user"
 	"github.com/koobind/koobind/koocli/internal"
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"os/user"
 	"path"
+	"strings"
 )
 
 var RootCmd = &cobra.Command{
@@ -63,6 +65,8 @@ func lookupContextInKubeconfig(kubeconfig string) string {
 func init() {
 	var rootCaFile string
 	var server string
+	var clientId string
+	var clientSecret string
 	var logLevel string
 	var logJson bool
 	var kubeconfig string
@@ -87,8 +91,18 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Kubeconfig file path. Used to lookup Context")
 	RootCmd.PersistentFlags().StringVar(&rootCaFile, "rootCaFile", "", "Cert authority for client connection")
 	RootCmd.PersistentFlags().StringVar(&server, "server", "", "Authentication server")
+	RootCmd.PersistentFlags().StringVar(&clientId, "clientId", "", "Client ID for authentication server")
+	RootCmd.PersistentFlags().StringVar(&clientSecret, "clientSecret", "", "Client secret")
 	RootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "INFO", "Log level")
 	RootCmd.PersistentFlags().BoolVar(&logJson, "logJson", false, "logs in JSON")
+
+	Context = strings.Trim(Context, "\"")
+	kubeconfig = strings.Trim(kubeconfig, "\"")
+	rootCaFile = strings.Trim(rootCaFile, "\"")
+	server = strings.Trim(server, "\"")
+	clientId = strings.Trim(clientId, "\"")
+	clientSecret = strings.Trim(clientSecret, "\"")
+	logLevel = strings.Trim(logLevel, "\"")
 
 	RootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		internal.ConfigureLogger(logLevel, logJson)
@@ -122,9 +136,17 @@ func init() {
 					_, _ = fmt.Fprintf(os.Stderr, "\nERROR: Missing 'rootCaFile' parameter on initial call\n\n")
 					os.Exit(2)
 				}
+				if clientId == "" || clientSecret == "" {
+					_, _ = fmt.Fprintf(os.Stderr, "\nERROR: Missing 'clientId' and/or 'clientSecret' parameters on initial call\n\n")
+					os.Exit(2)
+				}
 				Config = &internal.Config{
 					Server:     server,
 					RootCaFile: rootCaFile,
+					Client: proto_v2.AuthClient{
+						Id:     clientId,
+						Secret: clientSecret,
+					},
 				}
 				internal.SaveConfig(Context, Config)
 			} else {
@@ -135,6 +157,14 @@ func init() {
 				}
 				if rootCaFile != "" && rootCaFile != Config.RootCaFile {
 					Config.RootCaFile = rootCaFile
+					dirtyConfig = true
+				}
+				if clientId != "" && clientId != Config.Client.Id {
+					Config.Client.Id = clientId
+					dirtyConfig = true
+				}
+				if clientSecret != "" && clientSecret != Config.Client.Secret {
+					Config.Client.Secret = clientSecret
 					dirtyConfig = true
 				}
 				if dirtyConfig {

@@ -21,6 +21,7 @@ package config
 
 import (
 	"fmt"
+	v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/koobind/koobind/koomgr/internal/utils"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
@@ -103,7 +104,7 @@ func Setup() {
 	pflag.StringVar(&sessionMaxTTL, "sessionMaxTTL", "24h", "Session max TTL")
 	pflag.StringVar(&clientTokenTTL, "clientTokenTTL", "30s", "Client local token TTL")
 	pflag.StringVar(&tokenStorage, "tokenStorage", "crd", "Tokens storage mode: 'memory' or 'crd'")
-	pflag.StringVar(&namespace, "namespace", "", "Default namespace for tokenNamespace and CRD")
+	pflag.StringVar(&namespace, "namespace", "", "Default namespace for tokenNamespace and crd provider")
 	pflag.StringVar(&tokenNamespace, "tokenNamespace", "", "Tokens storage namespace when tokenStorage==crd")
 	pflag.IntVar(&lastHitStep, "lastHitStep", 3, "Delay to store lastHit in CRD, when tokenStorage==crd. In % of inactivityTimeout")
 	pflag.CommandLine.SortFlags = false
@@ -168,6 +169,11 @@ func Setup() {
 		Conf.TokenNamespace = Conf.Namespace
 	}
 	Conf.CrdNamespaces = utils.NewStringSet()
+
+	Conf.AuthClientById = make(map[string]v2.AuthClient, len(Conf.AuthClients))
+	for idx, client := range Conf.AuthClients {
+		Conf.AuthClientById[client.Id] = Conf.AuthClients[idx]
+	}
 }
 
 func AdjustPath(baseFolder string, path *string) {

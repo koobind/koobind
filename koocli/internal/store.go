@@ -21,6 +21,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -32,6 +33,7 @@ import (
 type Config struct {
 	Server     string `json:"server"`
 	RootCaFile string `json:"rootCaFile"`
+	Client     proto_v2.AuthClient
 }
 
 type CurrentContext struct {

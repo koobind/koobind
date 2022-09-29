@@ -61,6 +61,7 @@ var PasswordCmd = &cobra.Command{
 		changePasswordRequest := proto.ChangePasswordRequest{
 			OldPassword: oldPassword,
 			NewPassword: newPassword,
+			Client:      common.Config.Client,
 		}
 		body, err := json.Marshal(changePasswordRequest)
 		response, err := common.HttpConnection.Do("POST", proto.ChangePasswordUrlPath, &internal.HttpAuth{Token: tokenBag.Token}, bytes.NewBuffer(body))
