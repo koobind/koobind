@@ -21,22 +21,27 @@ type ChangePasswordHandler struct {
 
 func (this *ChangePasswordHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	this.ServeAuthenticatedHTTP(response, request, func(usr tokenapi.UserDesc) {
+		var requestPayload proto.ChangePasswordRequest
+		err := json.NewDecoder(request.Body).Decode(&requestPayload)
+		if err != nil {
+			this.HttpError(response, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if clientId := this.LookupClient(requestPayload.Client); clientId == "" {
+			this.Logger.Info("Invalid clientId or clientSecret for password change.", "clientId", requestPayload.Client.Id, "user", usr.Name)
+			this.HttpError(response, "Invalid clientId/clientSecret", http.StatusForbidden)
+			return
+		}
 		found, userDescription := this.Providers.DescribeUser(usr.Name)
 		if !found {
-			this.Logger.Error(nil, "User authenticated but not found by Describe.", "user", usr.Name)
+			this.Logger.Error(nil, "User authenticated but not found by Describe.", "clientId", requestPayload.Client.Id, "user", usr.Name)
 			this.HttpError(response, "User authenticated but not found by Describe.", http.StatusInternalServerError)
 			return
 		}
 		prvd, err := this.Providers.GetProvider(userDescription.Authority)
 		if err != nil {
-			this.Logger.Error(err, "User authenticated but its authority is not found.", "user", usr.Name, "authority", userDescription.Authority)
+			this.Logger.Error(err, "User authenticated but its authority is not found.", "clientId", requestPayload.Client.Id, "user", usr.Name, "authority", userDescription.Authority)
 			this.HttpError(response, "User authenticated its Authority is not found.", http.StatusInternalServerError)
-			return
-		}
-		var requestPayload proto.ChangePasswordRequest
-		err = json.NewDecoder(request.Body).Decode(&requestPayload)
-		if err != nil {
-			this.HttpError(response, err.Error(), http.StatusBadRequest)
 			return
 		}
 		err = prvd.ChangePassword(usr.Name, requestPayload.OldPassword, requestPayload.NewPassword)

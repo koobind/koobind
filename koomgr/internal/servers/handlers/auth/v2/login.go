@@ -2,7 +2,6 @@ package v2
 
 import (
 	"encoding/json"
-	"fmt"
 	proto "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
 	"github.com/koobind/koobind/koomgr/internal/providers"
 	"github.com/koobind/koobind/koomgr/internal/servers/handlers"
@@ -19,6 +18,11 @@ func (this *AuthLoginHandler) ServeHTTP(response http.ResponseWriter, request *h
 	err := json.NewDecoder(request.Body).Decode(&requestPayload)
 	if err != nil {
 		this.HttpError(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if clientId := this.LookupClient(requestPayload.Client); clientId == "" {
+		this.Logger.Info("Invalid clientId or clientSecret for login.", "clientId", requestPayload.Client.Id, "user", requestPayload.Login)
+		this.HttpError(response, "Invalid clientId/clientSecret", http.StatusForbidden)
 		return
 	}
 	usr, ok, err := this.Providers.Login(requestPayload.Login, requestPayload.Password)
@@ -44,10 +48,10 @@ func (this *AuthLoginHandler) ServeHTTP(response http.ResponseWriter, request *h
 			responsePayload.Token = userToken.Token
 			responsePayload.ClientTTL = userToken.Spec.Lifecycle.ClientTTL.Duration
 		}
-		this.Logger.Info(fmt.Sprintf("Login successful for user:'%s'  uid:%s, groups=%v with token:'%s'", usr.Name, usr.Uid, usr.Groups, responsePayload.Token))
+		this.Logger.Info("Login successful", "clientId", requestPayload.Client.Id, "user", usr.Name, "groups", usr.Groups, "token", responsePayload.Token)
 		this.ServeJSON(response, responsePayload)
 	} else {
-		this.Logger.Info(fmt.Sprintf("Invalid login for user '%s'.", requestPayload.Login))
+		this.Logger.Info("Invalid login", "user", requestPayload.Client.Id, requestPayload.Login)
 		this.HttpError(response, "Unauthorized", http.StatusUnauthorized)
 	}
 }

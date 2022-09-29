@@ -23,6 +23,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
+	proto_v2 "github.com/koobind/koobind/koomgr/apis/proto/auth/v2"
+	"github.com/koobind/koobind/koomgr/internal/config"
 	"github.com/koobind/koobind/koomgr/internal/token"
 	"net/http"
 	"strings"
@@ -72,4 +74,18 @@ func json2String(data interface{}) string {
 	builder := &strings.Builder{}
 	_ = json.NewEncoder(builder).Encode(data)
 	return builder.String()
+}
+
+func (this *BaseHandler) LookupClient(client proto_v2.AuthClient) (clientId string) {
+	authClient, ok := config.Conf.AuthClientById[client.Id]
+	if !ok {
+		this.Logger.V(1).Info("Unable to find client.Id", "client.Id", client.Id)
+		return ""
+	}
+	if authClient.Secret != client.Secret {
+		this.Logger.V(1).Info("client.Secret mismatch", "client.Id", client.Id, "client.Secret", client.Secret, "server.Secret", authClient.Secret)
+		return ""
+	}
+	this.Logger.V(1).Info("Found client", "client.Id", authClient.Id)
+	return authClient.Id
 }

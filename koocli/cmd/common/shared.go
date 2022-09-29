@@ -97,6 +97,7 @@ func loginAndGetToken(login, password string) *proto_v2.LoginResponse {
 		Login:         login,
 		Password:      password,
 		GenerateToken: true,
+		Client:        Config.Client,
 	}
 	body, err := json.Marshal(loginRequestPayload)
 	if err != nil {
@@ -116,7 +117,9 @@ func loginAndGetToken(login, password string) *proto_v2.LoginResponse {
 	} else if response.StatusCode == http.StatusUnauthorized {
 		return nil
 	} else {
-		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode)
+		var b bytes.Buffer
+		b.ReadFrom(response.Body)
+		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d) %v\n", response.Status, response.StatusCode, b.String())
 		return nil
 		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
 	}
@@ -156,7 +159,8 @@ func inputPassword(prompt string) string {
 
 func ValidateToken(token string) bool {
 	validateTokenRequest := proto_v2.ValidateTokenRequest{
-		Token: token,
+		Token:  token,
+		Client: Config.Client,
 	}
 	body, err := json.Marshal(validateTokenRequest)
 	if err != nil {
