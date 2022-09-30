@@ -105,24 +105,30 @@ func loginAndGetToken(login, password string) *proto_v2.LoginResponse {
 	}
 	response, err := HttpConnection.Do("POST", proto_v2.LoginUrlPath, nil, bytes.NewBuffer(body))
 	if err != nil {
-		panic(err)
-	}
-	if response.StatusCode == http.StatusOK {
-		var loginResponse proto_v2.LoginResponse
-		err = json.NewDecoder(response.Body).Decode(&loginResponse)
-		if err != nil {
-			panic(err)
-		}
-		return &loginResponse
-	} else if response.StatusCode == http.StatusUnauthorized {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to exchnage with authentication server: %v. Check server logs\n", err)
 		return nil
-	} else {
+		//os.Exit(2)
+	}
+	if response.StatusCode == http.StatusUnauthorized {
+		return nil
+	}
+	if response.StatusCode != http.StatusOK {
 		var b bytes.Buffer
 		b.ReadFrom(response.Body)
 		_, _ = fmt.Fprintf(os.Stderr, "Invalid http response: %s, (Status:%d) %v\n", response.Status, response.StatusCode, b.String())
 		return nil
 		//panic(fmt.Errorf("Invalid http response: %s, (Status:%d)\n", response.Status, response.StatusCode))
+
 	}
+	var loginResponse proto_v2.LoginResponse
+	err = json.NewDecoder(response.Body).Decode(&loginResponse)
+	if err != nil {
+		var b bytes.Buffer
+		b.ReadFrom(response.Body)
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to decode server response '%s': %v\n", b.String(), err)
+		panic(err)
+	}
+	return &loginResponse
 }
 
 func inputCredentials(login, password string) (string, string) {

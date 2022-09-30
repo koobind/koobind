@@ -5,19 +5,19 @@
 # In other words, the upper valuew file will host the full users and groups list.
 users:
   - name: admin
-    commonName: Administrator
-    email:
+    commonNames: [ "Administrator", "admin" ]
     passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
   - name: guest
     disabled: false
     passwordHash: $2a$10$pmBHSa4db5U44ssmVj97gOV1AlPhxd3dmg4r1/Jv/HYWb50vP9keG # guest
-#  - name: jules
-#    commonName: Jules Testeur
-#    email: jt@test.com
-#    passwordHash: $2a$10$rRL5Tfm5YHLv/d/vDu3bDO8eb92LZAkCqr5Try77R04PGhFfKO0rS  # admin
-#    uid: 1000
-#    comment: "A tester"
-#    disabled: True
+  - name: jules
+    commonNames: ["Jules Testeur", "Mr TESTEUR"]
+    emails: ["jt@test.com", "jt@abcdef.com"]
+    passwordHash: $2a$10$XzAt/1qD9G9R3FKJo0jVVeDAsbAICfexg8HUh8xwSgTia.OF.mkS.  # jules
+    uid: 1000
+    comment: "A tester"
+    disabled: false
+
 
 groups:
 

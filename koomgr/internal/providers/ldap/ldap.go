@@ -165,7 +165,7 @@ func getAttrs(e ldap.Entry, name string) []string {
 			return a.Values
 		}
 	}
-	return nil
+	return []string{}
 }
 
 func getAttr(e ldap.Entry, name string) string {
@@ -186,7 +186,8 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 		PasswordStatus: tokenapi.PasswordStatusUnchecked,
 		Uid:            "",
 		Groups:         []string{},
-		Email:          "",
+		Emails:         []string{},
+		CommonNames:    []string{},
 		Messages:       make([]string, 0, 0),
 	}
 	var ldapUser ldap.Entry
@@ -236,8 +237,8 @@ func (this *ldapProvider) GetUserStatus(login string, password string, checkPass
 				userEntry.Uid = strconv.Itoa(uid)
 			}
 		}
-		userEntry.Email = getAttr(ldapUser, this.UserSearch.EmailAttr)
-		userEntry.CommonName = getAttr(ldapUser, this.UserSearch.CnAttr)
+		userEntry.Emails = getAttrs(ldapUser, this.UserSearch.EmailAttr)
+		userEntry.CommonNames = getAttrs(ldapUser, this.UserSearch.CnAttr)
 	}
 	return userEntry, err
 }

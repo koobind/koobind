@@ -72,7 +72,7 @@ func NewTokenBasket() token.TokenBasket {
 	})
 }
 
-func (this *tokenBasket) NewUserToken(user tokenapi.UserDesc) (proto.UserToken, error) {
+func (this *tokenBasket) NewUserToken(clientId string, user tokenapi.UserDesc) (proto.UserToken, error) {
 	b := make([]byte, 32)
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
@@ -81,6 +81,7 @@ func (this *tokenBasket) NewUserToken(user tokenapi.UserDesc) (proto.UserToken, 
 	t := proto.UserToken{
 		Token: string(b),
 		Spec: tokenapi.TokenSpec{
+			Client:    clientId,
 			User:      user,
 			Creation:  metav1.Time{Time: now},
 			Lifecycle: *this.defaultLifecycle,

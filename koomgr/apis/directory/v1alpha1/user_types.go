@@ -27,13 +27,13 @@ import (
 type UserSpec struct {
 	// The user login is the Name of the resource.
 
-	// The user common name.
+	// The user common name(s).
 	// +optional
-	CommonName string `json:"commonName,omitempty"`
+	CommonNames []string `json:"commonNames,omitempty"`
 
-	// The user email.
+	// The user email(s).
 	// +optional
-	Email string `json:"email,omitempty"`
+	Emails []string `json:"emails,omitempty"`
 
 	// The user password, Hashed. Using golang.org/x/crypto/bcrypt.GenerateFromPassword()
 	// Is optional, in case we only enrich a user from another directory
@@ -60,8 +60,8 @@ type UserStatus struct {
 // +kubebuilder:object:root=true
 
 // +kubebuilder:resource:scope=Namespaced,shortName=koouser;kuser;koousers;kusers
-// +kubebuilder:printcolumn:name="Common name",type=string,JSONPath=`.spec.commonName`
-// +kubebuilder:printcolumn:name="Email",type=string,JSONPath=`.spec.email`
+// +kubebuilder:printcolumn:name="Common names",type=string,JSONPath=`.spec.commonNames`
+// +kubebuilder:printcolumn:name="Emails",type=string,JSONPath=`.spec.emails`
 // +kubebuilder:printcolumn:name="Uid",type=integer,JSONPath=`.spec.uid`
 // +kubebuilder:printcolumn:name="Comment",type=string,JSONPath=`.spec.comment`
 // +kubebuilder:printcolumn:name="Disabled",type=boolean,JSONPath=`.spec.disabled`

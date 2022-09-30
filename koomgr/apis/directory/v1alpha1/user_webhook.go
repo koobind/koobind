@@ -82,9 +82,11 @@ func (this *User) validate() error {
 			return fmt.Errorf("Invalid passwordHash! ('%s')", this.Spec.PasswordHash)
 		}
 	}
-	if this.Spec.Email != "" {
-		if !emailRegexp.MatchString(this.Spec.Email) {
-			return fmt.Errorf("Invalid Email")
+	if this.Spec.Emails != nil {
+		for _, email := range this.Spec.Emails {
+			if !emailRegexp.MatchString(email) {
+				return fmt.Errorf("'%s' is not a valid Email", email)
+			}
 		}
 	}
 	return nil

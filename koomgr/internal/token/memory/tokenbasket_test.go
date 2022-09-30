@@ -69,7 +69,7 @@ var lifeCycle3s = tokenapi.TokenLifecycle{
 func TestNew(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle3s)
 	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
-	userToken, err := basket.NewUserToken(user)
+	userToken, err := basket.NewUserToken("testClient", user)
 	assert.Nil(t, err)
 	userToken2, err := basket.Get(userToken.Token)
 	assert.Nil(t, err)
@@ -80,7 +80,7 @@ func TestNew(t *testing.T) {
 func TestTimeout1(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
 	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
-	userToken, err := basket.NewUserToken(user)
+	userToken, err := basket.NewUserToken("testClient", user)
 	assert.Nil(t, err)
 	time.Sleep(time.Second * 3)
 	userToken2, err := basket.Get(userToken.Token)
@@ -91,7 +91,7 @@ func TestTimeout1(t *testing.T) {
 func TestTimeout2(t *testing.T) {
 	basket := newTokenBasket(&lifeCycle2s)
 	var user = tokenapi.UserDesc{Name: "Alfred", Groups: []string{}}
-	userToken, err := basket.NewUserToken(user)
+	userToken, err := basket.NewUserToken("testClient", user)
 	assert.Nil(t, err)
 	token := userToken.Token
 

@@ -37,8 +37,8 @@ type UserEntry struct {
 	PasswordStatus PasswordStatus `json:"passwordStatus"` // For describe, always 'unchecked'
 	Uid            string         `json:"uid"`            // Issued from the authoritative server (The first one which checked the password).
 	Groups         []string       `json:"groups"`
-	Email          string         `json:"email"`
-	CommonName     string         `json:"commonName"`
+	Emails         []string       `json:"emails"`
+	CommonNames    []string       `json:"commonNames"`
 	Messages       []string       `json:"messages"` // To report error or explanation i.e broken link in crd provider, or disabled link
 }
 
@@ -63,6 +63,9 @@ type TokenLifecycle struct {
 type TokenSpec struct {
 
 	// +required
+	Client string `json:"client"`
+
+	// +required
 	User UserDesc `json:"user"`
 
 	// +required
@@ -79,6 +82,7 @@ type TokenStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Namespaced,shortName=ktoken;kootoken
+// +kubebuilder:printcolumn:name="Client",type=string,JSONPath=`.spec.client`
 // +kubebuilder:printcolumn:name="User name",type=string,JSONPath=`.spec.user.name`
 // +kubebuilder:printcolumn:name="User ID",type=string,JSONPath=`.spec.user.uid`
 // +kubebuilder:printcolumn:name="User Groups",type=string,JSONPath=`.spec.user.groups`

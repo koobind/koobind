@@ -25,7 +25,7 @@ import (
 )
 
 type TokenBasket interface {
-	NewUserToken(user tokenapi.UserDesc) (proto.UserToken, error)
+	NewUserToken(clientId string, user tokenapi.UserDesc) (proto.UserToken, error)
 	Get(token string) (*proto.UserToken, error)
 	GetAll() ([]proto.UserToken, error)
 	Clean() error

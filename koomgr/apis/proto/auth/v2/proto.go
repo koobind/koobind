@@ -21,14 +21,13 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Username      string        `json:"username"`
-	CommonNames   []string      `json:"commonNames"`
-	Uid           string        `json:"uid"`
-	Emails        []string      `json:"emails"`
-	EmailVerified bool          `json:"emailVerified"` // Not used for now
-	Groups        []string      `json:"groups"`
-	Token         string        `json:"token"`
-	ClientTTL     time.Duration `json:"clientTTL"`
+	Username    string        `json:"username"`
+	CommonNames []string      `json:"commonNames"`
+	Uid         string        `json:"uid"`
+	Emails      []string      `json:"emails"`
+	Groups      []string      `json:"groups"`
+	Token       string        `json:"token"`
+	ClientTTL   time.Duration `json:"clientTTL"`
 }
 
 // ---------------------------------------------------

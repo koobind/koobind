@@ -72,7 +72,7 @@ var userDescribeCmd = &cobra.Command{
 				tw := new(tabwriter.Writer)
 				tw.Init(os.Stdout, 2, 4, 3, ' ', 0)
 				if explainAuth {
-					_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAIL\tCOMMON NAME\tCOMMENT")
+					_, _ = fmt.Fprintf(tw, "PROVIDER\tFOUND\tAUTH\tUID\tGROUPS\tEMAILS\tCOMMON NAMES\tCOMMENT")
 					//authorityFound := false
 					for _, userEntry := range userDesc.Entries {
 						var found = ""
@@ -87,11 +87,11 @@ var userDescribeCmd = &cobra.Command{
 								}
 							}
 						}
-						_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userEntry.ProviderName, found, authority, userEntry.Uid, array2String(userEntry.Groups), userEntry.Email, userEntry.CommonName, array2String(userEntry.Messages))
+						_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", userEntry.ProviderName, found, authority, userEntry.Uid, array2String(userEntry.Groups), array2String(userEntry.Emails), array2String(userEntry.CommonNames), array2String(userEntry.Messages))
 					}
 				} else {
-					_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tAUTHORITY")
-					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s", userDesc.Name, userDesc.Uid, strings.Join(userDesc.Groups, ","), userDesc.Authority)
+					_, _ = fmt.Fprintf(tw, "USER\tID\tGROUPS\tEMAILS\tCOMMON NAMES\tAUTHORITY")
+					_, _ = fmt.Fprintf(tw, "\n%s\t%s\t%s\t%s\t%s\t%s", userDesc.Name, userDesc.Uid, array2String(userDesc.Groups), array2String(userDesc.Emails), array2String(userDesc.CommonNames), userDesc.Authority)
 				}
 				_, _ = fmt.Fprintf(tw, "\n")
 				_ = tw.Flush()

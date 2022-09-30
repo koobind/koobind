@@ -51,7 +51,8 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 		PasswordStatus: tokenapi.PasswordStatusUnchecked,
 		Uid:            "",
 		Groups:         []string{},
-		Email:          "",
+		Emails:         []string{},
+		CommonNames:    []string{},
 		Messages:       make([]string, 0, 0),
 	}
 	usr := directoryapi.User{}
@@ -84,8 +85,12 @@ func (this *CrdProvider) GetUserStatus(login string, password string, checkPassw
 	if usr.Spec.Uid != nil {
 		userEntry.Uid = strconv.Itoa(*usr.Spec.Uid + this.UidOffet)
 	}
-	userEntry.CommonName = usr.Spec.CommonName
-	userEntry.Email = usr.Spec.Email
+	if len(usr.Spec.CommonNames) > 0 { // Avoid copying a nil
+		userEntry.CommonNames = usr.Spec.CommonNames
+	}
+	if len(usr.Spec.Emails) > 0 { // Avoid copying a nil
+		userEntry.Emails = usr.Spec.Emails
+	}
 	if *this.CredentialAuthority && checkPassword && usr.Spec.PasswordHash != "" {
 		err := bcrypt.CompareHashAndPassword([]byte(usr.Spec.PasswordHash), []byte(password))
 		if err == nil {

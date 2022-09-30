@@ -184,6 +184,16 @@ func (in *UserEntry) DeepCopyInto(out *UserEntry) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.Emails != nil {
+		in, out := &in.Emails, &out.Emails
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.CommonNames != nil {
+		in, out := &in.CommonNames, &out.CommonNames
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Messages != nil {
 		in, out := &in.Messages, &out.Messages
 		*out = make([]string, len(*in))

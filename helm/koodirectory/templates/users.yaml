@@ -10,8 +10,9 @@ metadata:
   labels:
       {{- include "koodirectory.labels" $ | nindent 4 }}
 spec:
-{{- with .commonName }}
-  commonName: {{ . }}
+{{- with .commonNames }}
+  commonNames:
+  {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- with .passwordHash }}
   passwordHash: {{ . }}
@@ -19,8 +20,9 @@ spec:
 {{- with .disabled}}
   disabled: {{ . }}
 {{- end }}
-{{- with .email }}
-  email: {{ . }}
+{{- with .emails }}
+  emails:
+  {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- with .comment}}
   comment: {{ . }}

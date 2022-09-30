@@ -20,7 +20,8 @@ func (this *AuthLoginHandler) ServeHTTP(response http.ResponseWriter, request *h
 		this.HttpError(response, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if clientId := this.LookupClient(requestPayload.Client); clientId == "" {
+	var clientId string
+	if clientId = this.LookupClient(requestPayload.Client); clientId == "" {
 		this.Logger.Info("Invalid clientId or clientSecret for login.", "clientId", requestPayload.Client.Id, "user", requestPayload.Login)
 		this.HttpError(response, "Invalid clientId/clientSecret", http.StatusForbidden)
 		return
@@ -32,15 +33,14 @@ func (this *AuthLoginHandler) ServeHTTP(response http.ResponseWriter, request *h
 	}
 	if ok {
 		responsePayload := proto.LoginResponse{
-			Username:      usr.Name,
-			Uid:           usr.Uid,
-			EmailVerified: false,
-			Groups:        usr.Groups,
-			Emails:        usr.Emails,
-			CommonNames:   usr.CommonNames,
+			Username:    usr.Name,
+			Uid:         usr.Uid,
+			Groups:      usr.Groups,
+			Emails:      usr.Emails,
+			CommonNames: usr.CommonNames,
 		}
 		if requestPayload.GenerateToken {
-			userToken, err := this.TokenBasket.NewUserToken(usr)
+			userToken, err := this.TokenBasket.NewUserToken(clientId, usr)
 			if err != nil {
 				this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 				return
@@ -51,7 +51,7 @@ func (this *AuthLoginHandler) ServeHTTP(response http.ResponseWriter, request *h
 		this.Logger.Info("Login successful", "clientId", requestPayload.Client.Id, "user", usr.Name, "groups", usr.Groups, "token", responsePayload.Token)
 		this.ServeJSON(response, responsePayload)
 	} else {
-		this.Logger.Info("Invalid login", "user", requestPayload.Client.Id, requestPayload.Login)
+		this.Logger.Info("Invalid login", "clientId", requestPayload.Client.Id, "user", requestPayload.Login)
 		this.HttpError(response, "Unauthorized", http.StatusUnauthorized)
 	}
 }

@@ -48,8 +48,9 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		Found:          false,
 		PasswordStatus: tokenapi.PasswordStatusUnchecked,
 		Uid:            "",
-		Groups:         nil,
-		Email:          "",
+		Groups:         []string{},
+		Emails:         []string{},
+		CommonNames:    []string{},
 		Messages:       make([]string, 0, 0),
 	}
 	user, exists := this.userByLogin[login]
@@ -79,8 +80,12 @@ func (this *staticProvider) GetUserStatus(login string, password string, checkPa
 		if user.Id != nil {
 			userEntry.Uid = strconv.Itoa(*user.Id + this.UidOffet)
 		}
-		userEntry.Email = user.Email
-		userEntry.CommonName = user.CommonName
+		if len(user.Emails) > 0 { // Avoid copying nil
+			userEntry.Emails = user.Emails
+		}
+		if len(user.CommonNames) > 0 { // Avoid copying nil
+			userEntry.CommonNames = user.CommonNames
+		}
 		// Will not collect groups if auth failed
 		if userEntry.PasswordStatus != tokenapi.PasswordStatusWrong && *this.GroupAuthority {
 			userEntry.Groups = make([]string, len(user.Groups))

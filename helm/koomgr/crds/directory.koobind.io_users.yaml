@@ -21,11 +21,11 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.commonName
-      name: Common name
+    - jsonPath: .spec.commonNames
+      name: Common names
       type: string
-    - jsonPath: .spec.email
-      name: Email
+    - jsonPath: .spec.emails
+      name: Emails
       type: string
     - jsonPath: .spec.uid
       name: Uid
@@ -59,16 +59,20 @@ spec:
               comment:
                 description: Whatever extra information related to this user.
                 type: string
-              commonName:
-                description: The user common name.
-                type: string
+              commonNames:
+                description: The user common name(s).
+                items:
+                  type: string
+                type: array
               disabled:
                 description: Prevent this user to login. Even if this user is managed
                   by an external provider (i.e LDAP)
                 type: boolean
-              email:
-                description: The user email.
-                type: string
+              emails:
+                description: The user email(s).
+                items:
+                  type: string
+                type: array
               passwordHash:
                 description: The user password, Hashed. Using golang.org/x/crypto/bcrypt.GenerateFromPassword()
                   Is optional, in case we only enrich a user from another directory

@@ -19,6 +19,9 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.client
+      name: Client
+      type: string
     - jsonPath: .spec.user.name
       name: User name
       type: string
@@ -51,6 +54,8 @@ spec:
           spec:
             description: K8s Name will be the token itself
             properties:
+              client:
+                type: string
               creation:
                 format: date-time
                 type: string
@@ -95,10 +100,14 @@ spec:
                       properties:
                         authority:
                           type: boolean
-                        commonName:
-                          type: string
-                        email:
-                          type: string
+                        commonNames:
+                          items:
+                            type: string
+                          type: array
+                        emails:
+                          items:
+                            type: string
+                          type: array
                         found:
                           type: boolean
                         groups:
@@ -117,8 +126,8 @@ spec:
                           type: string
                       required:
                       - authority
-                      - commonName
-                      - email
+                      - commonNames
+                      - emails
                       - found
                       - groups
                       - messages
@@ -137,6 +146,7 @@ spec:
                 - userEntries
                 type: object
             required:
+            - client
             - creation
             - lifecycle
             - user

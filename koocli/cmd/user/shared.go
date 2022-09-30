@@ -28,23 +28,26 @@ import (
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
-	crdUserSpec = &v1alpha1.UserSpec{}
-	uid         int
-	disabled    bool
-	enabled     bool
-	_true       = true
-	_false      = false
+	crdUserSpec   = &v1alpha1.UserSpec{}
+	uid           int
+	disabled      bool
+	enabled       bool
+	commonNameCsv string
+	emailCsv      string
+	_true         = true
+	_false        = false
 )
 
 func initUserParams(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&Provider, "provider", "_", "")
 	cmd.PersistentFlags().BoolVar(&disabled, "disabled", false, "")
 	cmd.PersistentFlags().BoolVar(&enabled, "enabled", false, "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.CommonName, "commonName", "", "")
-	cmd.PersistentFlags().StringVar(&crdUserSpec.Email, "email", "", "")
+	cmd.PersistentFlags().StringVar(&commonNameCsv, "commonNames", "", "")
+	cmd.PersistentFlags().StringVar(&emailCsv, "emails", "", "")
 	cmd.PersistentFlags().StringVar(&crdUserSpec.Comment, "comment", "", "")
 	cmd.PersistentFlags().StringVar(&crdUserSpec.PasswordHash, "passwordHash", "", "")
 	cmd.PersistentFlags().IntVar(&uid, "uid", 0, "")
@@ -67,6 +70,12 @@ func applyUserCommand(cmd *cobra.Command, args []string, method string) {
 	}
 	if cmd.PersistentFlags().Lookup("uid").Changed {
 		crdUserSpec.Uid = &uid
+	}
+	if cmd.PersistentFlags().Lookup("emails").Changed {
+		crdUserSpec.Emails = strings.Split(emailCsv, ",")
+	}
+	if cmd.PersistentFlags().Lookup("commonNames").Changed {
+		crdUserSpec.CommonNames = strings.Split(commonNameCsv, ",")
 	}
 	if enabled {
 		crdUserSpec.Disabled = &_false

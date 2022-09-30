@@ -30,8 +30,8 @@ type User struct {
 	PasswordHash string   `yaml:"passwordHash"`
 	Id           *int     `yaml:"id,omitempty"`
 	Groups       []string `yaml:"groups"`
-	Email        string   `yaml:"email"`
-	CommonName   string   `yaml:"commonName"`
+	Emails       []string `yaml:"emails"`
+	CommonNames  []string `yaml:"commonNamex"`
 }
 
 type StaticProviderConfig struct {

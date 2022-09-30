@@ -99,11 +99,11 @@ func AddApplyPatchUser(handler *AdminV1Handler, usr tokenapi.UserDesc, response 
 				if userSpec.Comment != "" {
 					crdUser.Spec.Comment = userSpec.Comment
 				}
-				if userSpec.Email != "" {
-					crdUser.Spec.Email = userSpec.Email
+				if userSpec.Emails != nil {
+					crdUser.Spec.Emails = userSpec.Emails
 				}
-				if userSpec.CommonName != "" {
-					crdUser.Spec.CommonName = userSpec.CommonName
+				if userSpec.CommonNames != nil {
+					crdUser.Spec.CommonNames = userSpec.CommonNames
 				}
 				if userSpec.Disabled != nil {
 					crdUser.Spec.Disabled = userSpec.Disabled

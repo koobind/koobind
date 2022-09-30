@@ -146,10 +146,12 @@ func (this *providerChain) Login(login, password string) (tokenapi.UserDesc, boo
 				user.Authority = prvd.GetName()
 			}
 			user.Groups = append(user.Groups, userEntry.Groups...)
-			if userEntry.Email != "" {
-				user.Emails = append(user.Emails, userEntry.Email)
+			if userEntry.Emails != nil {
+				user.Emails = append(user.Emails, userEntry.Emails...)
 			}
-			user.CommonNames = append(user.CommonNames, userEntry.CommonName)
+			if user.CommonNames != nil {
+				user.CommonNames = append(user.CommonNames, userEntry.CommonNames...)
+			}
 		}
 	}
 	if passwordStatus != tokenapi.PasswordStatusChecked {
@@ -189,10 +191,12 @@ func (this *providerChain) DescribeUser(login string) (bool, tokenapi.UserDesc) 
 				}
 				found = true
 				user.Groups = append(user.Groups, userEntry.Groups...)
-				if userEntry.Email != "" {
-					user.Emails = append(user.Emails, userEntry.Email)
+				if userEntry.Emails != nil {
+					user.Emails = append(user.Emails, userEntry.Emails...)
 				}
-				user.CommonNames = append(user.CommonNames, userEntry.CommonName)
+				if userEntry.CommonNames != nil {
+					user.CommonNames = append(user.CommonNames, userEntry.CommonNames...)
+				}
 			}
 		}
 		user.Entries = append(user.Entries, userEntry)

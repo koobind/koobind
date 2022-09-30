@@ -75,8 +75,13 @@ build: generate fmt vet ## Build manager binary locally
 	go build -o bin/manager main.go
 
 
+.PHONY: crdinstall
+crdinstall: crd ## Install CRDs on the configured K8s cluster.
+	kubectl apply -f ../helm/koomgr/crds
+
+
 .PHONY: crduninstall
-crduninstall: crd ## Uninstall CRDs from the configured K8s cluster
+crduninstall: crd ## Uninstall CRDs from the configured K8s cluster. WARNING: Will destroy all related resources
 	# Set ignore-not-found=true to ignore resource not found errors during deletion.
 	kubectl delete --ignore-not-found=$(ignore-not-found) -f ../helm/koomgr/crds
 

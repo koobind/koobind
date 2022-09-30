@@ -46,16 +46,15 @@ func (this *DexLoginHandler) ServeHTTP(response http.ResponseWriter, request *ht
 		return
 	}
 	if ok {
-		userToken, err := this.TokenBasket.NewUserToken(usr)
+		userToken, err := this.TokenBasket.NewUserToken("dex", usr)
 		if err != nil {
 			this.HttpError(response, "Server error. Check server logs", http.StatusInternalServerError)
 		} else {
 			data := proto.DexLoginResponse{
-				Name:          userToken.Spec.User.Name,
-				Uid:           userToken.Spec.User.Uid,
-				EmailVerified: false,
-				Groups:        userToken.Spec.User.Groups,
-				Token:         userToken.Token,
+				Name:   userToken.Spec.User.Name,
+				Uid:    userToken.Spec.User.Uid,
+				Groups: userToken.Spec.User.Groups,
+				Token:  userToken.Token,
 			}
 			if len(userToken.Spec.User.CommonNames) > 0 {
 				data.CommonName = userToken.Spec.User.CommonNames[0]
